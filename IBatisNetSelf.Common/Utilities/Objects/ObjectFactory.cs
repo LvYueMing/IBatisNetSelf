@@ -29,7 +29,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects
             }
             else
             {
-                this.objectFactory = new ActivatorObjectFactory();
+                //this.objectFactory = new ActivatorObjectFactory();
             }
         }
 
@@ -45,7 +45,8 @@ namespace IBatisNetSelf.Common.Utilities.Objects
         {
             if (logger.IsDebugEnabled)
             {
-                return new FactoryLogAdapter(typeToCreate, types, this.objectFactory.CreateFactory(typeToCreate, types));
+                //return new FactoryLogAdapter(typeToCreate, types, this.objectFactory.CreateFactory(typeToCreate, types));
+                return null;
             }
             else
             {

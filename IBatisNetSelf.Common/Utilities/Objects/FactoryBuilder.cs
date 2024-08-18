@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using IBatisNetSelf.Common.Exceptions;
+using System.Xml.Linq;
+using System.Runtime.CompilerServices;
 
 namespace IBatisNetSelf.Common.Utilities.Objects
 {
@@ -28,7 +30,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects
         {
             AssemblyName _assemblyName = new AssemblyName();
             _assemblyName.Name = "IBatisNetSelf.EmitFactory" + HashCodeProvider.GetIdentityHashCode(this).ToString();
-
+                       
             // Create a new assembly with one module
             AssemblyBuilder _assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(_assemblyName, AssemblyBuilderAccess.Run);
 
@@ -67,7 +69,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects
         /// <param name="aTypeToCreate">The type instance to create.</param>
         /// <param name="aArgumentTypes">The types.</param>
         /// <returns>The <see cref="IFactory"/></returns>
-        private Type CreateFactoryType(Type aTypeToCreate, Type[] aArgumentTypes)
+        private Type? CreateFactoryType(Type aTypeToCreate, Type[] aArgumentTypes)
         {
             string _argumentTypeNames = string.Empty;
             for (int i = 0; i < aArgumentTypes.Length; i++)
@@ -81,7 +83,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects
             //adds an interface that this type implements
             _typeBuilder.AddInterfaceImplementation(typeof(IFactory));
 
-            //添加CreateInstance方法
+            //实现CreateInstance()方法
             this.ImplementCreateInstance(_typeBuilder, aTypeToCreate, aArgumentTypes);
             return _typeBuilder.CreateType();
         }
@@ -99,11 +101,11 @@ namespace IBatisNetSelf.Common.Utilities.Objects
             ILGenerator _il = _method.GetILGenerator();
 
             // Add test if contructeur not public
-            ConstructorInfo _constructor = aTypeToCreate.GetConstructor(VISIBILITY, null, aArgumentTypes, null);
+            ConstructorInfo? _constructor = aTypeToCreate.GetConstructor(VISIBILITY, null, aArgumentTypes, null);
             if (_constructor == null || !_constructor.IsPublic)
             {
                 throw new ProbeException(
-                    string.Format("Unable to optimize create instance. Cause : Could not find public constructor matching specified arguments for type \"{0}\".", aTypeToCreate.Name));
+                    $"Unable to optimize create instance. Cause : Could not find public constructor matching specified arguments for type \"{aTypeToCreate.Name}\".");
             }
             // new typeToCreate() or new typeToCreate(... arguments ...)
             this.EmitArgsIL(_il, aArgumentTypes);
@@ -172,5 +174,13 @@ namespace IBatisNetSelf.Common.Utilities.Objects
         }
 
 
+        public void SaveDll()
+        {            
+            var generator = new Lokad.ILPack.AssemblyGenerator();
+
+            var assembly = this.moduleBuilder.Assembly;
+
+            generator.GenerateAssembly(assembly,  AppDomain.CurrentDomain.BaseDirectory+this.moduleBuilder.Assembly.GetName().Name+".dll");
+        }
     }
 }
