@@ -136,9 +136,10 @@ namespace IBatisNetSelf.Common.Utilities.Objects
                 // 3、索引值index和数组array都从堆栈中弹出; 查找存储在数组 array 中索引 index 处的值。
                 // 4、该值被推送到堆栈上。
 
-                //将索引1处的参数加载到计算堆栈上。
-                aIl.Emit(OpCodes.Ldarg_1);   // Argument 1 is argument array.
-                                             //将值 i 推送到堆栈上。
+                //arg_0 表示类实例,此处不需要
+                //将arg_1(索引1)的参数加载到计算堆栈上。
+                aIl.Emit(OpCodes.Ldarg_1);   // Arg_1 is argument array.
+                //将值 i 推送到堆栈上。
                 aIl.Emit(OpCodes.Ldc_I4, i);
                 //将位于指定数组 索引处的对象引用加载到计算堆栈的顶部
                 aIl.Emit(OpCodes.Ldelem_Ref);
@@ -174,13 +175,16 @@ namespace IBatisNetSelf.Common.Utilities.Objects
         }
 
 
-        public void SaveDll()
-        {            
+        /// <summary>
+        /// 保存动态程序集到磁盘，即保持为dll，方便反编译观察程序
+        /// </summary>
+        public void SaveToDll()
+        {
             var generator = new Lokad.ILPack.AssemblyGenerator();
 
             var assembly = this.moduleBuilder.Assembly;
 
-            generator.GenerateAssembly(assembly,  AppDomain.CurrentDomain.BaseDirectory+this.moduleBuilder.Assembly.GetName().Name+".dll");
+            generator.GenerateAssembly(assembly, AppDomain.CurrentDomain.BaseDirectory + this.moduleBuilder.Assembly.GetName().Name + ".dll");
         }
     }
 }

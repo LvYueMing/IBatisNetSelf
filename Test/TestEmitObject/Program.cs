@@ -8,11 +8,11 @@ namespace TestEmitObject
         {
             FactoryBuilder _factoryBuilder = new FactoryBuilder();
 
-            IFactory _factory= _factoryBuilder.CreateFactory(typeof(MyClass), new Type[] { typeof(string)});
+            IFactory _factory= _factoryBuilder.CreateFactory(typeof(MyClass), Type.EmptyTypes);
 
-            _factoryBuilder.SaveDll();
+            _factoryBuilder.SaveToDll();
 
-            MyClass _my = (MyClass)_factory.CreateInstance(new object[] {"1" });
+            MyClass _my = (MyClass)_factory.CreateInstance(null);
 
 
             Console.WriteLine($"{_my.id}  {_my.name}") ;
@@ -24,6 +24,13 @@ namespace TestEmitObject
     {
         public string id { set; get; }
         public string name { set; get; }
+
+
+        public MyClass()
+        {
+            id = Guid.NewGuid().ToString();
+            name = "Test";
+        }
 
         public MyClass(string id) 
         {
