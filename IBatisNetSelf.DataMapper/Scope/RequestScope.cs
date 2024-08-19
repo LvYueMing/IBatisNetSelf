@@ -1,4 +1,7 @@
-﻿using IBatisNetSelf.DataMapper.Configuration.Statements;
+﻿using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
+using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
+using IBatisNetSelf.DataMapper.Configuration.Statements;
+using IBatisNetSelf.DataMapper.DataExchange;
 using IBatisNetSelf.DataMapper.MappedStatements;
 using System;
 using System.Collections;

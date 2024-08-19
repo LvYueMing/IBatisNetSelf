@@ -1,8 +1,14 @@
 ﻿using IBatisNetSelf.Common;
+using IBatisNetSelf.Common.Exceptions;
 using IBatisNetSelf.Common.Utilities;
-using IBatisNetSelf.DataMapper.Exceptions;
+using IBatisNetSelf.Common.Utilities.Objects;
+using IBatisNetSelf.Common.Utilities.Objects.Members;
+using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
+using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
+using IBatisNetSelf.DataMapper.DataExchange;
 using IBatisNetSelf.DataMapper.MappedStatements;
 using IBatisNetSelf.DataMapper.SessionStore;
+using IBatisNetSelf.DataMapper.TypeHandlers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,7 +39,7 @@ namespace IBatisNetSelf.DataMapper
         private IDataSource dataSource = null;
         //(CacheModel name, cache))
         private HybridDictionary cacheMaps = new HybridDictionary();
-        // private TypeHandlerFactory typeHandlerFactory = null;
+        private TypeHandlerFactory typeHandlerFactory = null;
         //private DBHelperParameterCache dbHelperParameterCache = null;
 
         private bool cacheModelsEnabled = false;
@@ -43,9 +49,9 @@ namespace IBatisNetSelf.DataMapper
         /// Container session unique for each thread. 
         /// </summary>
         private ISessionStore sessionStore = null;
-        //private IObjectFactory objectFactory = null;
-        //private AccessorFactory accessorFactory = null;
-        //private DataExchangeFactory dataExchangeFactory = null;
+        private IObjectFactory objectFactory = null;
+        private AccessorFactory accessorFactory = null;
+        private DataExchangeFactory dataExchangeFactory = null;
         #endregion
 
         #region Properties
@@ -90,22 +96,22 @@ namespace IBatisNetSelf.DataMapper
         /// <summary>
         /// Factory for DataExchange objects
         /// </summary>
-    //    public DataExchangeFactory DataExchangeFactory =>  this.dataExchangeFactory; 
+        public DataExchangeFactory DataExchangeFactory =>  this.dataExchangeFactory; 
 
         /// <summary>
         /// The TypeHandlerFactory
         /// </summary>
-     //   public TypeHandlerFactory TypeHandlerFactory => this.typeHandlerFactory; 
+        public TypeHandlerFactory TypeHandlerFactory => this.typeHandlerFactory; 
 
         /// <summary>
         /// The meta factory for object factory
         /// </summary>
-     //   public IObjectFactory ObjectFactory => this.objectFactory; 
+        public IObjectFactory ObjectFactory => this.objectFactory; 
 
         /// <summary>
         /// The factory which build <see cref="IAccessor"/>
         /// </summary>
-     //   public AccessorFactory AccessorFactory => this.accessorFactory;
+        public AccessorFactory AccessorFactory => this.accessorFactory;
 
 
         /// <summary>
@@ -129,23 +135,14 @@ namespace IBatisNetSelf.DataMapper
         /// </summary>
         /// <param name="aObjectFactory">The object factory.</param>
         /// <param name="aAccessorFactory">The accessor factory.</param>
-        //public SqlMapper(IObjectFactory aObjectFactory, AccessorFactory aAccessorFactory)
-        //{
-        //    this.typeHandlerFactory = new TypeHandlerFactory();
-        //    this.dbHelperParameterCache = new DBHelperParameterCache();
-        //    this.objectFactory = aObjectFactory;
-        //    this.accessorFactory = aAccessorFactory;
-
-        //    this.dataExchangeFactory = new DataExchangeFactory(this.typeHandlerFactory, objectFactory, aAccessorFactory);
-
-        //    this.id = HashCodeProvider.GetIdentityHashCode(this).ToString();
-        //    this.sessionStore = SessionStoreFactory.GetSessionStore(this.id);
-        //}
-
-
-        //test
-        public SqlMapper()
+        public SqlMapper(IObjectFactory aObjectFactory, AccessorFactory aAccessorFactory)
         {
+            this.typeHandlerFactory = new TypeHandlerFactory();
+            //this.dbHelperParameterCache = new DBHelperParameterCache();
+            this.objectFactory = aObjectFactory;
+            this.accessorFactory = aAccessorFactory;
+
+            this.dataExchangeFactory = new DataExchangeFactory(this.typeHandlerFactory, objectFactory, aAccessorFactory);
 
             this.id = HashCodeProvider.GetIdentityHashCode(this).ToString();
             this.sessionStore = SessionStoreFactory.GetSessionStore(this.id);
@@ -153,7 +150,6 @@ namespace IBatisNetSelf.DataMapper
 
 
         #endregion
-
 
 
         #region Methods
@@ -227,54 +223,54 @@ namespace IBatisNetSelf.DataMapper
         /// </summary>
         /// <param name="name">The name of the ParameterMap</param>
         /// <returns>The ParameterMap</returns>
-        //public ParameterMap GetParameterMap(string name)
-        //{
-        //    if (!parameterMaps.Contains(name))
-        //    {
-        //        throw new DataMapperException("This SQL map does not contain an ParameterMap named " + name + ".  ");
-        //    }
-        //    return (ParameterMap)parameterMaps[name];
-        //}
+        public ParameterMap GetParameterMap(string name)
+        {
+            if (!parameterMaps.Contains(name))
+            {
+                throw new DataMapperException("This SQL map does not contain an ParameterMap named " + name + ".  ");
+            }
+            return (ParameterMap)parameterMaps[name];
+        }
 
         /// <summary>
         /// Adds a (named) ParameterMap.
         /// </summary>
         /// <param name="parameterMap">the ParameterMap to add</param>
-        //public void AddParameterMap(ParameterMap parameterMap)
-        //{
-        //    if (this.parameterMaps.Contains(parameterMap.Id) == true)
-        //    {
-        //        throw new DataMapperException("This SQL map already contains an ParameterMap named " + parameterMap.Id);
-        //    }
-        //    this.parameterMaps.Add(parameterMap.Id, parameterMap);
-        //}
+        public void AddParameterMap(ParameterMap parameterMap)
+        {
+            if (this.parameterMaps.Contains(parameterMap.Id) == true)
+            {
+                throw new DataMapperException("This SQL map already contains an ParameterMap named " + parameterMap.Id);
+            }
+            this.parameterMaps.Add(parameterMap.Id, parameterMap);
+        }
 
         /// <summary>
         /// Gets a ResultMap by name
         /// </summary>
         /// <param name="name">The name of the result map</param>
         /// <returns>The ResultMap</returns>
-        //public IResultMap GetResultMap(string name)
-        //{
-        //    if (resultMaps.Contains(name) == false)
-        //    {
-        //        throw new DataMapperException("This SQL map does not contain an ResultMap named " + name);
-        //    }
-        //    return (ResultMap)resultMaps[name];
-        //}
+        public IResultMap GetResultMap(string name)
+        {
+            if (resultMaps.Contains(name) == false)
+            {
+                throw new DataMapperException("This SQL map does not contain an ResultMap named " + name);
+            }
+            return (ResultMap)resultMaps[name];
+        }
 
         /// <summary>
         /// Adds a (named) ResultMap
         /// </summary>
         /// <param name="resultMap">The ResultMap to add</param>
-        //public void AddResultMap(IResultMap resultMap)
-        //{
-        //    if (resultMaps.Contains(resultMap.Id) == true)
-        //    {
-        //        throw new DataMapperException("This SQL map already contains an ResultMap named " + resultMap.Id);
-        //    }
-        //    resultMaps.Add(resultMap.Id, resultMap);
-        //}
+        public void AddResultMap(IResultMap resultMap)
+        {
+            if (resultMaps.Contains(resultMap.Id) == true)
+            {
+                throw new DataMapperException("This SQL map already contains an ResultMap named " + resultMap.Id);
+            }
+            resultMaps.Add(resultMap.Id, resultMap);
+        }
 
         /// <summary>
         /// The ParameterMap collection

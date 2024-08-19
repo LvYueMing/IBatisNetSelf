@@ -1,0 +1,117 @@
+﻿using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace IBatisNetSelf.DataMapper.TypeHandlers.Handlers
+{
+    /// <summary>
+    /// Custom type handler for adding a TypeHandlerCallback
+    /// </summary>
+    public sealed class CustomTypeHandler : BaseTypeHandler
+    {
+        private ITypeHandlerCallback _callback = null;
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is simple type.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this instance is simple type; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsSimpleType => true;
+
+        /// <summary>
+        /// The null value for this type
+        /// </summary>
+        /// <value></value>
+        public override object NullValue => _callback.NullValue;
+
+
+        /// <summary>
+        /// Gets or sets the callback.
+        /// </summary>
+        /// <value>The callback.</value>
+        public ITypeHandlerCallback Callback
+        {
+            get { return _callback; }
+            set { /* nop */ }
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomTypeHandler"/> class.
+        /// </summary>
+        /// <param name="callback">The callback.</param>
+        public CustomTypeHandler(ITypeHandlerCallback callback)
+        {
+            _callback = callback;
+        }
+
+
+
+        /// <summary>
+        /// Performs processing on a value before it is used to set
+        /// the parameter of a IDbCommand.
+        /// </summary>
+        /// <param name="dataParameter"></param>
+        /// <param name="parameterValue">The value to be set</param>
+        /// <param name="dbType">Data base type</param>
+        public override void SetParameter(IDataParameter dataParameter, object parameterValue, string dbType)
+        {
+            IParameterSetter setter = new ParameterSetterImpl(dataParameter);
+            _callback.SetParameter(setter, parameterValue);
+        }
+
+        /// <summary>
+        /// Gets a column value by the name
+        /// </summary>
+        /// <param name="mapping"></param>
+        /// <param name="dataReader"></param>
+        /// <returns></returns>
+        public override object GetValueByName(ResultProperty mapping, IDataReader dataReader)
+        {
+            IResultGetter getter = new ResultGetterImpl(dataReader, mapping.ColumnName);
+            return _callback.GetResult(getter);
+        }
+
+        /// <summary>
+        /// Gets a column value by the index
+        /// </summary>
+        /// <param name="mapping"></param>
+        /// <param name="dataReader"></param>
+        /// <returns></returns>
+        public override object GetValueByIndex(ResultProperty mapping, IDataReader dataReader)
+        {
+            IResultGetter getter = new ResultGetterImpl(dataReader, mapping.ColumnIndex);
+            return _callback.GetResult(getter);
+        }
+
+        /// <summary>
+        /// Converts the String to the type that this handler deals with
+        /// </summary>
+        /// <param name="type">the tyepe of the property (used only for enum conversion)</param>
+        /// <param name="s">the String value</param>
+        /// <returns>the converted value</returns>
+        public override object ValueOf(Type type, string s)
+        {
+            return _callback.ValueOf(s);
+        }
+
+        /// <summary>
+        /// Retrieve ouput database value of an output parameter
+        /// </summary>
+        /// <param name="outputValue">ouput database value</param>
+        /// <param name="parameterType">type used in EnumTypeHandler</param>
+        /// <returns></returns>
+        public override object GetDataBaseValue(object outputValue, Type parameterType)
+        {
+            IResultGetter getter = new ResultGetterImpl(outputValue);
+            return _callback.GetResult(getter);
+        }
+
+
+    }
+}

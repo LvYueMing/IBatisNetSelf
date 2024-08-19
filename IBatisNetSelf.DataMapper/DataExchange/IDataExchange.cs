@@ -1,4 +1,5 @@
 ﻿using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
+using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
 using System;
 using System.Collections.Generic;
 using System.Linq;

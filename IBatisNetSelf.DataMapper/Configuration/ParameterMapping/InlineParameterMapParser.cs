@@ -1,7 +1,9 @@
-﻿using IBatisNetSelf.Common.Utilities;
+﻿using IBatisNetSelf.Common.Exceptions;
+using IBatisNetSelf.Common.Utilities;
+using IBatisNetSelf.Common.Utilities.Objects;
 using IBatisNetSelf.DataMapper.Configuration.Statements;
-using IBatisNetSelf.DataMapper.Exceptions;
 using IBatisNetSelf.DataMapper.Scope;
+using IBatisNetSelf.DataMapper.TypeHandlers;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections;
@@ -54,7 +56,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                 _parameterClassType = aStatement.ParameterClass;
             }
 
-            StringTokenizer _parser = new StringTokenizer(aStringSql, PARAMETER_TOKEN, true);
+            Common.Utilities.StringTokenizer _parser = new Common.Utilities.StringTokenizer(aStringSql, PARAMETER_TOKEN, true);
             StringBuilder _newSqlBuffer = new StringBuilder();
 
             string _token = null;
@@ -131,7 +133,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
         {
             ParameterProperty _mapping = new ParameterProperty();
 
-            StringTokenizer _paramParser = new StringTokenizer(token, "=,", false);
+            Common.Utilities.StringTokenizer _paramParser = new Common.Utilities.StringTokenizer(token, "=,", false);
             IEnumerator _enumeratorParam = _paramParser.GetEnumerator();
 
             _enumeratorParam.MoveNext();
@@ -214,7 +216,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
 
             if (aToken.IndexOf(PARAM_DELIM) > -1)
             {
-                StringTokenizer _paramParser = new StringTokenizer(aToken, PARAM_DELIM, true);
+                Common.Utilities.StringTokenizer _paramParser = new Common.Utilities.StringTokenizer(aToken, PARAM_DELIM, true);
                 IEnumerator _enumeratorParam = _paramParser.GetEnumerator();
 
                 int _n1 = _paramParser.TokenNumber;

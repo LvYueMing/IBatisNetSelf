@@ -1,5 +1,10 @@
-﻿using IBatisNetSelf.Common.Utilities;
+﻿using IBatisNetSelf.Common.Exceptions;
+using IBatisNetSelf.Common.Utilities;
+using IBatisNetSelf.Common.Utilities.Objects;
+using IBatisNetSelf.Common.Utilities.Objects.Members;
 using IBatisNetSelf.DataMapper.Scope;
+using IBatisNetSelf.DataMapper.TypeHandlers;
+using IBatisNetSelf.DataMapper.TypeHandlers.Handlers;
 using System;
 using System.Collections;
 using System.Collections.Generic;

@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using System.Xml;
+using IBatisNetSelf.DataMapper.DataExchange;
+using IBatisNetSelf.DataMapper.TypeHandlers;
 
 namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
 {

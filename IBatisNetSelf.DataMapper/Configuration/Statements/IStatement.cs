@@ -1,4 +1,6 @@
-﻿using IBatisNetSelf.DataMapper.Configuration.Sql;
+﻿using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
+using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
+using IBatisNetSelf.DataMapper.Configuration.Sql;
 using System;
 using System.Collections;
 using System.Collections.Generic;

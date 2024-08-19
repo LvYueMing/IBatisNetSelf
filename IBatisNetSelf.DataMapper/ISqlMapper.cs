@@ -1,5 +1,12 @@
 ﻿using IBatisNetSelf.Common;
+using IBatisNetSelf.Common.Utilities.Objects;
+using IBatisNetSelf.Common.Utilities.Objects.Members;
+using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
+using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
+using IBatisNetSelf.DataMapper.DataExchange;
+using IBatisNetSelf.DataMapper.MappedStatements;
 using IBatisNetSelf.DataMapper.SessionStore;
+using IBatisNetSelf.DataMapper.TypeHandlers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -76,22 +83,22 @@ namespace IBatisNetSelf.DataMapper
         /// <summary>
         /// Factory for DataExchange objects
         /// </summary>
-      //  DataExchangeFactory DataExchangeFactory { get; }
+        DataExchangeFactory DataExchangeFactory { get; }
 
         /// <summary>
         /// The TypeHandlerFactory
         /// </summary>
-      //  TypeHandlerFactory TypeHandlerFactory { get; }
+        TypeHandlerFactory TypeHandlerFactory { get; }
 
         /// <summary>
         /// The meta factory for object factory
         /// </summary>
-     //   IObjectFactory ObjectFactory { get; }
+        IObjectFactory ObjectFactory { get; }
 
         /// <summary>
         /// The factory which build <see cref="IAccessor"/>
         /// </summary>
-    //    AccessorFactory AccessorFactory { get; }
+        AccessorFactory AccessorFactory { get; }
 
 
         /// <summary>
@@ -109,26 +116,26 @@ namespace IBatisNetSelf.DataMapper
         /// </summary>
         /// <param name="name">The name of the ParameterMap</param>
         /// <returns>The ParameterMap</returns>
-        //    ParameterMap GetParameterMap(string name);
+            ParameterMap GetParameterMap(string name);
 
         /// <summary>
         /// Adds a (named) ParameterMap.
         /// </summary>
         /// <param name="parameterMap">the ParameterMap to add</param>
-        //    void AddParameterMap(ParameterMap parameterMap);
+            void AddParameterMap(ParameterMap parameterMap);
 
         /// <summary>
         /// Gets a ResultMap by name
         /// </summary>
         /// <param name="name">The name of the result map</param>
         /// <returns>The ResultMap</returns>
-        //   IResultMap GetResultMap(string name);
+           IResultMap GetResultMap(string name);
 
         /// <summary>
         /// Adds a (named) ResultMap
         /// </summary>
         /// <param name="resultMap">The ResultMap to add</param>
-        //   void AddResultMap(IResultMap resultMap);
+           void AddResultMap(IResultMap resultMap);
 
 
         /// <summary>
@@ -136,7 +143,7 @@ namespace IBatisNetSelf.DataMapper
         /// </summary>
         /// <param name="id"> The id of the statement</param>
         /// <returns> The MappedStatement</returns>
-        //   IMappedStatement GetMappedStatement(string id);
+           IMappedStatement GetMappedStatement(string id);
 
 
         /// <summary>
@@ -144,7 +151,7 @@ namespace IBatisNetSelf.DataMapper
         /// </summary>
         /// <param name="key"> The key name</param>
         /// <param name="mappedStatement">The statement to add</param>
-        //    void AddMappedStatement(string key, IMappedStatement mappedStatement);
+            void AddMappedStatement(string key, IMappedStatement mappedStatement);
 
         /// <summary>
         /// Gets a cache by name
