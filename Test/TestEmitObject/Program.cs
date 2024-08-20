@@ -12,6 +12,7 @@ namespace EmitObject
 
             _factoryBuilder.SaveToDll();
 
+
             MyClass _my = (MyClass)_factory.CreateInstance(null);
 
 

@@ -32,6 +32,10 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
         /// The IL emitted ISet
         /// </summary>
         private ISet emittedSet = null;
+        /// <summary>
+        /// 动态创建的类名
+        /// </summary>
+        private string emitClassName = string.Empty;
 
 
         #region IAccessor Members
@@ -125,7 +129,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
             this.EmitType(aModuleBuilder);
 
             // Create a new instance
-            this.emittedSet = aAssemblyBuilder.CreateInstance("SetFor" + targetType.FullName + propertyName) as ISet;
+            this.emittedSet = aAssemblyBuilder.CreateInstance(this.emitClassName) as ISet;
 
             this.nullInternal = this.GetNullInternal(propertyType);
 
@@ -147,9 +151,11 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
         /// <param name="aModuleBuilder">The module builder.</param>
         private void EmitType(ModuleBuilder aModuleBuilder)
         {
-            // Define a public class named "SetFor.FullTagetTypeName.PropertyName" in the assembly.
-            TypeBuilder _typeBuilder = aModuleBuilder.DefineType("SetFor" + this.targetType.FullName + this.propertyName,
-                TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed);
+            // Define a public class named "FastSetAccessor.SetFor+TagetTypeName+PropertyName" in the assembly.
+            // this.targetType.FullName = "Namespace.ClassName"
+            // this.targetType.Name = "ClassName"
+            this.emitClassName = "FastSetAccessor.SetFor" + this.targetType.Name + this.propertyName;
+            TypeBuilder _typeBuilder = aModuleBuilder.DefineType(this.emitClassName, TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed);
 
             // Mark the class as implementing ISet. 
             _typeBuilder.AddInterfaceImplementation(typeof(ISet));

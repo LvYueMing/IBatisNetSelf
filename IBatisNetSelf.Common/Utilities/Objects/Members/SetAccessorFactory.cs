@@ -188,5 +188,17 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
         }
 
         #endregion
+
+        /// <summary>
+        /// 保存动态程序集到磁盘，即保持为dll，方便反编译观察程序
+        /// </summary>
+        public void SaveToDll()
+        {
+            var _generator = new Lokad.ILPack.AssemblyGenerator();
+
+            var _assembly = this.moduleBuilder.Assembly;
+
+            _generator.GenerateAssembly(_assembly, AppDomain.CurrentDomain.BaseDirectory + this.moduleBuilder.Assembly.GetName().Name + ".dll");
+        }
     }
 }

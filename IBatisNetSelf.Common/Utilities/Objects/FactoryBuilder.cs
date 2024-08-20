@@ -180,11 +180,11 @@ namespace IBatisNetSelf.Common.Utilities.Objects
         /// </summary>
         public void SaveToDll()
         {
-            var generator = new Lokad.ILPack.AssemblyGenerator();
+            var _generator = new Lokad.ILPack.AssemblyGenerator();
 
-            var assembly = this.moduleBuilder.Assembly;
+            var _assembly = this.moduleBuilder.Assembly;
 
-            generator.GenerateAssembly(assembly, AppDomain.CurrentDomain.BaseDirectory + this.moduleBuilder.Assembly.GetName().Name + ".dll");
+            _generator.GenerateAssembly(_assembly, AppDomain.CurrentDomain.BaseDirectory + this.moduleBuilder.Assembly.GetName().Name + ".dll");
         }
     }
 }
