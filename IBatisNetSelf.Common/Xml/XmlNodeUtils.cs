@@ -147,15 +147,22 @@ namespace IBatisNetSelf.Common.Xml
         /// Replace properties by their values in the given string
         /// </summary>
         /// <param name="str"></param>
-        /// <param name="properties"></param>
+        /// <param name="aProperties"></param>
+        /// exmple: "User ID=${hospital};Password=${source}"
+        /// 第一次: _prepend   = "User ID=" 
+        ///        _append    = ";Password=${source}" 
+        ///        _propName  = "User" 
+        ///        _propValue = "hospital_value"
+        ///        _newString = "User ID=hospital_value;Password=${source}"
+        /// return: "User ID=hospital_value;Password=source_value"
         /// <returns></returns>
-        public static string ParsePropertyTokens(string str, NameValueCollection? properties)
+        public static string ParsePropertyTokens(string str, NameValueCollection? aProperties)
         {
             string OPEN = "${";
             string CLOSE = "}";
 
             string _newString = str;
-            if (_newString != null && properties != null)
+            if (_newString != null && aProperties != null)
             {
                 int _startIndex = _newString.IndexOf(OPEN);
                 int _endIndex = _newString.IndexOf(CLOSE);
@@ -167,7 +174,7 @@ namespace IBatisNetSelf.Common.Xml
 
                     int index = _startIndex + OPEN.Length;
                     string _propName = _newString.Substring(index, _endIndex - index);
-                    string _propValue = properties.Get(_propName);
+                    string _propValue = aProperties.Get(_propName);
                     if (_propValue == null)
                     {
                         _newString = _prepend + _propName + _append;

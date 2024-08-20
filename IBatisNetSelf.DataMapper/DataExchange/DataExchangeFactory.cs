@@ -28,26 +28,20 @@ namespace IBatisNetSelf.DataMapper.DataExchange
         /// <summary>
         ///  Getter for the type handler factory
         /// </summary>
-        public TypeHandlerFactory TypeHandlerFactory
-        {
-            get { return typeHandlerFactory; }
-        }
+        public TypeHandlerFactory TypeHandlerFactory=> typeHandlerFactory;
+
 
         /// <summary>
         /// The factory for object
         /// </summary>
-        public IObjectFactory ObjectFactory
-        {
-            get { return objectFactory; }
-        }
+        public IObjectFactory ObjectFactory=> objectFactory;
+
 
         /// <summary>
         /// The factory which build <see cref="ISetAccessor"/>
         /// </summary>
-        public AccessorFactory AccessorFactory
-        {
-            get { return accessorFactory; }
-        }
+        public AccessorFactory AccessorFactory=> accessorFactory;
+
 
 
         /// <summary>

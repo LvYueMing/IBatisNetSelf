@@ -12,6 +12,7 @@ using System.Xml.Serialization;
 using System.Xml;
 using IBatisNetSelf.DataMapper.DataExchange;
 using IBatisNetSelf.DataMapper.TypeHandlers;
+using IBatisNetSelf.DataMapper.Configuration.Serializers;
 
 namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
 {

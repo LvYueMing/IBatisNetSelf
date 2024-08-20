@@ -6,7 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using IBatisNetSelf.DataMapper.Exceptions;
+using IBatisNetSelf.Common.Exceptions;
 
 namespace IBatisNetSelf.DataMapper
 {

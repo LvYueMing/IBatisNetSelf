@@ -31,7 +31,7 @@ namespace TestSession
 
         private void button2_Click(object sender, EventArgs e)
         {
-            sqlMapper = new SqlMapper();
+            sqlMapper = new SqlMapper(null,null);
             sqlMapper.DataSource = this.dataSource;
             sqlMapper.OpenConnection();
             sqlMapper.LocalSession.OpenConnection();

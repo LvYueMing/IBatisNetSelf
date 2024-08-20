@@ -57,7 +57,7 @@ namespace IBatisNetSelf.DataMapper
         /// <example>
         /// sqlMapper.SessionStore = new HybridWebThreadSessionStore( sqlMapper.Id );
         /// </example>
-         ISessionStore SessionStore { set; }
+        ISessionStore SessionStore { set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is session started.
@@ -116,26 +116,26 @@ namespace IBatisNetSelf.DataMapper
         /// </summary>
         /// <param name="name">The name of the ParameterMap</param>
         /// <returns>The ParameterMap</returns>
-            ParameterMap GetParameterMap(string name);
+        ParameterMap GetParameterMap(string name);
 
         /// <summary>
         /// Adds a (named) ParameterMap.
         /// </summary>
         /// <param name="parameterMap">the ParameterMap to add</param>
-            void AddParameterMap(ParameterMap parameterMap);
+        void AddParameterMap(ParameterMap parameterMap);
 
         /// <summary>
         /// Gets a ResultMap by name
         /// </summary>
         /// <param name="name">The name of the result map</param>
         /// <returns>The ResultMap</returns>
-           IResultMap GetResultMap(string name);
+        IResultMap GetResultMap(string name);
 
         /// <summary>
         /// Adds a (named) ResultMap
         /// </summary>
         /// <param name="resultMap">The ResultMap to add</param>
-           void AddResultMap(IResultMap resultMap);
+        void AddResultMap(IResultMap resultMap);
 
 
         /// <summary>
@@ -143,7 +143,7 @@ namespace IBatisNetSelf.DataMapper
         /// </summary>
         /// <param name="id"> The id of the statement</param>
         /// <returns> The MappedStatement</returns>
-           IMappedStatement GetMappedStatement(string id);
+        IMappedStatement GetMappedStatement(string id);
 
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace IBatisNetSelf.DataMapper
         /// </summary>
         /// <param name="key"> The key name</param>
         /// <param name="mappedStatement">The statement to add</param>
-            void AddMappedStatement(string key, IMappedStatement mappedStatement);
+        void AddMappedStatement(string key, IMappedStatement mappedStatement);
 
         /// <summary>
         /// Gets a cache by name

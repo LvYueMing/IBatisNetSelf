@@ -1,6 +1,7 @@
 ﻿using IBatisNetSelf.Common.Exceptions;
 using IBatisNetSelf.Common.Utilities;
 using IBatisNetSelf.Common.Utilities.Objects;
+using IBatisNetSelf.DataMapper.Configuration.Sql.Dynamic;
 using IBatisNetSelf.DataMapper.Configuration.Statements;
 using IBatisNetSelf.DataMapper.Scope;
 using IBatisNetSelf.DataMapper.TypeHandlers;

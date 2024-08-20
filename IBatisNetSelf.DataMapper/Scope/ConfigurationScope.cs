@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using IBatisNetSelf.Common.Exceptions;
 using IBatisNetSelf.Common.Utilities.Objects;
+using IBatisNetSelf.DataMapper.Configuration;
 
 namespace IBatisNetSelf.DataMapper.Scope
 {
