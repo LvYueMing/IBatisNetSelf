@@ -9,13 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IBatisNetSelf.DataMapper", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{8B50026E-AE90-4146-8C58-3582087AFC54}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestLog", "Test\TestLog\TestLog.csproj", "{A3128F33-6032-40DB-8778-668CD567FDBE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Log", "Test\TestLog\Log.csproj", "{A3128F33-6032-40DB-8778-668CD567FDBE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestDbProvider", "Test\TestDbProvider\TestDbProvider.csproj", "{D7EE4F02-4B9D-4395-8998-A1081E3AE340}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbProvider", "Test\TestDbProvider\DbProvider.csproj", "{D7EE4F02-4B9D-4395-8998-A1081E3AE340}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestSession", "Test\TestSession\TestSession.csproj", "{8F8B390B-5D8B-449E-BB63-64279F64EDE1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Session", "Test\TestSession\Session.csproj", "{8F8B390B-5D8B-449E-BB63-64279F64EDE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestEmitObject", "Test\TestEmitObject\TestEmitObject.csproj", "{61823EE0-78D5-43A0-AD44-AEFC413144D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmitObject", "Test\TestEmitObject\EmitObject.csproj", "{61823EE0-78D5-43A0-AD44-AEFC413144D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

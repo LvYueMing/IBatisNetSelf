@@ -1,6 +1,6 @@
 ﻿using IBatisNetSelf.Common.Utilities.Objects;
 
-namespace TestEmitObject
+namespace EmitObject
 {
     internal class Program
     {

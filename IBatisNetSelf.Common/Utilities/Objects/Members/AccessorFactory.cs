@@ -17,13 +17,13 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
         /// <summary>
         /// The factory which build <see cref="ISetAccessor"/>
         /// </summary>
-        public ISetAccessorFactory SetAccessorFactory=> this.setAccessorFactory;
+        public ISetAccessorFactory SetAccessorFactory => this.setAccessorFactory;
 
 
         /// <summary>
         /// The factory which build <see cref="IGetAccessor"/>
         /// </summary>
-        public IGetAccessorFactory GetAccessorFactory=> this.getAccessorFactory;
+        public IGetAccessorFactory GetAccessorFactory => this.getAccessorFactory;
 
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
         /// </summary>
         /// <param name="setAccessorFactory">The set accessor factory.</param>
         /// <param name="getAccessorFactory">The get accessor factory.</param>
-        public AccessorFactory(ISetAccessorFactory setAccessorFactory,IGetAccessorFactory getAccessorFactory)
+        public AccessorFactory(ISetAccessorFactory setAccessorFactory, IGetAccessorFactory getAccessorFactory)
         {
             this.setAccessorFactory = setAccessorFactory;
             this.getAccessorFactory = getAccessorFactory;
