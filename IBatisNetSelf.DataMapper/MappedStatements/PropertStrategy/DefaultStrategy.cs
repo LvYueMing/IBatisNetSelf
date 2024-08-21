@@ -29,8 +29,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.PropertStrategy
         /// <param name="target">The target.</param>
         /// <param name="reader">The reader.</param>
         /// <param name="keys">The keys</param>
-        public void Set(RequestScope request, IResultMap resultMap,
-            ResultProperty mapping, ref object target, IDataReader reader, object keys)
+        public void Set(RequestScope request, IResultMap resultMap,ResultProperty mapping, ref object target, IDataReader reader, object keys)
         {
             object obj = Get(request, resultMap, mapping, ref target, reader);
             resultMap.SetValueOfProperty(ref target, mapping, obj);
