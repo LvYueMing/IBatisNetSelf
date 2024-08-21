@@ -7,6 +7,7 @@ using IBatisNetSelf.Common.Utilities.Objects.Members;
 using IBatisNetSelf.Common.Xml;
 using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
 using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
+using IBatisNetSelf.DataMapper.Configuration.Sql.Dynamic.Elements;
 using IBatisNetSelf.DataMapper.Configuration.Statements;
 using IBatisNetSelf.DataMapper.MappedStatements;
 using IBatisNetSelf.DataMapper.Scope;

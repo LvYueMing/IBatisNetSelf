@@ -10,9 +10,6 @@ namespace EmitObject
 
             IFactory _factory= _factoryBuilder.CreateFactory(typeof(MyClass), Type.EmptyTypes);
 
-            _factoryBuilder.SaveToDll();
-
-
             MyClass _my = (MyClass)_factory.CreateInstance(null);
 
 

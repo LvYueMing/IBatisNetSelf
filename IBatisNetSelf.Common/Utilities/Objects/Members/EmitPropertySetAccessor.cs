@@ -167,8 +167,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
             // Define a method named "Set" for the set operation (ISet).
             Type[] _setParamTypes = new Type[] { typeof(object), typeof(object) };
 
-            MethodBuilder _methodBuilder = _typeBuilder.DefineMethod("Set",
-                MethodAttributes.Public | MethodAttributes.Virtual,
+            MethodBuilder _methodBuilder = _typeBuilder.DefineMethod("Set",MethodAttributes.Public | MethodAttributes.Virtual,
                 null,
                 _setParamTypes);
 
@@ -188,10 +187,8 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
                 //声明指定类型(_paramType)的局部变量
                 _generatorIL.DeclareLocal(_paramType);
                 _generatorIL.Emit(OpCodes.Ldarg_1); //Load the first argument (target object)
+
                 //OpCodes.Castclass:尝试将引用传递的对象转换为指定的类。
-                // 1、对象引用被推送到堆栈上。
-                // 2、对象引用从堆栈中弹出; 引用的对象被强制转换为指定的class对象。
-                // 3、如果成功，则会将新的对象引用推送到堆栈上
                 _generatorIL.Emit(OpCodes.Castclass, targetType); //Cast to the source type(强制转换为源类型)
                 _generatorIL.Emit(OpCodes.Ldarg_2); //Load the second argument (value object)
                 if (_paramType.IsValueType)
@@ -199,11 +196,13 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
                     _generatorIL.Emit(OpCodes.Unbox, _paramType); //Unbox it 	
                     if (typeToOpcode[_paramType] != null)
                     {
+                        //OpCodes.Ldind_I1:将 int8 类型的值作为 int32 间接加载(即从地址加载)到计算堆栈上
                         OpCode _opCode = (OpCode)typeToOpcode[_paramType];
-                        _generatorIL.Emit(_opCode); //and load
+                        _generatorIL.Emit(_opCode); 
                     }
                     else
                     {
+                        //OpCodes.Ldobj 将地址指向的值类型对象复制到计算堆栈的顶部。
                         _generatorIL.Emit(OpCodes.Ldobj, _paramType);
                     }
                 }
@@ -211,7 +210,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
                 {
                     _generatorIL.Emit(OpCodes.Castclass, _paramType); //Cast class
                 }
-                //OpCodes.Callvirt:对对象调用后期绑定方法，并且将返回值推送到计算堆栈上。
+                //OpCodes.Callvirt:对对象调用后期绑定方法(虚函数)，并且将返回值推送到计算堆栈上。
                 // 1、对象引用obj被推送到堆栈上。
                 // 2、方法参数arg1-argN被推送到堆栈上。
                 // 3、方法参数arg1-argN和对象引用obj从堆栈中弹出;

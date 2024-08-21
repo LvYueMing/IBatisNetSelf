@@ -23,6 +23,8 @@ namespace IBatisNetSelf.Common.Utilities.Objects
 
         private ModuleBuilder moduleBuilder = null;
 
+        public ModuleBuilder ModuleBuilder => this.moduleBuilder;
+
         /// <summary>
         /// constructor
         /// </summary>
@@ -77,7 +79,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects
                 _argumentTypeNames += aArgumentTypes[i].Name.Replace("[]", string.Empty) + i.ToString();
             }
 
-            string _typeNameToCreate = "EmitFactoryFor" + aTypeToCreate.FullName + _argumentTypeNames;
+            string _typeNameToCreate = "EmitObjectFactory.CreateFor" + aTypeToCreate.Name + _argumentTypeNames;
             TypeBuilder _typeBuilder = this.moduleBuilder.DefineType(_typeNameToCreate, TypeAttributes.Public);
 
             //adds an interface that this type implements
@@ -174,17 +176,5 @@ namespace IBatisNetSelf.Common.Utilities.Objects
             }
         }
 
-
-        /// <summary>
-        /// 保存动态程序集到磁盘，即保持为dll，方便反编译观察程序
-        /// </summary>
-        public void SaveToDll()
-        {
-            var _generator = new Lokad.ILPack.AssemblyGenerator();
-
-            var _assembly = this.moduleBuilder.Assembly;
-
-            _generator.GenerateAssembly(_assembly, AppDomain.CurrentDomain.BaseDirectory + this.moduleBuilder.Assembly.GetName().Name + ".dll");
-        }
     }
 }
