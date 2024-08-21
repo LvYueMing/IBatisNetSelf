@@ -5,13 +5,22 @@ using IBatisNetSelf.Common.Utilities;
 using IBatisNetSelf.Common.Utilities.Objects;
 using IBatisNetSelf.Common.Utilities.Objects.Members;
 using IBatisNetSelf.Common.Xml;
+using IBatisNetSelf.DataMapper.Configuration.Alias;
+using IBatisNetSelf.DataMapper.Configuration.Cache.Fifo;
+using IBatisNetSelf.DataMapper.Configuration.Cache.Lru;
+using IBatisNetSelf.DataMapper.Configuration.Cache.Memory;
 using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
 using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
+using IBatisNetSelf.DataMapper.Configuration.Serializers;
+using IBatisNetSelf.DataMapper.Configuration.Sql;
+using IBatisNetSelf.DataMapper.Configuration.Sql.Dynamic;
 using IBatisNetSelf.DataMapper.Configuration.Sql.Dynamic.Elements;
 using IBatisNetSelf.DataMapper.Configuration.Statements;
 using IBatisNetSelf.DataMapper.MappedStatements;
 using IBatisNetSelf.DataMapper.Scope;
+using IBatisNetSelf.DataMapper.TypeHandlers;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -19,6 +28,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Schema;
 
 namespace IBatisNetSelf.DataMapper.Configuration
 {
