@@ -1,4 +1,5 @@
-﻿using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
+﻿using IBatisNetSelf.DataMapper.Configuration.Cache;
+using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
 using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
 using IBatisNetSelf.DataMapper.Configuration.Sql;
 using System;
@@ -62,7 +63,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         /// <summary>
         /// The CacheModel used by this statement.
         /// </summary>
-     //   CacheModel CacheModel { get;set;}
+        CacheModel CacheModel { get;set;}
 
 
         /// <summary>

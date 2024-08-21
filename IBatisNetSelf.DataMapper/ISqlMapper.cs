@@ -1,6 +1,7 @@
 ﻿using IBatisNetSelf.Common;
 using IBatisNetSelf.Common.Utilities.Objects;
 using IBatisNetSelf.Common.Utilities.Objects.Members;
+using IBatisNetSelf.DataMapper.Configuration.Cache;
 using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
 using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
 using IBatisNetSelf.DataMapper.DataExchange;
@@ -158,18 +159,18 @@ namespace IBatisNetSelf.DataMapper
         /// </summary>
         /// <param name="name">The name of the cache to get</param>
         /// <returns>The cache object</returns>
-        //     CacheModel GetCache(string name);
+             CacheModel GetCache(string name);
 
         /// <summary>
         /// Adds a (named) cache.
         /// </summary>
         /// <param name="cache">The cache to add</param>
-        //    void AddCache(CacheModel cache);
+            void AddCache(CacheModel cache);
 
         /// <summary>
         /// Flushes all cached objects that belong to this SqlMap
         /// </summary>
-        //   void FlushCaches();
+           void FlushCaches();
 
         /// <summary>
         /// Gets the data cache stats.

@@ -3,6 +3,7 @@ using IBatisNetSelf.Common.Exceptions;
 using IBatisNetSelf.Common.Utilities;
 using IBatisNetSelf.Common.Utilities.Objects;
 using IBatisNetSelf.Common.Utilities.Objects.Members;
+using IBatisNetSelf.DataMapper.Configuration.Cache;
 using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
 using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
 using IBatisNetSelf.DataMapper.DataExchange;
@@ -296,41 +297,41 @@ namespace IBatisNetSelf.DataMapper
         /// <summary>
         /// Flushes all cached objects that belong to this SqlMap
         /// </summary>
-        //public void FlushCaches()
-        //{
-        //	IDictionaryEnumerator enumerator = _cacheMaps.GetEnumerator();
-        //	while (enumerator.MoveNext())
-        //	{
-        //		((CacheModel)enumerator.Value).Flush();
-        //	}
-        //}
+        public void FlushCaches()
+        {
+            IDictionaryEnumerator enumerator = cacheMaps.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                ((CacheModel)enumerator.Value).Flush();
+            }
+        }
 
         /// <summary>
         /// Adds a (named) cache.
         /// </summary>
         /// <param name="cache">The cache to add</param>
-        //public void AddCache(CacheModel cache)
-        //{
-        //    if (cacheMaps.Contains(cache.Id))
-        //    {
-        //        throw new DataMapperException("This SQL map already contains an Cache named " + cache.Id);
-        //    }
-        //    cacheMaps.Add(cache.Id, cache);
-        //}
+        public void AddCache(CacheModel cache)
+        {
+            if (cacheMaps.Contains(cache.Id))
+            {
+                throw new DataMapperException("This SQL map already contains an Cache named " + cache.Id);
+            }
+            cacheMaps.Add(cache.Id, cache);
+        }
 
         /// <summary>
         /// Gets a cache by name
         /// </summary>
         /// <param name="name">The name of the cache to get</param>
         /// <returns>The cache object</returns>
-        //public CacheModel GetCache(string name)
-        //{
-        //    if (!cacheMaps.Contains(name))
-        //    {
-        //        throw new DataMapperException("This SQL map does not contain an Cache named " + name);
-        //    }
-        //    return (CacheModel)cacheMaps[name];
-        //}
+        public CacheModel GetCache(string name)
+        {
+            if (!cacheMaps.Contains(name))
+            {
+                throw new DataMapperException("This SQL map does not contain an Cache named " + name);
+            }
+            return (CacheModel)cacheMaps[name];
+        }
 
         /// <summary>
         /// 
@@ -338,45 +339,45 @@ namespace IBatisNetSelf.DataMapper
         /// <returns></returns>
         //public string GetDataCacheStats()
         //{
-        //	StringBuilder buffer = new StringBuilder();
-        //	buffer.Append(Environment.NewLine);
-        //	buffer.Append("Cache Data Statistics");
-        //	buffer.Append(Environment.NewLine);
-        //	buffer.Append("=====================");
-        //	buffer.Append(Environment.NewLine);
+        //    StringBuilder buffer = new StringBuilder();
+        //    buffer.Append(Environment.NewLine);
+        //    buffer.Append("Cache Data Statistics");
+        //    buffer.Append(Environment.NewLine);
+        //    buffer.Append("=====================");
+        //    buffer.Append(Environment.NewLine);
 
-        //	IDictionaryEnumerator enumerator = _mappedStatements.GetEnumerator();
-        //	while (enumerator.MoveNext())
-        //	{
-        //		IMappedStatement mappedStatement = (IMappedStatement)enumerator.Value;
+        //    IDictionaryEnumerator enumerator = _mappedStatements.GetEnumerator();
+        //    while (enumerator.MoveNext())
+        //    {
+        //        IMappedStatement mappedStatement = (IMappedStatement)enumerator.Value;
 
-        //		buffer.Append(mappedStatement.Id);
-        //		buffer.Append(": ");
+        //        buffer.Append(mappedStatement.Id);
+        //        buffer.Append(": ");
 
-        //		if (mappedStatement is CachingStatement)
-        //		{
-        //			double hitRatio = ((CachingStatement)mappedStatement).GetDataCacheHitRatio();
-        //			if (hitRatio != -1)
-        //			{
-        //				buffer.Append(Math.Round(hitRatio * 100));
-        //				buffer.Append("%");
-        //			}
-        //			else
-        //			{
-        //				// this statement has a cache but it hasn't been accessed yet
-        //				// buffer.Append("Cache has not been accessed."); ???
-        //				buffer.Append("No Cache.");
-        //			}
-        //		}
-        //		else
-        //		{
-        //			buffer.Append("No Cache.");
-        //		}
+        //        if (mappedStatement is CachingStatement)
+        //        {
+        //            double hitRatio = ((CachingStatement)mappedStatement).GetDataCacheHitRatio();
+        //            if (hitRatio != -1)
+        //            {
+        //                buffer.Append(Math.Round(hitRatio * 100));
+        //                buffer.Append("%");
+        //            }
+        //            else
+        //            {
+        //                // this statement has a cache but it hasn't been accessed yet
+        //                // buffer.Append("Cache has not been accessed."); ???
+        //                buffer.Append("No Cache.");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            buffer.Append("No Cache.");
+        //        }
 
-        //		buffer.Append(Environment.NewLine);
-        //	}
+        //        buffer.Append(Environment.NewLine);
+        //    }
 
-        //	return buffer.ToString();
+        //    return buffer.ToString();
         //}
 
         #endregion

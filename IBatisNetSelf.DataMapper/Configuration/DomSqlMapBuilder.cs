@@ -6,6 +6,7 @@ using IBatisNetSelf.Common.Utilities.Objects;
 using IBatisNetSelf.Common.Utilities.Objects.Members;
 using IBatisNetSelf.Common.Xml;
 using IBatisNetSelf.DataMapper.Configuration.Alias;
+using IBatisNetSelf.DataMapper.Configuration.Cache;
 using IBatisNetSelf.DataMapper.Configuration.Cache.Fifo;
 using IBatisNetSelf.DataMapper.Configuration.Cache.Lru;
 using IBatisNetSelf.DataMapper.Configuration.Cache.Memory;
@@ -17,6 +18,8 @@ using IBatisNetSelf.DataMapper.Configuration.Sql.Dynamic;
 using IBatisNetSelf.DataMapper.Configuration.Sql.Dynamic.Elements;
 using IBatisNetSelf.DataMapper.Configuration.Statements;
 using IBatisNetSelf.DataMapper.MappedStatements;
+using IBatisNetSelf.DataMapper.MappedStatements.ArgumentStrategy;
+using IBatisNetSelf.DataMapper.MappedStatements.PropertStrategy;
 using IBatisNetSelf.DataMapper.Scope;
 using IBatisNetSelf.DataMapper.TypeHandlers;
 using System;
@@ -282,26 +285,26 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// <summary>
         /// Allow a custom <see cref="ISetAccessorFactory"/> to be set before configuration.
         /// </summary>
-        //public ISetAccessorFactory SetAccessorFactory
-        //{
-        //	set { _setAccessorFactory = value; }
-        //}
+        public ISetAccessorFactory SetAccessorFactory
+        {
+            set { setAccessorFactory = value; }
+        }
 
         /// <summary>
         /// Allow a custom <see cref="IGetAccessorFactory"/> to be set before configuration.
         /// </summary>
-        //public IGetAccessorFactory GetAccessorFactory
-        //{
-        //	set { _getAccessorFactory = value; }
-        //}
+        public IGetAccessorFactory GetAccessorFactory
+        {
+            set { getAccessorFactory = value; }
+        }
 
         /// <summary>
         /// Allow a custom <see cref="IObjectFactory"/> to be set before configuration.
         /// </summary>
-        //public IObjectFactory ObjectFactory
-        //{
-        //	set { _objectFactory = value; }
-        //}
+        public IObjectFactory ObjectFactory
+        {
+            set { objectFactory = value; }
+        }
 
         /// <summary>
         /// Allow a custom <see cref="ISqlMapper"/> to be set before configuration.
