@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmitObject", "Test\EmitObje
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SetAccessor", "Test\SetAccessor\SetAccessor.csproj", "{C482AAFA-C078-4280-86C0-23BB9275FE6E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Log", "Test\Log\Log.csproj", "{4691EF70-0EA4-4088-B67E-1C875B8CA8BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "Test\Log\Logger.csproj", "{4691EF70-0EA4-4088-B67E-1C875B8CA8BB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmitDllSave", "Test\EmitDllSave\EmitDllSave.csproj", "{C98A66D5-1FB7-4E8B-8534-21A9323E92D9}"
 EndProject
