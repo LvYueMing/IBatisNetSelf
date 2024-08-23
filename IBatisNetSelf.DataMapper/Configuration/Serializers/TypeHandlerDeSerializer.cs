@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using IBatisNetSelf.Common.Exceptions;
 using IBatisNetSelf.Common.Xml;
+using IBatisNetSelf.DataMapper.Configuration.Alias;
 
 namespace IBatisNetSelf.DataMapper.Configuration.Serializers
 {

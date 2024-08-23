@@ -1,4 +1,5 @@
 ﻿using IBatisNetSelf.Common.Utilities.Objects.Members;
+using IBatisNetSelf.DataMapper.Configuration.Sql.Dynamic.Handlers;
 using System;
 using System.Collections.Generic;
 using System.Linq;

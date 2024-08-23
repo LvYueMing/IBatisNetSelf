@@ -1,5 +1,7 @@
-﻿using IBatisNetSelf.Common.Utilities.Objects.Members;
+﻿using IBatisNetSelf.Common.Exceptions;
+using IBatisNetSelf.Common.Utilities.Objects.Members;
 using IBatisNetSelf.Common.Xml;
+using IBatisNetSelf.DataMapper.Configuration.Statements;
 using IBatisNetSelf.DataMapper.Scope;
 using System;
 using System.Collections.Generic;
@@ -68,8 +70,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.Serializers
         {
             switch (s)
             {
-                case @"pre": return IBatisNetCore.DataMapper.SelectKeyType.@pre;
-                case @"post": return IBatisNetCore.DataMapper.SelectKeyType.@post;
+                case @"pre": return IBatisNetSelf.DataMapper.SelectKeyType.@pre;
+                case @"post": return IBatisNetSelf.DataMapper.SelectKeyType.@post;
                 default: throw new ConfigurationException("Unknown selectKey type : '" + s + "'");
             }
         }

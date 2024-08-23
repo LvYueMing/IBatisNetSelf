@@ -16,6 +16,8 @@ using IBatisNetSelf.DataMapper.Configuration.Serializers;
 using IBatisNetSelf.DataMapper.Configuration.Sql;
 using IBatisNetSelf.DataMapper.Configuration.Sql.Dynamic;
 using IBatisNetSelf.DataMapper.Configuration.Sql.Dynamic.Elements;
+using IBatisNetSelf.DataMapper.Configuration.Sql.SimpleDynamic;
+using IBatisNetSelf.DataMapper.Configuration.Sql.Static;
 using IBatisNetSelf.DataMapper.Configuration.Statements;
 using IBatisNetSelf.DataMapper.MappedStatements;
 using IBatisNetSelf.DataMapper.MappedStatements.ArgumentStrategy;
@@ -54,8 +56,8 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
         #region Constant
 
-        private const string PROPERTY_ELEMENT_KEY_ATTRIB = "key";
-        private const string PROPERTY_ELEMENT_VALUE_ATTRIB = "value";
+        private const string PROPERTY_ELEMENT_KEY_ATTR = "key";
+        private const string PROPERTY_ELEMENT_VALUE_ATTR = "value";
 
         /// <summary>
         /// 
@@ -1619,8 +1621,8 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 {
                     foreach (XmlNode propertyNode in _nodeProperties.SelectNodes(ApplyDataMapperNamespacePrefix(XML_PROPERTY), configScope.XmlNamespaceManager))
                     {
-                        XmlAttribute keyAttrib = propertyNode.Attributes[PROPERTY_ELEMENT_KEY_ATTRIB];
-                        XmlAttribute valueAttrib = propertyNode.Attributes[PROPERTY_ELEMENT_VALUE_ATTRIB];
+                        XmlAttribute keyAttrib = propertyNode.Attributes[PROPERTY_ELEMENT_KEY_ATTR];
+                        XmlAttribute valueAttrib = propertyNode.Attributes[PROPERTY_ELEMENT_VALUE_ATTR];
 
                         if (keyAttrib != null && valueAttrib != null)
                         {
@@ -1638,7 +1640,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
                             foreach (XmlNode node in propertiesConfig.SelectNodes(XML_GLOBAL_PROPERTIES, configScope.XmlNamespaceManager))
                             {
-                                configScope.Properties[node.Attributes[PROPERTY_ELEMENT_KEY_ATTRIB].Value] = node.Attributes[PROPERTY_ELEMENT_VALUE_ATTRIB].Value;
+                                configScope.Properties[node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value] = node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
 
                                 //if (_logger.IsDebugEnabled)
                                 //{
@@ -1660,7 +1662,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
                     foreach (XmlNode node in propertiesConfig.SelectNodes(XML_SETTINGS_ADD))
                     {
-                        configScope.Properties[node.Attributes[PROPERTY_ELEMENT_KEY_ATTRIB].Value] = node.Attributes[PROPERTY_ELEMENT_VALUE_ATTRIB].Value;
+                        configScope.Properties[node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value] = node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
 
                         //if (_logger.IsDebugEnabled)
                         //{

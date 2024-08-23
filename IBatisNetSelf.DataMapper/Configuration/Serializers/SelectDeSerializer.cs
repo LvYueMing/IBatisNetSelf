@@ -1,4 +1,5 @@
 ﻿using IBatisNetSelf.Common.Xml;
+using IBatisNetSelf.DataMapper.Configuration.Statements;
 using IBatisNetSelf.DataMapper.Scope;
 using System;
 using System.Collections.Generic;

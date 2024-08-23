@@ -1,4 +1,5 @@
-﻿using IBatisNetSelf.DataMapper.Configuration.Statements;
+﻿using IBatisNetSelf.DataMapper.Commands;
+using IBatisNetSelf.DataMapper.Configuration.Statements;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -75,7 +76,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
 
         #endregion
 
-
         #region ExecuteUpdate
 
         /// <summary>
@@ -133,7 +133,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
 
         #endregion
 
-
         #region ExecuteForObject
 
         /// <summary>
@@ -155,7 +154,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         object ExecuteQueryForObject(ISqlMapSession session, object parameterObject, object resultObject);
 
         #endregion
-
 
         #region Delegate
 
@@ -184,7 +182,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         IDictionary ExecuteQueryForMapWithRowDelegate(ISqlMapSession session, object parameterObject, string keyProperty, string valueProperty, DictionaryRowDelegate rowDelegate);
 
         #endregion
-
 
         #region ExecuteForDataSet
         /// <summary>

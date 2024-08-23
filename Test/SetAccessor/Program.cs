@@ -22,7 +22,6 @@ namespace SetAccessor
 
             Console.WriteLine(((TestClass)obj).id);
 
-            factory.SaveToDll();
             Console.ReadKey();
         }
     }

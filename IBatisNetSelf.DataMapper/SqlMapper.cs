@@ -32,16 +32,20 @@ namespace IBatisNetSelf.DataMapper
 
         //(MappedStatement Name, MappedStatement)
         private HybridDictionary mappedStatements = new HybridDictionary();
+        
         //(ResultMap name, ResultMap)
         private HybridDictionary resultMaps = new HybridDictionary();
+        
         //(ParameterMap name, ParameterMap)
         private HybridDictionary parameterMaps = new HybridDictionary();
+        
         // DataSource
         private IDataSource dataSource = null;
+        
         //(CacheModel name, cache))
         private HybridDictionary cacheMaps = new HybridDictionary();
         private TypeHandlerFactory typeHandlerFactory = null;
-        //private DBHelperParameterCache dbHelperParameterCache = null;
+        private DBHelperParameterCache dbHelperParameterCache = null;
 
         private bool cacheModelsEnabled = false;
 
@@ -92,7 +96,7 @@ namespace IBatisNetSelf.DataMapper
         /// Gets the DB helper parameter cache.
         /// </summary>
         /// <value>The DB helper parameter cache.</value>
-    //    public DBHelperParameterCache DBHelperParameterCache => this.dbHelperParameterCache; 
+        public DBHelperParameterCache DBHelperParameterCache => this.dbHelperParameterCache; 
 
         /// <summary>
         /// Factory for DataExchange objects

@@ -1,4 +1,5 @@
 ﻿using IBatisNetSelf.Common;
+using IBatisNetSelf.Common.Utilities;
 using IBatisNetSelf.Common.Utilities.Objects;
 using IBatisNetSelf.Common.Utilities.Objects.Members;
 using IBatisNetSelf.DataMapper.Configuration.Cache;
@@ -78,7 +79,7 @@ namespace IBatisNetSelf.DataMapper
         /// Gets the DB helper parameter cache.
         /// </summary>
         /// <value>The DB helper parameter cache.</value>
-      //  DBHelperParameterCache DBHelperParameterCache { get; }
+        DBHelperParameterCache DBHelperParameterCache { get; }
 
 
         /// <summary>

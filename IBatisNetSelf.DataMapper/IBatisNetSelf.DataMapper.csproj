@@ -14,9 +14,4 @@
     <ProjectReference Include="..\IBatisNetSelf.Common\IBatisNetSelf.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Configuration\Sql\SimpleDynamic\" />
-    <Folder Include="Configuration\Sql\Static\" />
-  </ItemGroup>
-
 </Project>

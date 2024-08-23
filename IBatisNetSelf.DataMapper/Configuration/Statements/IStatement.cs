@@ -33,7 +33,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         /// <summary>
         /// The type of the statement (text or procedure).
         /// </summary>
-        CommandType  commandType { get; }
+        CommandType  CommandType { get; }
 
 
         /// <summary>
