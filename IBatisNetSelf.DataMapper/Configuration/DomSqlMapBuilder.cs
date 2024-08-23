@@ -45,7 +45,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
     {
         #region Embedded resource
 
-        // Which files must we allow to be used as Embedded Resources ?
+        // Which files we allow to be used as Embedded Resources ?
         // - slqMap.config [Yes]
         // - providers.config [Yes]
         // - sqlMap files [Yes]
@@ -1125,21 +1125,21 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// </summary>
         private void ConfigureSqlMap()
         {
-            XmlNode sqlMapNode = this.configScope.NodeContext;
+            XmlNode _sqlMapNode = this.configScope.NodeContext;
 
             this.configScope.ErrorContext.Activity = "loading sqlMap file";
-            this.configScope.ErrorContext.Resource = sqlMapNode.OuterXml.ToString();
+            this.configScope.ErrorContext.Resource = _sqlMapNode.OuterXml.ToString();
 
             if (this.configScope.UseConfigFileWatcher)
             {
-                if (sqlMapNode.Attributes["resource"] != null || sqlMapNode.Attributes["url"] != null)
+                if (_sqlMapNode.Attributes["resource"] != null || _sqlMapNode.Attributes["url"] != null)
                 {
-                    ConfigWatcherHandler.AddFileToWatch(Resources.GetFileInfo(Resources.GetValueOfNodeResourceUrl(sqlMapNode, this.configScope.Properties)));
+                    ConfigWatcherHandler.AddFileToWatch(Resources.GetFileInfo(Resources.GetValueOfNodeResourceUrl(_sqlMapNode, this.configScope.Properties)));
                 }
             }
 
             // Load the file 
-            this.configScope.SqlMapDocument = Resources.GetSubfileAsXmlDocument(sqlMapNode, this.configScope.Properties);
+            this.configScope.SqlMapDocument = Resources.GetSubfileAsXmlDocument(_sqlMapNode, this.configScope.Properties);
 
             if (this.configScope.ValidateSqlMap)
             {
