@@ -515,6 +515,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
         #endregion
 
+
         #region Methods
 
         /// <summary>
@@ -551,8 +552,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// <param name="useConfigFileWatcher"></param>
         /// <param name="isCallFromDao"></param>
         /// <returns>Returns an ISqlMapper instance.</returns>
-        private ISqlMapper Build(XmlDocument document, DataSource dataSource,
-                                 bool useConfigFileWatcher, bool isCallFromDao)
+        private ISqlMapper Build(XmlDocument document, DataSource dataSource, bool useConfigFileWatcher, bool isCallFromDao)
         {
             this.configScope.SqlMapConfigDocument = document;
             this.configScope.DataSource = dataSource;
@@ -560,13 +560,16 @@ namespace IBatisNetSelf.DataMapper.Configuration
             this.configScope.UseConfigFileWatcher = useConfigFileWatcher;
 
             this.configScope.XmlNamespaceManager = new XmlNamespaceManager(this.configScope.SqlMapConfigDocument.NameTable);
+            //AddNamespace (string prefix, string uri) 将给定的命名空间添加到集合
+            //prefix:与命名空间关联的前缀。 使用 String.Empty 来添加默认命名空间。
+            //uri:要添加的命名空间
             this.configScope.XmlNamespaceManager.AddNamespace(DATAMAPPER_NAMESPACE_PREFIX, DATAMAPPER_XML_NAMESPACE);
             this.configScope.XmlNamespaceManager.AddNamespace(PROVIDERS_NAMESPACE_PREFIX, PROVIDER_XML_NAMESPACE);
             this.configScope.XmlNamespaceManager.AddNamespace(MAPPING_NAMESPACE_PREFIX, MAPPING_XML_NAMESPACE);
 
             try
             {
-                if (validateSqlMapConfig)
+                if (this.validateSqlMapConfig)
                 {
                     ValidateSchema(document.ChildNodes[1], "SqlMapConfig.xsd");
                 }
@@ -587,31 +590,30 @@ namespace IBatisNetSelf.DataMapper.Configuration
         private void ValidateSchema(XmlNode aSection, string aSchemaFileName)
         {
 
-            XmlValidatingReader _validatingReader = null;
-            Stream _xsdFile = null;
+            XmlReader _validatingReader = null;
+            Stream _xsdStream = null;
 
             configScope.ErrorContext.Activity = "Validate SqlMap config";
             try
             {
                 //Validate the document using a schema               
-                _xsdFile = GetStream(aSchemaFileName);
+                _xsdStream = GetStream(aSchemaFileName);
 
-                if (_xsdFile == null)
+                if (_xsdStream == null)
                 {
                     // TODO: avoid using hard-coded value "IBatisNet.DataMapper"
-                    throw new ConfigurationException("Unable to locate embedded resource [IBatisNet.DataMapper." + aSchemaFileName + "]. If you are building from source, verfiy the file is marked as an embedded resource.");
+                    throw new ConfigurationException("Unable to locate embedded resource [IBatisNetSelf.DataMapper." + aSchemaFileName + "]. If you are building from source, verfiy the file is marked as an embedded resource.");
                 }
 
-                XmlSchema _schema = XmlSchema.Read(_xsdFile, new ValidationEventHandler(ValidationCallBack));
+                XmlSchema? _schema = XmlSchema.Read(_xsdStream, new ValidationEventHandler(ValidationCallBack));
 
-                _validatingReader = new XmlValidatingReader(new XmlTextReader(new StringReader(aSection.OuterXml)));
-                _validatingReader.ValidationType = ValidationType.Schema;
+                XmlReaderSettings _readerSettings = new XmlReaderSettings();
+                _readerSettings.ValidationType= ValidationType.Schema;
+                _readerSettings.ValidationEventHandler += ValidationCallBack;
+                _readerSettings.Schemas.Add(_schema);
 
-                _validatingReader.Schemas.Add(_schema);
+                _validatingReader = XmlReader.Create(new XmlTextReader(new StringReader(aSection.OuterXml)), _readerSettings);
 
-                // Wire up the call back.  The ValidationEvent is fired when the
-                // XmlValidatingReader hits an issue validating a section of the xml
-                _validatingReader.ValidationEventHandler += new ValidationEventHandler(ValidationCallBack);
                 // Validate the document
                 while (_validatingReader.Read()) { }
 
@@ -623,11 +625,16 @@ namespace IBatisNetSelf.DataMapper.Configuration
             finally
             {
                 if (_validatingReader != null) _validatingReader.Close();
-                if (_xsdFile != null) _xsdFile.Close();
+                if (_xsdStream != null) _xsdStream.Close();
             }
         }
 
-        private void ValidationCallBack(object sender, ValidationEventArgs args)
+        private void _readerSettings_ValidationEventHandler(object? sender, ValidationEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ValidationCallBack(object? sender, ValidationEventArgs args)
         {
             configScope.IsXmlValid = false;
             configScope.ErrorContext.Resource += args.Message + Environment.NewLine;

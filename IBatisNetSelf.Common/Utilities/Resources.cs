@@ -99,6 +99,7 @@ namespace IBatisNetSelf.Common.Utilities
         {
             XmlDocument _configXmlDoc = new XmlDocument();
             XmlTextReader _reader = null;
+            //去掉 "://"
             string _resourcePath = GetFileSystemResourceWithoutProtocol(resourcePath);
 
             if (!Resources.FileExists(_resourcePath))
