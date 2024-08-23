@@ -156,24 +156,24 @@ namespace IBatisNetSelf.Common.Utilities
         /// <param name="aNode">An location node</param>
         /// <param name="aProperties">the global properties</param>
         /// <returns>Return the Xml document load.</returns>
-        public static XmlDocument GetAsXmlDocument(XmlNode aNode, NameValueCollection aProperties)
+        public static XmlDocument GetSubfileAsXmlDocument(XmlNode aNode, NameValueCollection aProperties)
         {
             XmlDocument _xmlDocument = null;
 
             if (aNode.Attributes["resource"] != null)
             {
-                string ressource = XmlNodeUtils.ParsePropertyTokens(aNode.Attributes["resource"].Value, aProperties);
-                _xmlDocument = Resources.GetResourceAsXmlDocument(ressource);
+                string _ressource = XmlNodeUtils.ParsePropertyTokens(aNode.Attributes["resource"].Value, aProperties);
+                _xmlDocument = Resources.GetResourceAsXmlDocument(_ressource);
             }
             else if (aNode.Attributes["url"] != null)
             {
-                string url = XmlNodeUtils.ParsePropertyTokens(aNode.Attributes["url"].Value, aProperties);
-                _xmlDocument = Resources.GetUrlAsXmlDocument(url);
+                string _url = XmlNodeUtils.ParsePropertyTokens(aNode.Attributes["url"].Value, aProperties);
+                _xmlDocument = Resources.GetUrlAsXmlDocument(_url);
             }
             else if (aNode.Attributes["embedded"] != null)
             {
-                string embedded = XmlNodeUtils.ParsePropertyTokens(aNode.Attributes["embedded"].Value, aProperties);
-                _xmlDocument = Resources.GetEmbeddedResourceAsXmlDocument(embedded);
+                string _embedded = XmlNodeUtils.ParsePropertyTokens(aNode.Attributes["embedded"].Value, aProperties);
+                _xmlDocument = Resources.GetEmbeddedResourceAsXmlDocument(_embedded);
             }
 
             return _xmlDocument;
@@ -330,7 +330,7 @@ namespace IBatisNetSelf.Common.Utilities
             if (_fileInfo.IsAssemblyQualified)
             {
                 Assembly _assembly = null;
-                _assembly = Assembly.LoadWithPartialName(_fileInfo.AssemblyName);
+                _assembly = Assembly.LoadFrom(_fileInfo.AssemblyName);
                 Stream _stream = _assembly.GetManifestResourceStream(_fileInfo.ResourceFileName);
                 // JIRA - IBATISNET-103 
                 if (_stream == null)

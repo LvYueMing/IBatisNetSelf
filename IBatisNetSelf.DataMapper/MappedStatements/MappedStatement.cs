@@ -53,7 +53,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// Name used to identify the MappedStatement amongst the others.
         /// This the name of the SQL statement by default.
         /// </summary>
-        public string Id => this.Id;
+        public string Id => this.statement.Id;
 
         /// <summary>
         /// The SQL statment used by this MappedStatement

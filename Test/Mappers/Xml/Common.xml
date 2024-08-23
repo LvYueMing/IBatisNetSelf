@@ -1,0 +1,354 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="Circulation" xmlns="http://ibatis.apache.org/mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
+
+	<parameterMaps>
+		<parameterMap class="Hashtable" id="PM.HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收">
+			<parameter column="IN_MR_FILE_ID" direction="Input" property="inMrFileId"/>
+			<parameter column="IN_HOSP_ID" direction="Input" property="inHospId"/>
+			<parameter column="IN_DEPT_ID" direction="Input" property="inDeptId"/>
+			<parameter column="IN_WORKER_ID" direction="Input" property="inWorkerId"/>
+		</parameterMap>
+
+		<parameterMap class="Hashtable" id="PM.HSEMR.PCK_MR_CIRCULATION.S_流转_流程提交">
+			<parameter column="IN_MR_FILE_ID" direction="Input" property="inMrFileId"/>
+			<parameter column="IN_CHECK_STEP" direction="Input" property="inCheckStep"/>
+			<parameter column="IN_HOSP_ID" direction="Input" property="inHospId"/>
+			<parameter column="IN_DEPT_ID" direction="Input" property="inDeptId"/>
+			<parameter column="IN_WORKER_ID" direction="Input" property="inWorkerId"/>
+		</parameterMap>
+	</parameterMaps>
+
+	<statements>
+		<!--待处理-->
+		<select id="Circulation_GetMrFileCirculation" parameterClass="Hashtable">
+			select t.resident_id 病案号,
+			hospital.get_resident_id_ex(t.resident_id, t.hosp_id) short_residentid,
+			hospital.get_patient_name(t.patient_id) 姓名,
+			hospital.get_patient_name(t.patient_id) name,
+			hospital.get_patient_name_pym(t.patient_id) 拼音,
+			t.visit_id 住院次,
+			hospital.get_dept_name(t.dept_id) 当前科室,
+			hospital.get_病人住院天数(t.resident_id) 住院天数,
+			hospital.get_patient_gender_ex(t.patient_id) 性别,
+			nvl(hospital.get_resident_age(t.resident_id),
+			hospital.get_patient_age(t.patient_id)) 年龄,
+			hospital.get_worker_name(t.charge_doctorid) 主治医生,
+			t.patient_id 病人编号,
+			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			t.out_date 出院时间,
+			t.dept_id 科室编号,
+			t.hosp_id 医院编号,
+			t.baby_flag,
+			t.visit_type
+			from hsemr.patient_visit_            t,
+			hsemr.mr_file_circulation_      c,
+			hsemr.circulation_step_process_ b
+			where t.resident_id = c.resident_id
+			and t.patient_id = c.patient_id
+			and c.circulation_id = b.circulation_id
+			and c.cur_step = b.circulation_step
+			and (b.process_worker_id is not null and
+			b.process_worker_id = #in_worker_id# or
+			b.process_worker_id is null and b.process_dept_id = #in_dept_id#)
+			and t.hosp_id = #in_hospid#
+			union
+			select t.resident_id 病案号,
+			hospital.get_resident_id_ex(t.resident_id, t.hosp_id) short_residentid,
+			hospital.get_patient_name(t.patient_id) 姓名,
+			hospital.get_patient_name(t.patient_id) name,
+			hospital.get_patient_name_pym(t.patient_id) 拼音,
+			t.visit_id 住院次,
+			hospital.get_dept_name(t.dept_id) 当前科室,
+			hospital.get_病人住院天数(t.resident_id) 住院天数,
+			hospital.get_patient_gender_ex(t.patient_id) 性别,
+			nvl(hospital.get_resident_age(t.resident_id),
+			hospital.get_patient_age(t.patient_id)) 年龄,
+			hospital.get_worker_name(t.charge_doctorid) 主治医生,
+			t.patient_id 病人编号,
+			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			t.out_date 出院时间,
+			t.dept_id 科室编号,
+			t.hosp_id 医院编号,
+			t.baby_flag,
+			t.visit_type
+			from hsemr.patient_visit_ t, hsemr.mr_file_circulation_ c
+			where t.dept_id = c.cur_process_dept_id
+			and t.resident_id = c.resident_id
+			and t.patient_id = c.patient_id
+			and c.input_worker_id = #in_worker_id#
+			and t.hosp_id = #in_hospid#
+		</select>
+		<!--协作患者-->
+		<select id="Circulation_GetCirculationPatient" parameterClass="Hashtable">
+			select distinct t.resident_id 病案号,
+			hospital.get_resident_id_ex(t.resident_id, t.hosp_id) short_residentid,
+			hospital.get_patient_name_pym(t.patient_id) 拼音,
+			hospital.get_patient_name(t.patient_id) 姓名,
+			t.visit_id 住院次,
+			hospital.get_dept_name(t.dept_id) 当前科室,
+			hospital.get_病人住院天数(t.resident_id) 住院天数,
+			hospital.get_patient_gender_ex(t.patient_id) 性别,
+			nvl(hospital.get_resident_age(t.resident_id),
+			hospital.get_patient_age(t.patient_id)) 年龄,
+			hospital.get_worker_name(t.charge_doctorid) 主治医生,
+			t.patient_id 病人编号,
+			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			t.out_date 出院时间,
+			t.dept_id 科室编号,
+			t.hosp_id 医院编号,
+			t.baby_flag,
+			t.visit_type
+			from hsemr.patient_visit_ t, hospital.in_examination_application_ a
+			where t.resident_id = a.residentid
+			and a.execute_deptid = #in_login_dept_id#
+			<isEqual property="in_patient_status" compareValue="IN">
+				and  t.status = 0
+			</isEqual>
+			<isEqual property="in_patient_status" compareValue="OUT">
+				and  t.status = 2 and (t.out_date between
+				to_date(#in_begin_date# || ' 00:00:00', 'yyyy/mm/dd hh24:mi:ss') and
+				to_date(#in_end_date# || ' 23:59:59', 'yyyy/mm/dd hh24:mi:ss'))
+			</isEqual>
+			and t.visit_type = 'ZY'
+			union all
+			select distinct t.resident_id 病案号,
+			hospital.get_resident_id_ex(t.resident_id, t.hosp_id) short_residentid,
+			hospital.get_patient_name_pym(t.patient_id) 拼音,
+			hospital.get_patient_name(t.patient_id) 姓名,
+			t.visit_id 住院次,
+			hospital.get_dept_name(t.dept_id) 当前科室,
+			hospital.get_病人住院天数(t.resident_id) 住院天数,
+			hospital.get_patient_gender_ex(t.patient_id) 性别,
+			nvl(hospital.get_resident_age(t.resident_id),
+			hospital.get_patient_age(t.patient_id)) 年龄,
+			hospital.get_worker_name(t.charge_doctorid) 主治医生,
+			t.patient_id 病人编号,
+			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			t.out_date 出院时间,
+			t.dept_id 科室编号,
+			t.hosp_id 医院编号,
+			t.baby_flag,
+			t.visit_type
+			from hsemr.patient_visit_ t, hsois.operation_arrangement_ a
+			where t.resident_id = a.resident_id
+			and a.operation_exec_deptid = #in_login_dept_id#
+			<isEqual property="in_patient_status" compareValue="IN">
+				and  t.status = 0
+			</isEqual>
+			<isEqual property="in_patient_status" compareValue="OUT">
+				and  t.status = 2 and (t.out_date between
+				to_date(#in_begin_date# || ' 00:00:00', 'yyyy/mm/dd hh24:mi:ss') and
+				to_date(#in_end_date# || ' 23:59:59', 'yyyy/mm/dd hh24:mi:ss'))
+			</isEqual>
+			and t.visit_type = 'ZY'
+		</select>
+		<select id="Circulation_GetCirculationProcess" parameterClass="Hashtable">
+			select distinct t.resident_id 病案号,
+			hospital.get_resident_id_ex(t.resident_id, t.hosp_id) short_residentid,
+			hospital.get_patient_name_pym(t.patient_id) 拼音,
+			hospital.get_patient_name(t.patient_id) name,
+			hospital.get_patient_name(t.patient_id) 姓名,
+			t.visit_id 住院次,
+			hospital.get_dept_name(t.dept_id) 当前科室,
+			hospital.get_病人住院天数(t.resident_id) 住院天数,
+			hospital.get_patient_gender_ex(t.patient_id) 性别,
+			nvl(hospital.get_resident_age(t.resident_id),
+			hospital.get_patient_age(t.patient_id)) 年龄,
+			hospital.get_worker_name(t.charge_doctorid) 主治医生,
+			t.patient_id 病人编号,
+			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			t.out_date 出院时间,
+			t.dept_id 科室编号,
+			t.hosp_id 医院编号,
+			t.baby_flag,
+			t.visit_type
+			from hsemr.patient_visit_               t,
+			hsemr.mr_file_circulation_         a,
+			hsemr.mr_file_circulation_process_ b
+			where t.resident_id = a.resident_id
+			and a.id = b.mr_file_circulation_id
+			and b.process_worker_id = #in_process_worker_id#
+			and (b.operation_date between
+			to_date(#in_begin_date# || ' 00:00:00', 'yyyy/mm/dd hh24:mi:ss') and
+			to_date(#in_end_date# || ' 23:59:59', 'yyyy/mm/dd hh24:mi:ss'))
+		</select>
+		<!--查询病人所有病历-->
+		<select id="Circulation_GetAllMRForTreeList" parameterClass="Hashtable">
+			select a.dept_id id,
+			null parentid,
+			hospital.get_dept_name(a.dept_id) ||
+			hsemr.get_treament_type(#in_resident_id#,
+			#in_visit_id#,
+			#in_hosp_id#,
+			#in_login_dept_id#) name,
+			'KS' title_type,
+			a.dept_id title_id,
+			a.dept_id patient_dept_id,
+			null topic,
+			null mr_doc_class,
+			null mr_file_id,
+			null parent_mr_file_id,
+			null new_page_flag,
+			null 文件状态,
+			null doc_type,
+			null parent_mr_doc_type,
+			null input_dept_id,
+			null input_dept,
+			null input_worker_id,
+			null input_worker,
+			null input_date,
+			null first_signature_date,
+			null 最后保存时间,
+			null 最后保存人,
+			null out_dept_date,
+			0 seq,
+			0 subseq,
+			null trigger_operation_type,
+			null circulation_id
+			from hsemr.patient_visit_ a
+			where a.resident_id = #in_resident_id#
+			and a.visit_id = #in_visit_id#
+			and a.hosp_id = #in_hosp_id#
+			union all
+			select a.class || b.patient_dept_id id,
+			b.patient_dept_id parentid,
+			a.name || '(' ||
+			hsemr.pck_mr.get_mr_file_count(#in_resident_id#,
+			#in_visit_id#,
+			#in_hosp_id#,
+			a.class,
+			b.patient_dept_id) || ')' name,
+			'BLLX' title_type,
+			a.class title_id,
+			b.patient_dept_id patient_dept_id,
+			null topic,
+			a.class mr_doc_class,
+			null mr_file_id,
+			null parent_mr_file_id,
+			null new_page_flag,
+			null 文件状态,
+			null doc_type,
+			null parent_mr_doc_type,
+			null input_dept_id,
+			null input_dept,
+			null input_worker_id,
+			null input_worker,
+			null input_date,
+			null first_signature_date,
+			null 最后保存时间,
+			null 最后保存人,
+			null out_dept_date,
+			a.subseq seq,
+			0 subseq,
+			null trigger_operation_type,
+			null circulation_id
+			from hsemr.mr_doc_class_ a,
+			(select a.dept_id patient_dept_id
+			from hsemr.patient_visit_ a
+			where a.resident_id = #in_resident_id#
+			and a.visit_id = #in_visit_id#
+			and a.hosp_id = #in_hosp_id#) b
+			where a.visible = '1'
+			<isEqual property="in_mr_doc_class" compareValue="COOPERATE">
+				and substrb(a.menu_config,9,1) = '1'
+			</isEqual>
+			union all
+			select a.id,
+			b.mr_doc_class_class || a.patient_dept_id parentid,
+			decode(c.class, '2',decode(a.new_page_flag, '1', '>', ' '),null) ||
+			decode(c.class, '2', to_char(a.input_date, 'mm/dd') || ' ', null) ||
+			decode(a.file_flag, '0', '*') || a.topic ||
+			decode(a.parent_id,
+			null,
+			hsemr.get_treament_dept_name(a.resident_id,
+			a.visit_id,
+			a.hosp_id,
+			a.id),
+			hsemr.get_treament_dept_name(a.resident_id,
+			a.visit_id,
+			a.hosp_id,
+			a.parent_id)) name,
+			'BLWS' title_type,
+			a.id title_id,
+			a.patient_dept_id patient_dept_id,
+			a.topic topic,
+			c.class mr_doc_class,
+			a.id mr_file_id,
+			a.parent_id parent_mr_file_id,
+			a.new_page_flag new_page_flag,
+			hsemr.get_field_dict('MR_FILE', 'FILE_FLAG', a.file_flag) 文件状态,
+			a.doc_type doc_type,
+			d.doc_type parent_mr_doc_type,
+			a.input_dept_id input_dept_id,
+			a.input_dept input_dept,
+			a.input_worker_id input_worker_id,
+			a.input_worker input_worker,
+			a.input_date input_date,
+			a.first_signature_date first_signature_date,
+			a.update_date 最后保存时间,
+			a.update_worker 最后保存人,
+			null out_dept_date,
+			c.subseq seq,
+			1 subseq,
+			a.trigger_operation_type,
+			a.circulation_id
+			from hsemr.mr_file_                a,
+			hsemr.mr_doc_class_mrt_class_ b,
+			hsemr.mr_file_circulation_ h,
+			hsemr.mr_doc_class_           c,
+			hsemr.mr_file_                d
+			where a.mr_class_id = b.mr_class_id
+			and b.mr_doc_class_class = c.class
+			and a.id= h.mr_file_id
+			and a.parent_id = d.id(+)
+			and a.deleted_flag = 0
+			and c.visible = '1'
+			and a.resident_id = #in_resident_id#
+			and a.visit_id = #in_visit_id#
+			and a.hosp_id = #in_hosp_id#
+			<isEqual property="in_mr_doc_class" compareValue="COOPERATE">
+				and substrb(c.menu_config,9,1) = '1'
+			</isEqual>
+			order by out_dept_date, seq asc,subseq asc, input_date asc
+		</select>
+		<!--查询业务流转步骤-->
+		<select id="Circulation_GetCirculationConfig" parameterClass="Hashtable">
+			select t.step_name 步骤,
+			hsemr.pck_mr_circulation.get_circulation_step_enable(b.mr_file_id,
+			t.step) enable_flag,
+			hsemr.pck_mr_circulation.get_circulation_step_check(b.mr_file_id,
+			t.step) check_flag,
+			hsemr.pck_mr_circulation.get_circulation_step_bottom(b.mr_file_id,
+			t.circulation_id,
+			t.step) 底部标题,
+			hsemr.pck_mr_circulation.get_circulation_process_time(b.mr_file_id,
+			t.circulation_id,
+			t.step) 顶部标题,
+			hsemr.pck_mr_circulation.get_circulation_process_info(b.mr_file_id,
+			t.step) 提示信息,
+			t.optional 可选,
+			t.step value
+			from hsemr.circulation_step_ t, hsemr.mr_file_circulation_ b
+			where t.circulation_id = b.circulation_id
+			and b.mr_file_id = #in_mr_file_id#
+			order by t.step
+		</select>
+		<!--查询文书状态-->
+		<select id="Circulation_GetCirculationWorkerRole" parameterClass="Hashtable">
+			select hsemr.pck_mr_circulation.get_circulation_worker_role(#in_mr_file_id#,
+			#in_worker_id#,
+			#in_dept_id#) 编辑权限
+			from dual
+		</select>
+
+		<procedure id="HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收" parameterMap="PM.HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收">
+			HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收
+		</procedure>
+
+		<procedure id="HSEMR.PCK_MR_CIRCULATION.S_流转_流程提交" parameterMap="PM.HSEMR.PCK_MR_CIRCULATION.S_流转_流程提交">
+			HSEMR.PCK_MR_CIRCULATION.S_流转_流程提交
+		</procedure>
+
+
+	</statements>
+</sqlMap>

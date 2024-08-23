@@ -1,0 +1,1879 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="Patient" xmlns="http://ibatis.apache.org/mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
+	<statements>
+		<!--查询在科患者-->
+		<select id="Patient_GetInPatient" parameterClass="Hashtable">
+			select decode(hsemr.pck_qc.get_mr_qc_num(t.hosp_id,
+			t.patient_id,
+			t.resident_id,
+			t.visit_id),
+			0,
+			'',
+			'☆') qc_flag,
+			t.resident_id 住院号,
+			t.resident_id 病案号,
+			hospital.get_resident_id_ex(t.resident_id,t.hosp_id) short_residentid,
+			t.bed_id 当前床号,
+			c.seq bed_seq,
+			a.name 姓名,
+			a.pinyin 拼音,
+			t.visit_id 住院次,
+			hospital.get_dept_name(t.dept_id) 当前科室,
+			hospital.case_fnc.get_西医入院诊断_名称(t.resident_id, 1) 入院主要诊断,
+			hospital.case_fnc.get_主证_名称(t.resident_id, 1) 主证,
+			hospital.case_fnc.get_中医出院主要诊断_名称(t.resident_id, 1) 主病,
+			hospital.get_病人住院天数(t.resident_id) 住院天数,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', a.gender) 性别,
+			nvl(hospital.get_resident_age(t.resident_id),hospital.get_patient_age(t.patient_id)) 年龄,
+			hospital.get_worker_name(t.attending_doctor_id) 管床医师,
+			hospital.get_worker_name(t.resident_doctor_id) 管床医生,
+			hospital.get_worker_name(t.charge_doctorid) 主治医生,
+			hospital.get_worker_name(nvl(t.three_superior_doctor_id,t.superior_doctor_id))上级医师,
+			t.three_superior_doctor_id 上级医师id,
+			hospital.get_worker_name(nvl(t.three_director_doctor_id,t.director_doctor_id)) 主任医师,
+			t.three_director_doctor_id 主任医师id,
+			'' 病情,
+			'' 临床路径,
+			t.patient_id 病人编号,
+			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			t.out_date 出院时间,
+			t.dept_id 科室编号,
+			t.hosp_id 医院编号,
+			t.attending_doctor_id,
+			a.identification,
+			t.baby_flag,
+			c.nurse_unit,
+			t.mr_doctor_part_status mr_status,
+			t.file_place,
+			null back_operate_type,
+			t.visit_type,
+			decode(hospital.clinic_pathway.get_是否已入路径病人(t.resident_id),
+			'Y',
+			'是',
+			'') 路径病人标识,
+			nvl(hospital.get_resident_patientflag(t.resident_id),'普通患者')  患者类型,
+			t.ward_id,
+			hospital.get_dept_name(t.ward_id) 病区,
+			t.data_flag
+			from hsemr.patient_visit_ t, hospital.patient_ a, hospital.bed_ c
+			where t.dept_id = #in_dept_id#
+			and (#in_resident_id# is null or
+			#in_resident_id# is not null and
+			(t.resident_id like '%' || #in_resident_id# || '%' or
+			t.patient_id like '%' || #in_resident_id# || '%'))
+			and (#in_name# is null or #in_name# is not null and
+			(a.name like '%' || #in_name# || '%' or
+			a.pinyin like '%' || upper(#in_name#) || '%'))
+			and (#in_bed_id# is null or
+			#in_bed_id# is not null and t.bed_id = #in_bed_id#)
+			and (#in_charge_doctorid# is null or
+			#in_charge_doctorid# is not null and
+			(t.attending_doctor_id = #in_charge_doctorid# or
+			t.superior_doctor_id = #in_charge_doctorid# or
+			t.director_doctor_id = #in_charge_doctorid# or
+			t.charge_doctorid = #in_charge_doctorid#))
+			and (#in_nurse_unit# is null or
+			(#in_nurse_unit# is not null and c.nurse_unit = #in_nurse_unit#) or
+			c.nurse_unit is null)
+			and (#in_identificationid# is null or
+			#in_identificationid# is not null and
+			a.identification = #in_identificationid#)
+			and t.dept_id = c.deptid(+)
+			and t.bed_id = c.id(+)
+			and a.id = t.patient_id
+			and t.status = 0
+			and t.visit_type in ('ZY', 'LG')
+			and t.hosp_id = #in_hospid#
+			order by bed_seq
+		</select>
+
+		<!--护理文书病区在科患者-->
+		<select id="Patient_GetNrWardInPatient" parameterClass="Hashtable">
+			select decode(hsemr.pck_qc.get_mr_qc_num(t.hosp_id,
+			t.patient_id,
+			t.resident_id,
+			t.visit_id),
+			0,
+			'',
+			'☆') qc_flag,
+			t.resident_id 住院号,
+			t.resident_id 病案号,
+			hospital.get_resident_id_ex(t.resident_id,t.hosp_id) short_residentid,
+			t.bed_id 当前床号,
+			c.seq bed_seq,
+			a.name 姓名,
+			a.pinyin 拼音,
+			t.visit_id 住院次,
+			hospital.get_dept_name(t.dept_id) 当前科室,
+			hospital.case_fnc.get_西医入院诊断_名称(t.resident_id, 1) 入院主要诊断,
+			hospital.get_病人住院天数(t.resident_id) 住院天数,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', a.gender) 性别,
+			nvl(hospital.get_resident_age(t.resident_id),hospital.get_patient_age(t.patient_id)) 年龄,
+			hospital.get_worker_name(t.attending_doctor_id) 管床医师,
+			hospital.get_worker_name(t.resident_doctor_id) 管床医生,
+			hospital.get_worker_name(t.charge_doctorid) 主治医生,
+			hospital.get_worker_name(nvl(t.three_superior_doctor_id,t.superior_doctor_id))上级医师,
+			t.three_superior_doctor_id 上级医师id,
+			hospital.get_worker_name(nvl(t.three_director_doctor_id,t.director_doctor_id)) 主任医师,
+			t.three_director_doctor_id 主任医师id,
+			'' 病情,
+			'' 临床路径,
+			t.patient_id 病人编号,
+			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			t.out_date 出院时间,
+			t.dept_id 科室编号,
+			t.hosp_id 医院编号,
+			t.attending_doctor_id,
+			a.identification,
+			t.baby_flag,
+			c.nurse_unit,
+			t.mr_doctor_part_status mr_status,
+			t.file_place,
+			null back_operate_type,
+			t.visit_type,
+			decode(hospital.clinic_pathway.get_是否已入路径病人(t.resident_id),
+			'Y',
+			'是',
+			'') 路径病人标识,
+			t.ward_id,
+			hospital.get_dept_name(t.ward_id) 病区,
+			t.data_flag
+			from hsemr.patient_visit_ t, hospital.patient_ a, hospital.bed_ c
+			where t.ward_id = #in_ward_id#
+			and (#in_resident_id# is null or
+			#in_resident_id# is not null and
+			(t.resident_id like '%' || #in_resident_id# || '%' or
+			t.patient_id like '%' || #in_resident_id# || '%'))
+			and (#in_name# is null or #in_name# is not null and
+			(a.name like '%' || #in_name# || '%' or
+			a.pinyin like '%' || upper(#in_name#) || '%'))
+			and (#in_bed_id# is null or
+			#in_bed_id# is not null and t.bed_id = #in_bed_id#)
+			and (#in_charge_doctorid# is null or
+			#in_charge_doctorid# is not null and
+			(t.attending_doctor_id = #in_charge_doctorid# or
+			t.superior_doctor_id = #in_charge_doctorid# or
+			t.director_doctor_id = #in_charge_doctorid# or
+			t.charge_doctorid = #in_charge_doctorid#))
+			and (#in_nurse_unit# is null or
+			(#in_nurse_unit# is not null and c.nurse_unit = #in_nurse_unit#) or
+			c.nurse_unit is null)
+			and (#in_identificationid# is null or
+			#in_identificationid# is not null and
+			a.identification = #in_identificationid#)
+			<!--and t.dept_id = c.deptid(+)-->
+			and t.ward_id = c.deptid(+)
+			and t.bed_id = c.id(+)
+			and a.id = t.patient_id
+			and t.status = 0
+			and t.visit_type in ('ZY','LG')
+			and t.hosp_id = #in_hospid#
+			order by bed_seq
+		</select>
+
+		<!--查询待处置患者-->
+		<!--跨科处置已经支持跨医院处置-->
+		<!--HZ:1、已接未签名或未接的会诊 2、已处理（已签名）的会诊-->
+		<!--KKXZ:1、已接或未接的未出院的跨科协作 2、已出院的跨科协作-->
+		<select id="Patient_GetTreatmentApply" parameterClass="Hashtable">
+			select a.id apply_id,
+			to_char(a.apply_date, 'yyyy-mm-dd hh24:mi:ss') 申请日期,
+			a.apply_dept 申请科室,
+			a.apply_dept_id 申请科室编码,
+			a.bed_id 床号,
+			b.name 姓名,
+			a.apply_type,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY',
+			'APPLY_TYPE',
+			a.apply_type) 申请类别,
+			a.apply_condition 病情介绍,
+			a.remark 备注,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY', 'STATUS', a.status) 状态,
+			a.apply_worker 申请医师,
+			to_char(a.treat_date, 'yyyy-mm-dd hh24:mi:ss') 处置时间,
+			a.treat_worker 处置医师,
+			a.resident_id 病案号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			a.patient_id 患者编号,
+			a.visit_id 住院次,
+			a.hosp_id 医院编号,
+			hsemr.get_hosp_name(a.hosp_id) 申请医院,
+			a.treat_hosp_id 处置医院编码,
+			hsemr.get_hosp_name(a.treat_hosp_id) 处置医院,
+			a.apply_mr_file_id 申请单编码,
+			a.apply_worker_id 申请医生,
+			b.identification,
+			a.apply_date,
+			c.mr_doctor_part_status mr_status,
+			c.file_place,
+			null back_operate_type,
+			c.visit_type,
+			hsemr.get_field_dict('PATIENT_VISIT', 'VISIT_TYPE', nvl(c.visit_type,'MZ')) visit_way,
+			decode(hospital.clinic_pathway.get_是否已入路径病人(c.resident_id),
+			'Y',
+			'是',
+			'') 路径病人标识,
+			nvl(hospital.get_resident_patientflag(c.resident_id),'普通患者') 患者类型,
+			c.patient_id 病人编号,
+			c.dept_id 科室编号,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', b.gender) 性别,
+			hospital.get_resident_age(c.resident_id) 年龄,
+			a.bed_id 当前床号,
+			to_char(c.in_date, 'yyyy-mm-dd') 入院时间,
+			c.out_date 出院时间,
+			c.baby_flag,
+			null nurse_unit,
+			c.ward_id,
+			hospital.get_dept_name(c.ward_id) 病区,
+			c.data_flag,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY', 'ATTRIBUTE', a.attribute) 会诊类型
+			from hsemr.emr_treament_apply_ a, hospital.patient_ b,hsemr.patient_visit_ c
+			where a.patient_id = b.id
+			and a.resident_id=c.resident_id
+			and a.hosp_id=c.hosp_id
+			and a.visit_id=c.visit_id
+			and a.treat_dept_id = #indept_id#
+			and a.apply_type='HZ'<!--会诊-->
+			<isEqual property="status_flag" compareValue="1">
+				and (a.treat_worker_id = #in_treat_worker_id# or a.treat_worker_id is null )
+				and a.status = 1
+			</isEqual>
+			<isEqual property="status_flag" compareValue="2">
+				and a.status <![CDATA[<>]]> 1 and a.treat_worker_id = #in_treat_worker_id#
+			</isEqual>
+			<isNotEmpty property="in_charge_doctorid" prepend="and">
+				a.apply_worker_id = #in_charge_doctorid#
+			</isNotEmpty>
+			<isNotEmpty property="inresident_id" prepend="and">
+				a.resident_id like '%'|| #inresident_id# || '%'
+			</isNotEmpty>
+			<isNotEmpty property="inname" prepend="and">
+				(b.name like '%' || #inname# || '%' or
+				b.pinyin like '%' || upper(#inname#) || '%')
+			</isNotEmpty>
+			<isNotEmpty property="inbed_id" prepend="and">
+				a.bed_id = #inbed_id#
+			</isNotEmpty>
+			<isNotEmpty property="in_identificationid" prepend="and">
+				b.identification = #in_identificationid#
+			</isNotEmpty>
+			<isNotEmpty property="treat_time1" prepend="and">
+				a.treat_date <![CDATA[>=]]> to_date(#treat_time1#,'yyyy-mm-dd')
+			</isNotEmpty>
+			<isNotEmpty property="treat_time2" prepend="and">
+				a.treat_date <![CDATA[<]]> to_date(#treat_time2#,'yyyy-mm-dd')+1
+			</isNotEmpty>
+			union all
+			select a.id apply_id,
+			to_char(a.apply_date, 'yyyy-mm-dd hh24:mi:ss') 申请日期,
+			a.apply_dept 申请科室,
+			a.apply_dept_id 申请科室编码,
+			a.bed_id 床号,
+			b.name 姓名,
+			a.apply_type,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY',
+			'APPLY_TYPE',
+			a.apply_type) 申请类别,
+			a.apply_condition 病情介绍,
+			a.remark 备注,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY', 'STATUS', a.status) 状态,
+			a.apply_worker 申请医师,
+			to_char(a.treat_date, 'yyyy-mm-dd hh24:mi:ss') 处置时间,
+			a.treat_worker 处置医师,
+			a.resident_id 病案号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			a.patient_id 患者编号,
+			a.visit_id 住院次,
+			a.hosp_id 医院编号,
+			hsemr.get_hosp_name(a.hosp_id) 申请医院,
+			a.treat_hosp_id 处置医院编码,
+			hsemr.get_hosp_name(a.treat_hosp_id) 处置医院,
+			a.apply_mr_file_id 申请单编码,
+			a.apply_worker_id 申请医生,
+			b.identification,
+			a.apply_date,
+			c.mr_doctor_part_status mr_status,
+			c.file_place,
+			null back_operate_type,
+			c.visit_type,
+			hsemr.get_field_dict('PATIENT_VISIT', 'VISIT_TYPE', nvl(c.visit_type,'MZ')) visit_way,
+			decode(hospital.clinic_pathway.get_是否已入路径病人(c.resident_id),
+			'Y',
+			'是',
+			'') 路径病人标识,
+			nvl(hospital.get_resident_patientflag(c.resident_id),'普通患者')  患者类型,
+			c.patient_id 病人编号,
+			c.dept_id 科室编号,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', b.gender) 性别,
+			hospital.get_resident_age(c.resident_id) 年龄,
+			a.bed_id 当前床号,
+			to_char(c.in_date, 'yyyy-mm-dd') 入院时间,
+			c.out_date 出院时间,
+			c.baby_flag,
+			null nurse_unit,
+			c.ward_id,
+			hospital.get_dept_name(c.ward_id) 病区,
+			c.data_flag,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY', 'ATTRIBUTE', a.attribute) 会诊类型
+			from hsemr.emr_treament_apply_ a, hospital.patient_ b,hsemr.patient_visit_ c
+			where a.patient_id = b.id
+			and a.resident_id=c.resident_id
+			and a.hosp_id=c.hosp_id
+			and a.visit_id=c.visit_id
+			and a.treat_dept_id = #indept_id#
+			and a.apply_type='KKXZ'<!--跨科协作-->
+			<isNotEmpty property="in_charge_doctorid" prepend="and">
+				a.apply_worker_id = #in_charge_doctorid#
+			</isNotEmpty>
+			<isNotEmpty property="inresident_id" prepend="and">
+				a.resident_id like '%' || #inresident_id# || '%'
+			</isNotEmpty>
+			<isNotEmpty property="inname" prepend="and">
+				(b.name like '%' || #inname# || '%' or
+				b.pinyin like '%' || upper(#inname#) || '%')
+			</isNotEmpty>
+			<isNotEmpty property="inbed_id" prepend="and">
+				a.bed_id = #inbed_id#
+			</isNotEmpty>
+			<isNotEmpty property="in_identificationid" prepend="and">
+				b.identification = #in_identificationid#
+			</isNotEmpty>
+			<isNotEmpty property="treat_time1" prepend="and">
+				a.treat_date <![CDATA[>=]]> to_date(#treat_time1#,'yyyy-mm-dd')
+			</isNotEmpty>
+			<isNotEmpty property="treat_time2" prepend="and">
+				a.treat_date <![CDATA[<]]> to_date(#treat_time2#,'yyyy-mm-dd')+1
+			</isNotEmpty>
+			<isEqual property="status_flag" compareValue="1">
+				and (a.treat_worker_id = #in_treat_worker_id# or a.treat_worker_id is null )
+				and a.status = 1
+			</isEqual>
+			<isEqual property="status_flag" compareValue="2">
+				and a.status <![CDATA[<>]]> 1 and a.treat_worker_id = #in_treat_worker_id#
+			</isEqual>
+			order by apply_date
+		</select>
+
+		<!--查询发起会诊患者-->
+		<!--跨科处置已经支持跨医院处置-->
+		<!--HZ:1、已接未签名或未接的会诊 2、已处理（已签名）的会诊-->
+		<!--KKXZ:1、已接或未接的未出院的跨科协作 2、已出院的跨科协作-->
+		<select id="Patient_GetWaitTreatment" parameterClass="Hashtable">
+			select  a.id apply_id,
+			to_char(a.apply_date, 'yyyy-mm-dd hh24:mi:ss') 申请日期,
+			a.apply_dept 申请科室,
+			a.apply_dept_id 申请科室编码,
+			a.bed_id 床号,
+			b.name 姓名,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY',
+			'APPLY_TYPE',
+			a.apply_type) 申请类别,
+			a.apply_condition 病情介绍,
+			a.remark 备注,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY', 'STATUS', a.status) 状态,
+			a.apply_worker 申请医师,
+			to_char(a.treat_date, 'yyyy-mm-dd hh24:mi:ss') 处置时间,
+			a.treat_worker 处置医师,
+			a.treat_dept 处置科室,
+			a.treat_dept_id,
+			a.resident_id 病案号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			a.patient_id 患者编号,
+			a.visit_id 住院次,
+			a.hosp_id 医院编号,
+			hsemr.get_hosp_name(a.hosp_id) 申请医院,
+			a.treat_hosp_id 处置医院编码,
+			hsemr.get_hosp_name(a.treat_hosp_id) 处置医院,
+			a.apply_mr_file_id 申请单编码,
+			a.apply_worker_id 申请医生,
+			b.identification,
+			a.apply_date,
+			c.mr_doctor_part_status mr_status,
+			c.file_place,
+			null back_operate_type,
+			c.visit_type,
+			c.data_flag,
+			hsemr.get_field_dict('PATIENT_VISIT', 'VISIT_TYPE', c.visit_type) visit_way
+			from hsemr.emr_treament_apply_ a, hospital.patient_ b,hsemr.patient_visit_ c
+			where a.patient_id = b.id
+			and a.resident_id=c.resident_id
+			and a.hosp_id=c.hosp_id
+			and a.visit_id=c.visit_id
+			and a.apply_dept_id = #in_dept_id#
+			and a.apply_type='HZ'
+			<isEqual property="status_flag" compareValue="1">
+				and (a.apply_worker_id = #in_apply_worker_id# or a.apply_worker_id is null )
+				and a.status = 1
+			</isEqual>
+			<isEqual property="status_flag" compareValue="2">
+				and a.status <![CDATA[<>]]> 1 and a.apply_worker_id = #in_apply_worker_id#
+			</isEqual>
+			<isNotEmpty property="in_charge_doctorid" prepend="and">
+				c.charge_doctorid = #in_charge_doctorid#
+			</isNotEmpty>
+			<isNotEmpty property="in_resident_id" prepend="and">
+				a.resident_id like '%'|| #in_resident_id# || '%'
+			</isNotEmpty>
+			<isNotEmpty property="in_name" prepend="and">
+				(b.name like '%' || #in_name# || '%' or
+				b.pinyin like '%' || upper(#in_name#) || '%')
+			</isNotEmpty>
+			<isNotEmpty property="in_bed_id" prepend="and">
+				a.bed_id = #in_bed_id#
+			</isNotEmpty>
+			<isNotEmpty property="in_identificationid" prepend="and">
+				b.identification = #in_identificationid#
+			</isNotEmpty>
+			<isNotEmpty property="in_apply_date1" prepend="and">
+				a.apply_date <![CDATA[>=]]> to_date(#in_apply_date1#,'yyyy-mm-dd')
+			</isNotEmpty>
+			<isNotEmpty property="in_apply_date2" prepend="and">
+				a.treat_date <![CDATA[<]]> to_date(#in_apply_date2#,'yyyy-mm-dd')+1
+			</isNotEmpty>
+			union all
+			select a.id apply_id,
+			to_char(a.apply_date, 'yyyy-mm-dd hh24:mi:ss') 申请日期,
+			a.apply_dept 申请科室,
+			a.apply_dept_id 申请科室编码,
+			a.bed_id 床号,
+			b.name 姓名,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY',
+			'APPLY_TYPE',
+			a.apply_type) 申请类别,
+			a.apply_condition 病情介绍,
+			a.remark 备注,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY', 'STATUS', a.status) 状态,
+			a.apply_worker 申请医师,
+			to_char(a.treat_date, 'yyyy-mm-dd hh24:mi:ss') 处置时间,
+			a.treat_worker 处置医师,
+			a.treat_dept 处置科室,
+			a.treat_dept_id,
+			a.resident_id 病案号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			a.patient_id 患者编号,
+			a.visit_id 住院次,
+			a.hosp_id 医院编号,
+			hsemr.get_hosp_name(a.hosp_id) 申请医院,
+			a.treat_hosp_id 处置医院编码,
+			hsemr.get_hosp_name(a.treat_hosp_id) 处置医院,
+			a.apply_mr_file_id 申请单编码,
+			a.apply_worker_id 申请医生,
+			b.identification,
+			a.apply_date,
+			c.mr_doctor_part_status mr_status,
+			c.file_place,
+			null back_operate_type,
+			c.visit_type,
+			c.data_flag,
+			hsemr.get_field_dict('PATIENT_VISIT', 'VISIT_TYPE', c.visit_type) visit_way
+			from hsemr.emr_treament_apply_ a, hospital.patient_ b,hsemr.patient_visit_ c
+			where a.patient_id = b.id
+			and a.resident_id=c.resident_id
+			and a.hosp_id=c.hosp_id
+			and a.visit_id=c.visit_id
+			and a.apply_dept_id = #in_dept_id#
+			and a.apply_type='KKXZ'
+			<isEqual property="status_flag" compareValue="1">
+				and (a.apply_dept_id = #in_apply_worker_id# or a.treat_worker_id is null )
+				and a.status = 1
+			</isEqual>
+			<isEqual property="status_flag" compareValue="2">
+				and a.status <![CDATA[<>]]> 1 and a.apply_dept_id = #in_apply_worker_id#
+			</isEqual>
+			<isNotEmpty property="in_charge_doctorid" prepend="and">
+				c.charge_doctorid = #in_charge_doctorid#
+			</isNotEmpty>
+			<isNotEmpty property="in_resident_id" prepend="and">
+				a.resident_id like '%' || #in_resident_id# || '%'
+			</isNotEmpty>
+			<isNotEmpty property="in_name" prepend="and">
+				(b.name like '%' || #in_name# || '%' or
+				b.pinyin like '%' || upper(#in_name#) || '%')
+			</isNotEmpty>
+			<isNotEmpty property="in_bed_id" prepend="and">
+				a.bed_id = #in_bed_id#
+			</isNotEmpty>
+			<isNotEmpty property="in_identificationid" prepend="and">
+				b.identification = #in_identificationid#
+			</isNotEmpty>
+			<isNotEmpty property="in_apply_date1" prepend="and">
+				a.treat_date <![CDATA[>=]]> to_date(#in_apply_date1#,'yyyy-mm-dd')
+			</isNotEmpty>
+			<isNotEmpty property="in_apply_date2" prepend="and">
+				a.treat_date <![CDATA[<]]> to_date(#in_apply_date2#,'yyyy-mm-dd')+1
+			</isNotEmpty>
+			order by apply_date
+		</select>
+
+		<!--查询转科患者信息-->
+		<select id="Patient_GetChangeDeptRecord" parameterClass="Hashtable">
+			select '' 转出时间,
+			a.bed_id 当前床号,
+			b.name 姓名,
+			b.pinyin 拼音,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', b.gender) 性别,
+			hospital.get_resident_age(a.resident_id) 年龄,
+			a.patient_id 病人编号,
+			hospital.get_dept_name(a.dept_id) 当前科室,
+			a.dept_id 科室编号,
+			to_char(a.in_date, 'yyyy-mm-dd') 入院时间,
+			a.out_date 出院时间,
+			a.resident_id 病案号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			a.visit_id 住院次,
+			a.hosp_id 医院编号,
+			b.identification,
+			a.baby_flag,
+			null nurse_unit,
+			a.mr_doctor_part_status mr_status,
+			a.file_place,
+			null back_operate_type,
+			a.visit_type,
+			decode(hospital.clinic_pathway.get_是否已入路径病人(a.resident_id),
+			'Y',
+			'是',
+			'') 路径病人标识,
+			nvl(hospital.get_resident_patientflag(a.resident_id),'普通患者') 患者类型,
+			a.ward_id,
+			hospital.get_dept_name(a.ward_id) 病区,
+			a.data_flag
+			from hsemr.patient_visit_ a, hospital.patient_ b
+			where resident_id in
+			(select b.residentid
+			from hsemr.patient_visit_ a, hospital.change_dept_info_ b
+			where a.dept_id != #in_to_dept_id#
+			and b.residentid = a.resident_id
+			and b.out_deptid = #in_to_dept_id#
+			and a.visit_type in ('ZY','LG')
+			group by b.residentid)
+			and a.hosp_id = #in_hospid#
+			and (#in_resident_id# is null or
+			#in_resident_id# is not null and
+			(a.resident_id like '%' || #in_resident_id# || '%' or
+			a.patient_id like '%' || #in_resident_id# || '%'))
+			and (#in_name# is null or
+			#in_name# is not null and b.name like '%' || #in_name# || '%' or
+			b.pinyin like '%' || upper(#in_name#) || '%')
+			and (#in_charge_doctorid# is null or
+			#in_charge_doctorid# is not null and
+			a.attending_doctor_id = #in_charge_doctorid# or
+			a.superior_doctor_id = #in_charge_doctorid# or
+			a.director_doctor_id = #in_charge_doctorid#)
+			and (#in_identificationid# is null or
+			#in_identificationid# is not null and
+			b.identification = #in_identificationid#)
+			and a.mr_doctor_part_status in ('SX', 'KSZK', 'BLWC')
+			and b.id = a.patient_id
+			and a.visit_type in ('ZY','LG')
+			order by a.out_date
+		</select>
+
+		<!--查询病区患者转出患者记录-->
+		<select id="Patient_GetChangeOutWardRecord" parameterClass="Hashtable">
+			select '' 转出时间,
+			a.bed_id 当前床号,
+			b.name 姓名,
+			b.pinyin 拼音,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', b.gender) 性别,
+			hospital.get_resident_age(a.resident_id) 年龄,
+			a.patient_id 病人编号,
+			hospital.get_dept_name(a.dept_id) 当前科室,
+			a.dept_id 科室编号,
+			to_char(a.in_date, 'yyyy-mm-dd') 入院时间,
+			a.out_date 出院时间,
+			a.resident_id 病案号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			a.visit_id 住院次,
+			a.hosp_id 医院编号,
+			hospital.get_病人住院天数(a.resident_id) 住院天数,
+			b.identification,
+			a.baby_flag,
+			null nurse_unit,
+			a.mr_doctor_part_status mr_status,
+			a.file_place,
+			null back_operate_type,
+			a.visit_type,
+			decode(hospital.clinic_pathway.get_是否已入路径病人(a.resident_id),
+			'Y',
+			'是',
+			'') 路径病人标识,
+			a.ward_id,
+			hospital.get_dept_name(a.ward_id) 病区,
+			a.data_flag
+			from hsemr.patient_visit_ a, hospital.patient_ b
+			where resident_id in
+			(select b.residentid
+			from hsemr.patient_visit_ a, hospital.change_ward_info_ b
+			where a.ward_id != #in_to_ward_id#
+			and b.residentid = a.resident_id
+			and b.out_wardid = #in_to_ward_id#
+			and a.visit_type in ('ZY','LG')
+			group by b.residentid)
+			and a.hosp_id = #in_hospid#
+			and (#in_resident_id# is null or
+			#in_resident_id# is not null and
+			(a.resident_id like '%' || #in_resident_id# || '%' or
+			a.patient_id like '%' || #in_resident_id# || '%'))
+			and (#in_name# is null or
+			#in_name# is not null and b.name like '%' || #in_name# || '%' or
+			b.pinyin like '%' || upper(#in_name#) || '%')
+			and (#in_charge_doctorid# is null or
+			#in_charge_doctorid# is not null and
+			a.attending_doctor_id = #in_charge_doctorid# or
+			a.superior_doctor_id = #in_charge_doctorid# or
+			a.director_doctor_id = #in_charge_doctorid#)
+			and (#in_identificationid# is null or
+			#in_identificationid# is not null and
+			b.identification = #in_identificationid#)
+			and a.mr_doctor_part_status in ('SX', 'KSZK', 'BLWC')
+			and b.id = a.patient_id
+			and a.visit_type in ('ZY','LG')
+			order by a.out_date
+		</select>
+
+		<!--查询待归档患者信息-->
+		<select id="Patient_GetWaitReceive" parameterClass="Hashtable">
+			select '0' selected,
+			decode(hsemr.pck_qc.get_mr_qc_num(a.hosp_id,
+			a.patient_id,
+			a.resident_id,
+			a.visit_id),
+			0,
+			'',
+			'☆') qc_flag,
+			a.bed_id 当前床号,
+			to_char(a.in_date, 'yyyy-mm-dd hh24:mi:ss') 入院时间,
+			to_char(a.out_date, 'yyyy-mm-dd') 出院时间,
+			a.bed_id 出院床号,
+			b.name 姓名,
+			b.pinyin 拼音,
+			a.resident_id 住院号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', b.gender) 性别,
+			hospital.get_resident_age(a.resident_id) 年龄,
+			a.patient_id 病人编号,
+			'' 临床路径,
+			a.visit_id 住院次,
+			hsemr.get_resident_out_type(a.resident_id) 出院方式,
+			trunc(sysdate) - trunc(a.out_date) 出院天数,
+			hospital.get_worker_name(a.attending_doctor_id) 管床医师,
+			hospital.get_worker_name(a.resident_doctor_id) 管床医生,
+			hospital.get_worker_name(a.charge_doctorid) 主治医生,
+			a.mr_score 病历评分,
+			a.resident_id 病案号,
+			a.dept_id 科室编号,
+			a.hosp_id 医院编号,
+			b.identification,
+			hospital.get_dept_name(a.dept_id) 当前科室,
+			a.baby_flag,
+			a.mr_doctor_part_status,
+			hsemr.get_field_dict('PATIENT_VISIT',
+			'MR_DOCTOR_PART_STATUS',
+			a.mr_doctor_part_status) 病历状态,
+			substr(hsemr.get_mf_content_segment('DE04.01.119.00',
+			a.resident_id,
+			a.hosp_id),
+			1,
+			2000) 主诉,
+			hospital.case_fnc.get_出院主要诊断_名称(a.resident_id, 1) 出院主要诊断,
+			hospital.case_fnc.get_主证_名称(a.resident_id, 1) 主证,
+			hospital.case_fnc.get_中医出院主要诊断_名称(a.resident_id, 1) 主病,
+			c.nurse_unit,
+			a.mr_doctor_part_status mr_status,
+			a.file_place,
+			null back_operate_type,
+			a.visit_type,
+			nvl(hospital.get_resident_patientflag(a.resident_id),'普通患者') 患者类型,
+			decode(hospital.clinic_pathway.get_是否已入路径病人(a.resident_id),
+			'Y',
+			'是',
+			'') 路径病人标识,
+			a.ward_id,
+			hospital.get_dept_name(a.ward_id) 病区,
+			a.data_flag
+			from hsemr.patient_visit_ a,
+			hospital.patient_ b,
+			hospital.bed_ c
+			where a.hosp_id = #in_hospid#
+			and a.out_dept_id = #in_dept_id#
+			and (#in_resident_id# is null or
+			#in_resident_id# is not null and
+			(a.resident_id like '%' || #in_resident_id# || '%' or
+			a.patient_id like '%' || #in_resident_id# || '%'))
+			and (#inname# is null or
+			#inname# is not null and b.name like '%' || #inname# || '%' or
+			b.pinyin like '%' || upper(#inname#) || '%')
+			and a.paper_mr_receive_date is null
+			and (#in_date1# is null or
+			#in_date1# is not null and
+			(a.out_date <![CDATA[>=]]> to_date(#in_date1#, 'yyyy-MM-dd')))
+			and (#in_date2# is null or
+			#in_date2# is not null and
+			(a.out_date <![CDATA[<=]]>
+			to_date(#in_date2# || '23:59:59', 'yyyy-MM-dd hh24:mi:ss')))
+			and (#in_charge_doctorid# is null or
+			#in_charge_doctorid# is not null and
+			a.charge_doctorid = #in_charge_doctorid#)
+			and (#in_nurse_unit# is null or
+			#in_nurse_unit# is not null and c.nurse_unit = #in_nurse_unit# or
+			c.nurse_unit is null)
+			and (#in_identificationid# is null or
+			#in_identificationid# is not null and
+			b.identification = #in_identificationid#)
+			and a.dept_id = c.deptid(+)
+			and a.bed_id = c.id(+)
+			and a.patient_id = b.id
+			and a.status = '2'
+			and a.visit_type in ('ZY','LG')
+			and a.mr_doctor_part_status in ($in_mrstatus$)
+			and not exists (select 1
+			from hsemr.mr_file_withdraw_ d
+			where d.resident_id = a.resident_id
+			and d.visit_id = a.visit_id
+			and d.hosp_id = a.hosp_id
+			and d.finish_status=0)
+			order by a.out_date desc
+		</select>
+		<!--查询待归档患者，护理界面使用-->
+		<select id="Patient_GetWaitReceiveNurse" parameterClass="Hashtable">
+			select a.bed_id 当前床号,
+			to_char(a.in_date, 'yyyy-mm-dd hh24:mi:ss') 入院时间,
+			to_char(a.out_date, 'yyyy-mm-dd') 出院时间,
+			a.bed_id 出院床号,
+			b.name 姓名,
+			b.pinyin 拼音,
+			a.resident_id 住院号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', b.gender) 性别,
+			hospital.get_resident_age(a.resident_id) 年龄,
+			hospital.get_病人住院天数(a.resident_id) 住院天数,
+			a.patient_id 病人编号,
+			a.visit_id 住院次,
+			a.resident_id 病案号,
+			a.dept_id 科室编号,
+			a.hosp_id 医院编号,
+			b.identification,
+			hospital.get_dept_name(a.dept_id) 当前科室,
+			a.baby_flag,
+			c.nurse_unit,
+			a.mr_doctor_part_status mr_status,
+			a.file_place,
+			null back_operate_type,
+			a.visit_type,
+			a.ward_id,
+			hospital.get_dept_name(a.ward_id) 病区,
+			a.data_flag
+			from hsemr.patient_visit_ a,
+			hospital.patient_ b,
+			hospital.bed_ c
+			where a.hosp_id = #in_hospid#
+			and a.out_dept_id = #in_dept_id#
+			and (#in_resident_id# is null or
+			#in_resident_id# is not null and
+			(a.resident_id like '%' || #in_resident_id# || '%' or
+			a.patient_id like '%' || #in_resident_id# || '%'))
+			and (#inname# is null or
+			#inname# is not null and b.name like '%' || #inname# || '%' or
+			b.pinyin like '%' || upper(#inname#) || '%')
+			and (#inbed_id# is null or
+			#inbed_id# is not null and a.bed_id = #inbed_id#)
+			and a.paper_mr_receive_date is null
+			and (#in_nurse_unit# is null or
+			#in_nurse_unit# is not null and c.nurse_unit = #in_nurse_unit# or
+			c.nurse_unit is null)
+			and a.ward_id = c.deptid(+)
+			and a.bed_id = c.id(+)
+			and a.patient_id = b.id
+			and a.status = '2'
+			and a.visit_type in ('ZY','LG')
+			and a.mr_doctor_part_status in ($in_mrstatus$)
+			order by a.out_date desc
+		</select>
+		<!--查询今日入院患者信息-->
+		<select id="Patient_GetTodayPatient" parameterClass="Hashtable">
+			select a.bed_id 当前床号,
+			b.name 姓名,
+			b.pinyin 拼音,
+			a.resident_id 病案号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			a.patient_id 病人编号,
+			a.hosp_id 医院编号,
+			a.visit_id 住院次,
+			a.dept_id 科室编号,
+			hospital.get_dept_name(a.dept_id) 当前科室,
+			hospital.get_resident_age(a.resident_id) 年龄,
+			to_char(a.in_date, 'yyyy-mm-dd') 入院时间,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', b.gender) 性别,
+			hospital.get_病人住院天数(a.resident_id) 住院天数,
+			a.out_date 出院时间,
+			a.baby_flag,
+			c.nurse_unit,
+			b.identification,
+			a.mr_doctor_part_status mr_status,
+			a.file_place,
+			null back_operate_type,
+			a.visit_type,
+			c.seq bed_seq,
+			a.ward_id,
+			hospital.get_dept_name(a.ward_id) 病区,
+			a.data_flag
+			from hsemr.patient_visit_ a,hospital.patient_ b,hospital.bed_ c
+			where a.status = '0'
+			and a.visit_type in ('ZY','LG')
+			and trunc(a.in_date) > trunc(sysdate) - 1
+			and b.id = a.patient_id
+			and a.ward_id = #indeptid#
+			and (#in_nurse_unit# is null or #in_nurse_unit# is not null and c.nurse_unit=#in_nurse_unit# or c.nurse_unit is null)
+			and a.ward_id=c.deptid(+)
+			and a.bed_id=c.id(+)
+			order by bed_seq
+		</select>
+		<!--查询打回未签收患者信息-->
+		<select id="Patient_GetCallBack" parameterClass="Hashtable">
+			select decode(hsemr.pck_qc.get_mr_qc_num(b.hosp_id,
+			b.patient_id,
+			b.resident_id,
+			b.visit_id),
+			0,
+			'',
+			'☆') qc_flag,
+			a.resident_id 住院号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			hospital.get_patient_name(b.patient_id) 姓名,
+			hospital.get_worker_name(b.charge_doctorid) 管床医师,
+			hospital.get_patient_gender_ex(b.patient_id) 性别,
+			a.apply_date 打回时间,
+			to_char(a.approve_date, 'yyyy-mm-dd hh24:mi:ss') 审批通过时间,
+			b.out_date 出院时间,
+			a.apply_reason 打回原因,
+			hsemr.get_field_dict('MR_FILE_WITHDRAW',
+			'MR_BACK_TYPE',
+			a.mr_back_type) 打回类型,
+			hsemr.get_field_dict('MR_FILE_WITHDRAW',
+			'OPERATOR_TYPE',
+			a.operator_type) 操作类型,
+			to_char(a.apply_limit_date, 'yyyy-mm-dd hh24:mi:ss') 修改截止时间,
+			a.resident_id 病案号,
+			a.hosp_id 医院编号,
+			b.visit_id 住院次,
+			a.mr_back_type,
+			b.patient_id 患者编号,
+			b.bed_id 床号,
+			b.baby_flag,
+			b.mr_doctor_part_status mr_status,
+			hsemr.get_field_dict('PATIENT_VISIT',
+			'MR_DOCTOR_PART_STATUS',
+			b.mr_doctor_part_status) 病案状态,
+			b.file_place,
+			a.operator_type back_operate_type,
+			a.status,
+			decode(a.status,0,'待审核',1,'已批准','已完成') 审批状态,
+			nvl(hospital.get_resident_patientflag(b.resident_id),'普通患者') 患者类型,
+			decode(hospital.clinic_pathway.get_是否已入路径病人(b.resident_id),
+			'Y',
+			'是',
+			'') 路径病人标识,
+			b.ward_id,
+			hospital.get_dept_name(b.ward_id) 病区,
+			a.id 打回编号
+			from hsemr.mr_file_withdraw_ a,
+			hsemr.patient_visit_    b,
+			hospital.patient_       c
+			where a.resident_id = b.resident_id
+			and a.visit_id = b.visit_id
+			and a.hosp_id = b.hosp_id
+			and b.out_dept_id is not null
+			and b.status = 2
+			and b.visit_type in ('ZY','LG')
+			and b.patient_id = c.id
+			and a.finish_status = 0
+			and a.status in (0, 1)
+			and a.apply_worker_id = #in_charge_doctroid#
+			and a.hosp_id = #in_hospid#
+			and a.apply_dept_id = #in_apply_dept_id#
+			and (#inresident_id# is null or
+			#inresident_id# is not null and
+			a.resident_id like '%' || #inresident_id# || '%')
+			and (#inname# is null or
+			#inname# is not null and c.name like '%' || #inname# || '%' or
+			c.pinyin like '%' || upper(#inname#) || '%')
+			and a.apply_date between to_date(#in_date1# || ' 00:00:00', 'yyyy-mm-dd hh24:mi:ss')
+			and to_date(#in_date2# || ' 23:59:59', 'yyyy-mm-dd hh24:mi:ss')
+			order by a.apply_date
+		</select>
+
+		<!--查询已出院病人-->
+		<select id="Patient_GetOutParient" parameterClass="Hashtable">
+			select a.hosp_id hospid,
+			a.hosp_id 医院编号,
+			b.id patientid,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			to_char(a.visit_id) 住院次,
+			a.resident_id 病案号,
+			hospital.get_worker_name(a.resident_doctor_id) 管床医生,
+			hospital.get_worker_name(a.charge_doctorid) 主治医生,
+			hsemr.get_resident_out_type(a.resident_id) 出院方式,
+			b.name,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', b.gender) gender,
+			hospital.get_resident_age(a.resident_id) age,
+			hospital.get_worker_name(a.charge_doctorid) charge_doctorid,
+			to_char(a.in_date, 'yyyy-mm-dd') in_date,
+			to_char(a.out_date, 'yyyy-mm-dd') out_date,
+			hospital.case_fnc.get_出院主要诊断_名称(a.resident_id, 1) 出院主要诊断,
+			hospital.case_fnc.get_主证_名称(a.resident_id, 1) 主证,
+			hospital.case_fnc.get_中医出院主要诊断_名称(a.resident_id, 1) 主病,
+			substr(hsemr.get_mf_content_segment('DE04.01.119.00',
+			a.resident_id,
+			a.hosp_id),
+			1,
+			2000) 主诉,
+			a.mr_doctor_part_status mr_status,
+			a.file_place,
+			null back_operate_type,
+			a.visit_type,
+			round(hospital.get_resident_totalfee(a.resident_id) ,2) 总费用,
+			nvl(hospital.get_resident_patientflag(a.resident_id),'普通患者') 患者类型,
+			decode(hospital.clinic_pathway.get_是否已入路径病人(a.resident_id),
+			'Y',
+			'是',
+			'') 路径病人标识,
+			hsemr.get_field_dict('PATIENT_VISIT',
+			'MR_DOCTOR_PART_STATUS',
+			a.mr_doctor_part_status) 病历状态,
+			a.ward_id,
+			hospital.get_dept_name(a.ward_id) 病区,
+			decode(a.data_flag, 'NEW', '新', 'OLD', '旧', 'INVALID', '无效') 数据标识,
+			a.data_flag data_flag,
+			(select hospital.get_worker_name(c.responsible_nurse)
+			from hospital.case_page1_ c
+			where a.resident_id = c.residentid(+)) 责任护士
+			from hsemr.patient_visit_ a, hospital.patient_ b
+			where a.patient_id = b.id
+			and a.status = 2
+			and a.visit_type in ('ZY','LG')
+			and a.mr_doctor_part_status in ($in_mrstatus$)
+			and ((#in_flag# = 'SELF' and a.charge_doctorid = #in_charge_doctroid#) or
+			(#in_flag# = 'ALL' and a.out_dept_id = #in_deptid# and
+			(#in_charge_doctroid# is null or
+			#in_charge_doctroid# is not null and
+			a.charge_doctorid = #in_charge_doctroid#)))
+			and (#in_resident_id# is null or
+			#in_resident_id# is not null and
+			(a.resident_id like '%' || #in_resident_id# || '%' or
+			a.patient_id = #in_resident_id#))
+			and (#in_name# is null or #in_name# is not null and
+			(b.name like '%' || #in_name# || '%' or
+			b.pinyin like '%' || upper(#in_name#) || '%'))
+			and (a.out_date between
+			to_date(#in_begin_date# || ' 00:00:00', 'yyyy-mm-dd hh24:mi:ss') and
+			to_date(#in_end_date# || ' 23:59:59', 'yyyy-mm-dd hh24:mi:ss'))
+			and not exists (select 1
+			from hsemr.mr_file_withdraw_ d
+			where d.resident_id = a.resident_id
+			and d.visit_id = a.visit_id
+			and d.hosp_id = a.hosp_id
+			and d.finish_status = 0)
+			<isEqual prepend="union" property="in_flag" compareValue="ALL">
+				<!--转出转入病人-->
+				select a.hosp_id hospid,
+				a.hosp_id 医院编号,
+				b.id patientid,
+				hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+				to_char(a.visit_id) 住院次,
+				a.resident_id 病案号,
+				hospital.get_worker_name(a.resident_doctor_id) 管床医生,
+				hospital.get_worker_name(a.charge_doctorid) 主治医生,
+				hsemr.get_resident_out_type(a.resident_id) 出院方式,
+				b.name,
+				hospital.get_field_dict_name('PATIENT', 'GENDER', b.gender) gender,
+				hospital.get_resident_age(a.resident_id) age,
+				hospital.get_worker_name(a.charge_doctorid) charge_doctorid,
+				to_char(a.in_date, 'yyyy-mm-dd') in_date,
+				to_char(a.out_date, 'yyyy-mm-dd') out_date,
+				hospital.case_fnc.get_出院主要诊断_名称(a.resident_id, 1) 出院主要诊断,
+				hospital.case_fnc.get_主证_名称(a.resident_id, 1) 主证,
+				hospital.case_fnc.get_中医出院主要诊断_名称(a.resident_id, 1) 主病,
+				substr(hsemr.get_mf_content_segment('DE04.01.119.00',
+				a.resident_id,
+				a.hosp_id),
+				1,
+				2000) 主诉,
+				a.mr_doctor_part_status mr_status,
+				a.file_place,
+				null back_operate_type,
+				a.visit_type,
+				round(hospital.get_resident_totalfee(a.resident_id) ,2) 总费用,
+				nvl(hospital.get_resident_patientflag(a.resident_id),'普通患者') 患者类型,
+				decode(hospital.clinic_pathway.get_是否已入路径病人(a.resident_id),
+				'Y',
+				'是',
+				'') 路径病人标识,
+				hsemr.get_field_dict('PATIENT_VISIT',
+				'MR_DOCTOR_PART_STATUS',
+				a.mr_doctor_part_status) 病历状态,                                                                                 a.ward_id,
+				hospital.get_dept_name(a.ward_id) 病区,
+				decode(a.data_flag, 'NEW', '新', 'OLD', '旧', 'INVALID', '无效') 数据标识,
+				a.data_flag data_flag,
+				(select hospital.get_worker_name(c.responsible_nurse)
+				from hospital.case_page1_ c
+				where a.resident_id = c.residentid(+)) 责任护士
+				from hsemr.patient_visit_ a, hospital.patient_ b
+				where a.patient_id = b.id
+				and (#in_charge_doctroid# is null or
+				#in_charge_doctroid# is not null and
+				a.charge_doctorid = #in_charge_doctroid#)
+				and a.status = 2
+				and a.visit_type in ('ZY','LG')
+				and a.mr_doctor_part_status in ($in_mrstatus$)
+				and (#in_resident_id# is null or
+				#in_resident_id# is not null and
+				(a.resident_id like '%' || #in_resident_id# || '%' or
+				a.patient_id = #in_resident_id#))
+				and (#in_name# is null or #in_name# is not null and
+				(b.name like '%' || #in_name# || '%' or
+				b.pinyin like '%' || upper(#in_name#) || '%'))
+				and (a.out_date between
+				to_date(#in_begin_date# || ' 00:00:00', 'yyyy-mm-dd hh24:mi:ss') and
+				to_date(#in_end_date# || ' 23:59:59', 'yyyy-mm-dd hh24:mi:ss'))
+				and not exists
+				(select 1
+				from hsemr.mr_file_withdraw_ d
+				where d.resident_id = a.resident_id
+				and d.visit_id = a.visit_id
+				and d.hosp_id = a.hosp_id
+				and d.finish_status = 0)
+				and a.resident_id in (select residentid
+				from hospital.change_dept_info_
+				where in_deptid = #in_deptid#
+				union
+				select residentid
+				from hospital.change_dept_info_
+				where out_deptid = #in_deptid#)
+			</isEqual>
+			order by out_date
+		</select>
+
+		<!--查询检查申请-->
+		<select id="Patient_GetExamApply" parameterClass="Hashtable">
+			select a.resident_id 病案号,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			a.visit_id 住院次,
+			a.hosp_id 医院编号,
+			a.bed_id 床号,
+			c.name 姓名,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', c.gender) gender,
+			hospital.get_resident_age(a.resident_id) age,
+			c.pinyin 拼音,
+			a.charge_doctorid,
+			hospital.get_worker_name(a.charge_doctorid) 主管医生,
+			hospital.get_dept_name(b.write_deptid) 开单科室,
+			b.write_date 开单时间,
+			hospital.get_dept_name(b.execute_deptid) 执行科室,
+			a.mr_doctor_part_status mr_status,
+			a.file_place,
+			null back_operate_type,
+			a.visit_type,
+			nvl(hospital.get_resident_patientflag(a.resident_id),'普通患者') 患者类型,
+			decode(hospital.clinic_pathway.get_是否已入路径病人(a.resident_id),
+			'Y',
+			'是',
+			'') 路径病人标识,
+			a.ward_id,
+			hospital.get_dept_name(a.ward_id) 病区,
+			a.data_flag
+			from hsemr.patient_visit_                 a,
+			hospital.in_examination_application_ b,
+			hospital.patient_                    c
+			where a.resident_id = b.residentid
+			and a.hosp_id = b.hosp_id
+			and a.patient_id = b.patientid
+			and a.patient_id = c.id
+			and b.execute_deptid = #in_execute_deptid#
+			and (#in_resident_id# is null or
+			#in_resident_id# is not null and
+			(a.resident_id like '%' || #in_resident_id# || '%' or
+			a.patient_id like '%' || #in_resident_id# || '%'))
+			and (#in_name# is null or #in_name# is not null and
+			(c.name like '%' || #in_name# || '%' or
+			c.pinyin like '%' || upper(#in_name#) || '%'))
+			and (#in_charge_doctorid# is null or
+			#in_charge_doctorid# is not null and
+			(a.attending_doctor_id = #in_charge_doctorid# or
+			a.superior_doctor_id = #in_charge_doctorid# or
+			a.director_doctor_id = #in_charge_doctorid#))
+			and (#in_identificationid# is null or
+			#in_identificationid# is not null and
+			c.identification = #in_identificationid#)
+			and a.status = 0
+			and a.visit_type in ('ZY','LG')
+			and a.hosp_id = #in_hospid#
+			and (#in_flag# = 0 and b.status <![CDATA[>=]]> 1 and b.status <![CDATA[<=]]>  4 or
+			#in_flag# = 1 and b.status = 5)
+			and (#audit_time1# is null or (#audit_time1# is not null and b.audit_date <![CDATA[>=]]> to_date(#audit_time1#,'yyyy-mm-dd')))
+			and (#audit_time2# is null or (#audit_time2# is not null and b.audit_date <![CDATA[<]]> to_date(#audit_time2#,'yyyy-mm-dd')+1))
+			group by a.resident_id,
+			a.visit_id,
+			a.hosp_id,
+			a.bed_id,
+			c.name,
+			c.pinyin,
+			a.charge_doctorid,
+			b.write_deptid,
+			b.execute_deptid,
+			b.write_date,
+			c.gender,
+			a.mr_doctor_part_status,
+			a.file_place,
+			a.visit_type,
+			a.ward_id,
+			a.data_flag
+		</select>
+		<!--医技科室查找患者-->
+		<select id="Patient_GetMedicalPatient" parameterClass="Hashtable">
+			select t.resident_id 病案号,
+			hospital.get_resident_id_ex(t.resident_id,t.hosp_id) short_residentid,
+			t.bed_id 当前床号,
+			a.name 姓名,
+			a.pinyin 拼音,
+			t.visit_id 住院次,
+			hospital.get_dept_name(t.dept_id) 当前科室,
+			hospital.case_fnc.get_西医入院诊断_名称(t.resident_id, 1) 入院主要诊断,
+			hospital.case_fnc.get_主证_名称(t.resident_id, 1) 主证,
+			hospital.case_fnc.get_中医出院主要诊断_名称(t.resident_id, 1) 主病,
+			hospital.get_病人住院天数(t.resident_id) 住院天数,
+			hospital.get_field_dict_name('PATIENT', 'GENDER', a.gender) 性别,
+			hospital.get_resident_age(t.resident_id) 年龄,
+			hospital.get_worker_name(t.attending_doctor_id) 管床医师,
+			hospital.get_worker_name(t.superior_doctor_id) 上级医师,
+			hospital.get_worker_name(t.resident_doctor_id) 管床医生,
+			hospital.get_worker_name(t.charge_doctorid) 主治医生,
+			t.superior_doctor_id 上级医师id,
+			hospital.get_worker_name(t.director_doctor_id) 主任医师,
+			t.director_doctor_id 主任医师id,
+			'' 病情,
+			'' 临床路径,
+			hsemr.get_field_dict('PATIENT_VISIT',
+			'MR_DOCTOR_PART_STATUS',
+			t.mr_doctor_part_status) 病历状态,
+			t.patient_id 病人编号,
+			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			t.out_date 出院时间,
+			t.dept_id 科室编号,
+			t.hosp_id 医院编号,
+			t.attending_doctor_id,
+			a.identification,
+			t.baby_flag,
+			t.mr_doctor_part_status mr_status,
+			t.file_place,
+			null back_operate_type,
+			t.visit_type,
+			hospital.get_dept_name(t.ward_id) 病区,
+			nvl(hospital.get_resident_patientflag(t.resident_id),'普通患者') 患者类型,
+			t.ward_id,
+			t.data_flag
+			from hsemr.patient_visit_ t, hospital.patient_ a
+			where (#in_deptid# is null or
+			#in_deptid# is not null and #in_deptid# = t.dept_id)
+			and  (#in_resident_id# is null or
+			#in_resident_id# is not null and
+			(t.resident_id like '%' || #in_resident_id# || '%' or
+			t.patient_id like '%' || #in_resident_id# || '%'))
+			and (#in_name# is null or #in_name# is not null and
+			(a.name like '%' || #in_name# || '%' or
+			a.pinyin like '%' || upper(#in_name#) || '%'))
+			and (#in_charge_doctorid# is null or
+			#in_charge_doctorid# is not null and
+			(t.attending_doctor_id = #in_charge_doctorid# or
+			t.superior_doctor_id = #in_charge_doctorid# or
+			t.director_doctor_id = #in_charge_doctorid# or t.charge_doctorid = #in_charge_doctorid#))
+			and (#in_identificationid# is null or
+			#in_identificationid# is not null and
+			a.identification = #in_identificationid#)
+			and a.id = t.patient_id
+			and t.visit_type in ('ZY','LG')
+			and t.hosp_id = #in_hospid#
+			<isEqual property="in_patientstatus" compareValue="IN" prepend="and">
+				t.status = 0
+			</isEqual>
+			<isEqual property="in_patientstatus" compareValue="OUT" prepend="and">
+				t.status = 2
+				and t.mr_doctor_part_status = 'SX'
+				<isNotEmpty property="in_date1" prepend="and">
+					t.out_date <![CDATA[>]]> to_date(#in_date1#, 'yyyy-mm-dd')
+				</isNotEmpty>
+				<isNotEmpty property="in_date2" prepend="and">
+					t.out_date <![CDATA[<]]> to_date(#in_date2#, 'yyyy-mm-dd') + 1
+				</isNotEmpty>
+			</isEqual>
+			order by t.dept_id, bed_id
+		</select>
+		<!--查找全院所有职员(根据key)-->
+		<select id="Patient_GetWorker" parameterClass="Hashtable">
+			select a.id, a.name, a.pinyin, a.nurse_level, a.doctor_level
+			from hospital.all_worker_ a
+			where (a.id like #key# || '%'
+			or a.name like #key# || '%'
+			or a.pinyin like upper(#key#) || '%')
+			and a.hospid = #in_hospid#
+			and a.write_off = '1'
+			order by id
+		</select>
+		<!--查找上级或主治医师(根据key)-->
+		<select id="Patient_GetSuperWorker" parameterClass="Hashtable">
+			select a.id,
+			a.name,
+			a.pinyin,
+			a.nurse_level,
+			a.doctor_level,
+			a.professional_title
+			from hospital.all_worker_ a
+			where a.deptid = #in_dept_id#
+			and substr(a.attribute, 5, 1) = 'A'
+			and a.hospid = #in_hosp_id#
+			and a.write_off = '1'
+			union
+			select a.id,
+			a.name,
+			a.pinyin,
+			a.nurse_level,
+			a.doctor_level,
+			a.professional_title
+			from hospital.all_worker_ a, hospital.worker_dept_ b
+			where a.id = b.workerid
+			and a.write_off = '1'
+			and b.deptid = #in_dept_id#
+			and b.status = 'VALID'
+			and substr(a.attribute, 5, 1) = 'A'
+			order by id
+		</select>
+		<!--查找临床科室(根据key)-->
+		<select id="Patient_GetDept" parameterClass="Hashtable">
+			select a.id, a.name, a.pinyin, a.hospid
+			from hospital.all_department_ a
+			where (a.id like #key# || '%'
+			or a.name like #key# || '%'
+			or a.pinyin like upper(#key#) || '%')
+			and a.hospid=#in_hosp_id#
+			and substr(a.attribute ,3,1) = 'A'
+			order by id
+		</select>
+		<!--查找全院科室(根据key)-->
+		<select id="Patient_GetAllDept" parameterClass="Hashtable">
+			select a.id, a.name, a.pinyin pym,a.parentid
+			from hospital.all_department_ a
+			where (a.id like #key# || '%'
+			or a.name like #key# || '%'
+			or a.pinyin like upper(#key#) || '%')
+			and a.hospid=#in_hosp_id#
+			and a.enable='1'
+			order by id
+		</select>
+		<!--查找授权科室-->
+		<select id="Patient_GetWokerGrantedDept" parameterClass="Hashtable">
+			select id, name, pinyin pym, parentid
+			from hospital.all_department
+			where id in (select dept_id
+			from hsemr.qc_mr_file_view_privilege_
+			where worker_id = #in_worker_id#
+			and hosp_id = #in_hosp_id#
+			and app_type = #in_app_type#
+			union all
+			select #in_dept_id# dept_id from dual)
+			and hospid = #in_hosp_id#
+			order by id, sequence
+		</select>
+		<!--查找医院-->
+		<select id="Patient_GetHospital" parameterClass="Hashtable">
+			select a.id, a.name
+			from hospital.hosp_  a
+			where (a.id like #key# || '%'
+			or a.name like #key# || '%')
+			order by id
+		</select>
+		<!--查找此人是否已有跨科处置记录-->
+		<select id="Patient_GetMrTreatmentRecord" parameterClass="Hashtable">
+			select a.status
+			from hsemr.emr_treament_apply_ a
+			where a.hosp_id = #in_hosp_id#
+			and a.resident_id = #in_resident_id#
+			and a.visit_id = #in_visit_id#
+			and a.apply_type = #in_apply_type#
+			and a.apply_dept_id = #in_dept_id#
+			and a.status in (0, 1)
+		</select>
+		<!--查找跨科处置记录-->
+		<select id="Patient_GetTreatmentByApplyMfId" parameterClass="Hashtable">
+			select a.id apply_id,
+			to_char(a.apply_date, 'yyyy-mm-dd hh24:mi:ss') 申请日期,
+			a.apply_dept 申请科室,
+			a.apply_dept_id 申请科室编码,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY',
+			'APPLY_TYPE',
+			a.apply_type) 申请类别,
+			a.apply_condition 病情介绍,
+			a.remark 备注,
+			hsemr.get_field_dict('EMR_TREAMENT_APPLY', 'STATUS', a.status) 状态,
+			a.apply_worker 申请医师,
+			to_char(a.treat_date, 'yyyy-mm-dd hh24:mi:ss') 处置时间,
+			a.treat_worker 处置医师,
+			hsemr.get_hosp_name(a.hosp_id) 申请医院,
+			a.treat_hosp_id 处置医院编码,
+			hsemr.get_hosp_name(a.treat_hosp_id) 处置医院,
+			a.apply_mr_file_id 申请单编码,
+			a.apply_worker_id 申请医生,
+			a.apply_date
+			from hsemr.emr_treament_apply_ a
+			where a.hosp_id = #in_hosp_id#
+			and a.resident_id = #in_resident_id#
+			and a.visit_id = #in_visit_id#
+			and a.apply_mr_file_id = #in_apply_mr_file_id#
+		</select>
+		<!--查找患者基本信息-->
+		<select id="Patient_GetPatientBaseInfo" parameterClass="Hashtable">
+			select a.hosp_id,
+			hsemr.get_hosp_name(a.hosp_id) hospital,
+			a.resident_id residentid,
+			hospital.get_resident_id_ex(a.resident_id,a.hosp_id) short_residentid,
+			a.patient_id patientid,
+			to_char(a.visit_id) seq,
+			hospital.get_patient_name(a.patient_id) name,
+			hospital.get_field_dict_name('PATIENT','GENDER',b.gender) gender,
+			to_char(a.in_date,'yyyy-mm-dd hh24:mi:ss') in_date,
+			to_char(a.out_date,'yyyy-mm-dd hh24:mi:ss') out_date,
+			hospital.get_dept_name(a.dept_id) dept,
+			a.bed_id bed_id,
+			nvl(hospital.get_resident_age(a.resident_id),hospital.get_patient_age(a.patient_id)) age,
+			b.race,
+			b.profession,
+			b.home_address,
+			a.charge_doctorid,
+			a.attending_doctor_id,
+			a.director_doctor_id,
+			a.superior_doctor_id,
+			hospital.get_dept_name(a.in_dept_id),
+			a.in_dept_id,
+			case
+			when a.out_date is null then
+			trunc(sysdate) - trunc(a.in_date)
+			else
+			trunc(a.out_date) - trunc(a.in_date)
+			end In_days,
+			a.baby_flag  baby_flag,
+			a.dept_id   dept_id,
+			b.identification,
+			a.mr_doctor_part_status mr_status,
+			a.file_place,
+			a.visit_type,
+			hsemr.get_resident_case_no(a.resident_id,a.hosp_id) case_no,
+			decode(a.in_dept_id, a.dept_id, 0, 1) change_dept,
+			1 order_seq,
+			nvl(hospital.get_resident_patientflag(a.resident_id),'普通患者') 患者类型,
+			decode(a.data_flag, 'NEW', '新', 'OLD', '旧', 'INVALID', '无效') 数据标识,
+			a.data_flag data_flag
+			from hsemr.patient_visit_ a,hospital.patient_ b
+			where b.id = a.patient_id
+			and a.hosp_id = #in_hosp_id#
+			and a.resident_id = #in_resident_id#
+			and a.visit_id = #in_visit_id#
+		</select>
+		<!--查找患者基本信息替换(旧)-->
+		<select id="Patient_GetPatientReplaceInfo" parameterClass="Hashtable">
+			select a.id, to_char(b.segment_content) value
+			from hsemr.macro_ a, hsemr.mr_file_content_segment_ b, hsemr.mr_file_ c
+			where c.hosp_id = #in_hosp_id#
+			and c.resident_id = #in_resident_id#
+			and c.visit_id = #in_visit_id#
+			and b.mr_file_id = c.id
+			and a.data_element_id = b.data_element_id
+			and c.deleted_flag = 0
+			and type = '1'
+			union all
+			select a.id, to_char(b.data_element_text) value
+			from hsemr.macro_ a, hsemr.mr_file_content_de_ b, hsemr.mr_file_ c
+			where c.hosp_id = #in_hosp_id#
+			and c.resident_id = #in_resident_id#
+			and c.visit_id = #in_visit_id#
+			and a.data_element_id = b.data_element_id
+			and b.mr_file_id = c.id
+			and type = '1'
+			union all
+			select '体温_入院' id,
+			hsemr.pck_vs.get_体温_入院(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '脉搏_入院' id,
+			hsemr.pck_vs.get_脉搏_入院(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '呼吸_入院' id,
+			hsemr.pck_vs.get_呼吸_入院(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '血压_入院' id,
+			hsemr.pck_vs.get_血压_入院(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '体温_当天' id,
+			hsemr.pck_vs.get_体温_当天(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '脉搏_当天' id,
+			hsemr.pck_vs.get_脉搏_当天(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '呼吸_当天' id,
+			hsemr.pck_vs.get_呼吸_当天(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '血压_当天' id,
+			hsemr.pck_vs.get_血压_当天(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '体温_最新' id,
+			hsemr.pck_vs.get_体温_最新(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '脉搏_最新' id,
+			hsemr.pck_vs.get_脉搏_最新(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '呼吸_最新' id,
+			hsemr.pck_vs.get_呼吸_最新(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '血压_最新' id,
+			hsemr.pck_vs.get_血压_最新(#in_hosp_id#,
+			#in_resident_id#,
+			#in_visit_id#) value
+			from dual
+			union
+			select '联系人' id, a.asso_name value
+			from hospital.patient_ a, hsemr.patient_visit_ b
+			where b.patient_id = a.id
+			and b.hosp_id = #in_hosp_id#
+			and b.resident_id = #in_resident_id#
+			and b.visit_id = #in_visit_id#
+			union
+			select '联系人电话' id, a.asso_tele value
+			from hospital.patient_ a, hsemr.patient_visit_ b
+			where b.patient_id = a.id
+			and b.hosp_id = #in_hosp_id#
+			and b.resident_id = #in_resident_id#
+			and b.visit_id = #in_visit_id#
+			union
+			select '入院诊断' id, hsemr.get_诊断_不换行(#in_resident_id#, 'A') value
+			from hsemr.patient_visit_ b
+			where b.hosp_id = #in_hosp_id#
+			and b.resident_id = #in_resident_id#
+			and b.visit_id = #in_visit_id#
+			union
+			select '最后诊断' id, hsemr.get_诊断_不换行(#in_resident_id#, 'C') value
+			from hsemr.patient_visit_ b
+			where b.hosp_id = #in_hosp_id#
+			and b.resident_id = #in_resident_id#
+			and b.visit_id = #in_visit_id#
+			union
+			select '初步诊断(不换行 )' id, hsemr.get_诊断_不换行(#in_resident_id#, 'EMR_A') value
+			from hsemr.patient_visit_ b
+			where b.hosp_id = #in_hosp_id#
+			and b.resident_id = #in_resident_id#
+			and b.visit_id = #in_visit_id#
+			union
+			select '出院科室' id, hospital.get_dept_name(b.dept_id) value
+			from hsemr.patient_visit_ b
+			where b.hosp_id = #in_hosp_id#
+			and b.resident_id = #in_resident_id#
+			and b.visit_id = #in_visit_id#
+			union
+			select '当前科室' id, hospital.get_dept_name(b.out_dept_id) value
+			from hsemr.patient_visit_ b
+			where b.hosp_id = #in_hosp_id#
+			and b.resident_id = #in_resident_id#
+			and b.visit_id = #in_visit_id#
+			union
+			select '住院天数' id,to_char(hospital.get_病人住院天数(#in_resident_id#)) value
+			from dual
+		</select>
+		<!--查找患者替换内容(新)-->
+		<select id="Patient_GetReplaceItem" parameterClass="Hashtable">
+			select a.id, b.segment_content value
+			from hsemr.macro_ a, hsemr.mr_file_content_segment_ b, hsemr.mr_file_ c
+			where c.hosp_id = #in_hosp_id#
+			and c.resident_id = #in_resident_id#
+			and c.visit_id = #in_visit_id#
+			and a.data_element_id = b.data_element_id
+			and b.mr_file_id = c.id
+			and c.deleted_flag = 0
+			and a.id in ($replaceItemId$)
+			and type = '1'
+			union all
+			select a.id, to_clob(b.data_element_text) value
+			from hsemr.macro_ a, hsemr.mr_file_content_de_ b, hsemr.mr_file_ c
+			where c.hosp_id = #in_hosp_id#
+			and c.resident_id = #in_resident_id#
+			and c.visit_id = #in_visit_id#
+			and a.data_element_id = b.data_element_id
+			and b.mr_file_id = c.id
+			and c.deleted_flag = 0
+			and a.id in ($replaceItemId$)
+			and type = '1'
+			union all
+			select '住院天数' id,
+			to_clob(hospital.get_病人住院天数(#in_resident_id#)) value
+			from dual
+		</select>
+		<!--查找患者替换内容通过查询(新)-->
+		<select id="Patient_GetReplaceItemBySql" parameterClass="Hashtable">
+			$sql$
+		</select>
+		<!--查找替换查询-->
+		<select id="Patient_GetReplaceSql" parameterClass="Hashtable">
+			select a.id, a.sql
+			from hsemr.macro_ a
+			where a.id in ($replaceItemId$)
+			and a.sql is not null
+		</select>
+		<!--查询临床科室在科会诊申请患者-->
+		<select id="Patient_GetInPatientConsultApply" parameterClass="Hashtable">
+			select  hospital.get_patient_name(p.patient_id) || ' (' || p.resident_id || ')' || ' (' ||
+			p.bed_id || '床)'|| ' ('||hospital.get_patient_gender_ex(p.patient_id)||')' patient_info,
+			p.resident_id 病案号,
+			p.visit_id 住院次,
+			hospital.get_resident_id_ex(p.resident_id,p.hosp_id) short_residentid,
+			p.bed_id 当前床号,
+			hospital.get_patient_name(p.patient_id) 姓名,
+			hospital.get_dept_name(p.dept_id) 当前科室,
+			hospital.get_patient_gender_ex(p.patient_id) 性别,
+			p.charge_doctorid,
+			hospital.get_worker_name(p.charge_doctorid) 主治医生,
+			p.patient_id 病人编号,
+			to_char(p.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			p.dept_id 科室编号,
+			p.hosp_id 医院编号,
+			f.id 申请单编码,
+			f.topic,
+			f.input_worker,
+			f.input_worker_id,
+			f.input_dept_id,
+			f.input_dept,
+			f.file_flag,
+			hsemr.get_field_dict('MR_FILE', 'FILE_FLAG', f.file_flag) 文书状态,
+			nvl2(f.file_flag, '申请单', '未申请') group_value,
+			p.mr_doctor_part_status mr_status,
+			p.file_place,
+			null back_operate_type,
+			p.visit_type,
+			p.data_flag,
+			'住院' visit_way
+			from hsemr.patient_visit_ p, hsemr.mr_file_ f
+			where p.dept_id = #in_dept_id#
+			and p.hosp_id = #in_hosp_id#
+			and p.resident_id = f.resident_id(+)
+			and p.patient_id = f.patient_id(+)
+			and p.hosp_id = f.hosp_id(+)
+			and p.status = 0
+			and p.visit_type in ('ZY','LG')
+			and f.doc_type(+) = '2'
+			and f.deleted_flag(+) = '0'
+		</select>
+		<!--查询门诊有效期会诊申请患者和住院会诊申请患者-->
+		<select id="Patient_GetOutPatientConsultApply" parameterClass="Hashtable">
+			select hospital.get_patient_name(r.patientid) || ' (' || r.patientid || ')' || ' (' ||
+			hospital.get_patient_gender_ex(r.patientid) || ')' patient_info,
+			r.id 病案号,
+			p.visit_id 住院次,
+			r.id short_residentid,
+			p.bed_id 当前床号,
+			hospital.get_patient_name(r.patientid) 姓名,
+			hospital.get_dept_name(r.deptid) 当前科室,
+			hospital.get_patient_gender_ex(r.patientid) 性别,
+			r.doctorid,
+			hospital.get_worker_name(r.doctorid) 主治医生,
+			r.patientid 病人编号,
+			to_char(r.register_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			r.deptid 科室编号,
+			p.hosp_id 医院编号,
+			f.id 申请单编码,
+			f.topic,
+			f.input_worker,
+			f.input_worker_id,
+			f.input_dept_id,
+			f.input_dept,
+			f.file_flag,
+			hsemr.get_field_dict('MR_FILE', 'FILE_FLAG', f.file_flag) 文书状态,
+			nvl2(f.file_flag, '申请单', '未申请') group_value,
+			null mr_status,
+			null file_place,
+			null back_operate_type,
+			p.visit_type,
+			p.data_flag,
+			'门诊' visit_way
+			from hospital.register_ r, hsemr.mr_file_ f,hsemr.patient_visit_ p
+			where r.deptid = #in_dept_id#
+			and r.id = f.resident_id(+)
+			and r.patientid = f.patient_id(+)
+			and r.invalid_date >= sysdate
+			and f.doc_type(+) = '2'
+			and f.deleted_flag(+) = '0'
+			and p.resident_id=r.id
+		</select>
+		<!--查询检查科室会诊患者-->
+		<select id="Patient_GetExamConsultApply" parameterClass="Hashtable">
+			select hospital.get_patient_name(a.patientid) || ' (' || a.residentid || ')' || ' (' ||
+			hospital.get_patient_gender_ex(a.patientid) || ')' patient_info,
+			p.resident_id 病案号,
+			p.visit_id 住院次,
+			hospital.get_resident_id_ex(p.resident_id,p.hosp_id) short_residentid,
+			p.bed_id 当前床号,
+			hospital.get_patient_name(p.patient_id) 姓名,
+			hospital.get_dept_name(p.dept_id) 当前科室,
+			hospital.get_patient_gender_ex(p.patient_id) 性别,
+			p.charge_doctorid,
+			hospital.get_worker_name(p.charge_doctorid) 主治医生,
+			p.patient_id 病人编号,
+			to_char(p.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			p.dept_id 科室编号,
+			p.hosp_id 医院编号,
+			f.id 申请单编码,
+			f.topic,
+			f.input_worker,
+			f.input_worker_id,
+			f.input_dept_id,
+			f.input_dept,
+			f.file_flag,
+			hsemr.get_field_dict('MR_FILE', 'FILE_FLAG', f.file_flag) 文书状态,
+			nvl2(f.file_flag, '申请单', '未申请') group_value,
+			p.mr_doctor_part_status mr_status,
+			p.file_place file_place,
+			null back_operate_type,
+			p.visit_type,
+			p.data_flag,
+			hsemr.get_field_dict('PATIENT_VISIT', 'VISIT_TYPE', p.visit_type) visit_way
+			from hospital.in_examination_application_ a,
+			hsemr.patient_visit_                 p,
+			hsemr.mr_file_                       f
+			where a.execute_deptid = #in_dept_id#
+			and a.hosp_id = #in_hosp_id#
+			and a.residentid = p.resident_id
+			and a.hosp_id = p.hosp_id
+			and a.residentid = f.resident_id(+)
+			and a.patientid = f.patient_id(+)
+			and a.hosp_id = f.hosp_id(+)
+			and p.status = 0
+			<!--a.status in ('4', '5')-->
+			and f.doc_type(+) = '2'
+			and f.deleted_flag(+) = '0'
+		</select>
+		<!--查询手术室会诊患者-->
+		<select id="Patient_GetOperationConsultApply" parameterClass="Hashtable">
+			select hospital.get_patient_name(o.patient_id) || ' (' || o.resident_id || ')' || ' (' ||
+			hospital.get_patient_gender_ex(o.patient_id) || ')' patient_info,
+			p.resident_id 病案号,
+			p.visit_id 住院次,
+			hospital.get_resident_id_ex(p.resident_id,p.hosp_id) short_residentid,
+			p.bed_id 当前床号,
+			hospital.get_patient_name(p.patient_id) 姓名,
+			hospital.get_dept_name(p.dept_id) 当前科室,
+			hospital.get_patient_gender_ex(p.patient_id) 性别,
+			p.charge_doctorid,
+			hospital.get_worker_name(p.charge_doctorid) 主治医生,
+			p.patient_id 病人编号,
+			to_char(p.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
+			p.dept_id 科室编号,
+			p.hosp_id 医院编号,
+			f.id 申请单编码,
+			f.topic,
+			f.input_worker,
+			f.input_worker_id,
+			f.input_dept_id,
+			f.input_dept,
+			f.file_flag,
+			hsemr.get_field_dict('MR_FILE', 'FILE_FLAG', f.file_flag) 文书状态,
+			nvl2(f.file_flag, '申请单', '未申请') group_value,
+			p.mr_doctor_part_status mr_status,
+			p.file_place file_place,
+			null back_operate_type,
+			p.visit_type,
+			p.data_flag,
+			hsemr.get_field_dict('PATIENT_VISIT', 'VISIT_TYPE', p.visit_type) visit_way
+			from hsois.operation_arrangement_ o,
+			hsemr.patient_visit_         p,
+			hsemr.mr_file_               f
+			where o.operation_exec_deptid = #in_dept_id#
+			and o.hosp_id = #in_hosp_id#
+			and o.resident_id = p.resident_id
+			and o.hosp_id = p.hosp_id
+			and o.resident_id = f.resident_id(+)
+			and o.patient_id = f.patient_id(+)
+			and o.hosp_id = f.hosp_id(+)
+			and o.status not in ('2', '3', '4', '5')
+			and f.doc_type(+) = '2'
+			and f.deleted_flag(+) = '0'
+			and p.status = 0
+		</select>
+		<!--查询待处理患者数量-->
+		<select id="Patient_GetPendingPatientNum" parameterClass="Hashtable">
+			select treament + submit_case + return_case total,
+			treament,
+			submit_case,
+			return_case
+			from (select (select count(et.resident_id)
+			from hsemr.emr_treament_apply_ et
+			where et.treat_dept_id = #in_dept_id#
+			and (et.treat_worker_id = #in_worker_id# or
+			et.treat_worker_id is null)
+			and et.treat_hosp_id = #in_hosp_id#
+			and et.status = 1) treament,
+			(select count(pv.resident_id)
+			from hsemr.patient_visit_ pv
+			where pv.charge_doctorid = #in_worker_id#
+			and pv.dept_id = #in_dept_id#
+			and pv.status = 2
+			and pv.mr_doctor_part_status ='SX') submit_case,
+			(select count(a.resident_id)
+			from hsemr.mr_file_withdraw_ a
+			where a.apply_dept_id = #in_dept_id#
+			and a.apply_worker_id = #in_worker_id#
+			and a.finish_status = 0) return_case
+			from dual)
+		</select>
+		<!--测试-->
+		<select id="Patient_Test" parameterClass="Hashtable">
+			select hosp_id,
+			resident_id,
+			patient_id,
+			visit_id,
+			in_dept_id,
+			dept_id,
+			bed_id,
+			in_date,
+			out_date,
+			out_dept_id,
+			age_out,
+			age_out_unit,
+			charge_doctorid,
+			vip_flag,
+			secret_level,
+			diagnosis_date,
+			mr_score,
+			paper_mr_receive_date,
+			paper_mr_offset_days,
+			paper_mr_receive_worker_id,
+			paper_mr_returner,
+			mr_doctor_part_status,
+			mr_nurse_part_status,
+			director_id,
+			director_doctor_id,
+			attending_doctor_id,
+			resident_doctor_id,
+			study_doctor_id,
+			graduate_doctor_id,
+			practice_worker_id,
+			death_date_time,
+			mr_register_date,
+			mr_register_worker_id,
+			mr_register_worker_name,
+			mr_return_date,
+			mr_return_worker_id,
+			mr_return_worker_name,
+			first_back_time,
+			first_back_man,
+			input_date,
+			input_worker_id,
+			update_date,
+			update_worker_id,
+			remark,
+			input_worker,
+			update_worker,
+			status,
+			baby_flag,
+			superior_doctor_id,
+			superior_doctor_name,
+			mr_receive_date,
+			record_no,
+			catalog_date,
+			catalog_worker_id,
+			catalog_worker,
+			last_back_time,
+			last_back_man,
+			paper_mr_receive_doctor_date,
+			paper_mr_receive_doctor,
+			paper_mr_receive_nurse_date,
+			paper_mr_receive_nurse,
+			mr_back_date,
+			mr_back_worker,
+			three_input_worker_id,
+			three_superior_doctor_id,
+			three_director_doctor_id,
+			file_place,
+			medical_type
+			from hsemr.patient_visit_
+		</select>
+		<!--测试-->
+		<select id="Patient_GetPatientMrFileStatus" parameterClass="Hashtable">
+			$sql$
+		</select>
+		<!--获取病历所处状态序号-->
+		<select id="Patient_GetPatientMrFileDescribe" parameterClass="Hashtable">
+			select s.resident_id,
+			s.mr_doctor_part_status mfstatus,
+			s.status,
+			b.withdraw
+			from hsemr.patient_visit_ s,
+			(select s.resident_id,
+			'1' withdraw
+			from hsemr.patient_visit_ s, hsemr.mr_file_withdraw_ a
+			where s.resident_id = #in_resident_id#
+			and s.resident_id = a.resident_id
+			and a.finish_status = 0
+			and a.status in (0, 1)) b
+			where s.resident_id = #in_resident_id#
+			and s.resident_id = b.resident_id(+)
+			　
+		</select>
+		<!--获取病历提交提示信息-->
+		<select id="Patient_GetMrCommitPrompt" parameterClass="Hashtable">
+			select '患者信息：姓名：' || hospital.get_resident_name(t.resident_id) || ' 住院号：' ||
+			t.resident_id patient_info,
+			t.prompt_class,
+			t.mr_file_name,
+			t.err_message,
+			decode(substr(t.prompt_class, 1, 2), '病历', 1, '存在', 3) sequence
+			from hsemr.mr_commit_prompt_ t
+			where t.resident_id = #in_resident_id#
+			union all
+			select '患者信息：姓名：' || hospital.get_resident_name(cm.resident_id) || ' 住院号：' ||
+			cm.resident_id patient_info,
+			'病案首页存在未通过质控校验的数据' prompt_class,
+			'病案首页' mr_file_name,
+			cm.err_rule err_message,
+			2 sequence
+			from hsemr.case_page1_err_msg_ cm
+			where cm.resident_id = #in_resident_id#
+			order by sequence
+			　
+		</select>
+	</statements>
+</sqlMap>

@@ -28,6 +28,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -573,6 +574,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 {
                     ValidateSchema(document.ChildNodes[1], "SqlMapConfig.xsd");
                 }
+                //根据配置文件 初始化
                 Initialize();
                 return configScope.SqlMapper;
             }
@@ -590,8 +592,8 @@ namespace IBatisNetSelf.DataMapper.Configuration
         private void ValidateSchema(XmlNode aSection, string aSchemaFileName)
         {
 
-            XmlReader _validatingReader = null;
-            Stream _xsdStream = null;
+            XmlReader? _validatingReader = null;
+            Stream? _xsdStream = null;
 
             configScope.ErrorContext.Activity = "Validate SqlMap config";
             try
@@ -610,7 +612,10 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 XmlReaderSettings _readerSettings = new XmlReaderSettings();
                 _readerSettings.ValidationType= ValidationType.Schema;
                 _readerSettings.ValidationEventHandler += ValidationCallBack;
-                _readerSettings.Schemas.Add(_schema);
+                if (_schema != null)
+                {
+                    _readerSettings.Schemas.Add(_schema);
+                }
 
                 _validatingReader = XmlReader.Create(new XmlTextReader(new StringReader(aSection.OuterXml)), _readerSettings);
 
@@ -629,10 +634,6 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
         }
 
-        private void _readerSettings_ValidationEventHandler(object? sender, ValidationEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
 
         private void ValidationCallBack(object? sender, ValidationEventArgs args)
         {
@@ -655,13 +656,29 @@ namespace IBatisNetSelf.DataMapper.Configuration
         {
             Reset();
 
+            Stopwatch _sw = null;
+            Stopwatch _swTotal = null;
+
+            if (logger.IsDebugEnabled)
+            {
+                _swTotal = Stopwatch.StartNew();
+                _sw = Stopwatch.StartNew();
+            }
+
             #region Load Global Properties
             if (this.configScope.IsCallFromDao == false)
             {
                 string _xPathProperties = ApplyDataMapperNamespacePrefix(XML_DATAMAPPER_CONFIG_ROOT);
-                this.configScope.NodeContext = this.configScope.SqlMapConfigDocument.SelectSingleNode(_xPathProperties, configScope.XmlNamespaceManager);
+                this.configScope.NodeContext = this.configScope.SqlMapConfigDocument.SelectSingleNode(_xPathProperties, this.configScope.XmlNamespaceManager);
 
                 this.ParseGlobalProperties();
+            }
+
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Load Global Properties cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
             }
             #endregion
 
@@ -697,6 +714,12 @@ namespace IBatisNetSelf.DataMapper.Configuration
                     }
                 }
             }
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Loading global settings cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
+            }
 
             #endregion
 
@@ -728,6 +751,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
             this.configScope.SqlMapper.IsCacheModelsEnabled = this.configScope.IsCacheModelsEnabled;
 
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Factory init cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
+            }
+
             #region Cache Alias
 
             TypeAlias _cacheAlias = new TypeAlias(typeof(MemoryCacheControler));
@@ -746,6 +776,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
             _cacheAlias.Name = "AnsiStringTypeHandler";
             this.configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(_cacheAlias.Name, _cacheAlias);
 
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"TypeAlias init cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
+            }
+
             #endregion
 
             #region Load providers
@@ -763,6 +800,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
             {
                 _provider = ParseProvider();
                 this.configScope.ErrorContext.Reset();
+            }
+
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Load providers cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
             }
             #endregion
 
@@ -802,6 +846,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 }
                 this.configScope.ErrorContext.Reset();
             }
+
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Load the DataSources cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
+            }
             #endregion
             #endregion 
 
@@ -812,6 +863,12 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 TypeAliasDeSerializer.Deserialize(xmlNode, this.configScope);
             }
             this.configScope.ErrorContext.Reset();
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Load Global TypeAlias cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
+            }
             #endregion
 
             #region Load TypeHandlers
@@ -835,6 +892,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 }
             }
             this.configScope.ErrorContext.Reset();
+
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Load Global TypeAlias cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
+            }
             #endregion
 
             #region Load sqlMap mapping files
@@ -843,7 +907,12 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 this.configScope.NodeContext = xmlNode;
                 this.ConfigureSqlMap();
             }
-
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Load sqlMap mapping files cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
+            }
             #endregion
 
             #region Attach CacheModel to statement
@@ -863,6 +932,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 }
             }
             this.configScope.ErrorContext.Reset();
+
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Attach CacheModel to statement cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
+            }
             #endregion
 
             #region Register Trigger Statements for Cache Models
@@ -898,6 +974,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
                     }
                 }
             }
+
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Register Trigger Statements for Cache Models cost {_sw.ElapsedMilliseconds} ms");
+                _sw.Restart();
+            }
             #endregion
 
             #region Resolve resultMap / Discriminator / PropertyStategy attributes on Result/Argument Property 
@@ -931,7 +1014,14 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
 
             this.configScope.ErrorContext.Reset();
+            if (logger.IsDebugEnabled)
+            {
+                _sw.Stop();
+                logger.Debug($"Resolve resultMap / Discriminator / PropertyStategy attributes on Result/Argument Property cost {_sw.ElapsedMilliseconds} ms");
 
+                _swTotal.Stop();
+                logger.Debug($"Build Sqlmap cost total {_swTotal.ElapsedMilliseconds} ms");
+            }
             #endregion
         }
 
@@ -950,7 +1040,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
             if (providersNode != null)
             {
-                _xmlProviders = Resources.GetAsXmlDocument(providersNode, configScope.Properties);
+                _xmlProviders = Resources.GetSubfileAsXmlDocument(providersNode, configScope.Properties);
             }
             else
             {
@@ -1049,7 +1139,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
 
             // Load the file 
-            this.configScope.SqlMapDocument = Resources.GetAsXmlDocument(sqlMapNode, this.configScope.Properties);
+            this.configScope.SqlMapDocument = Resources.GetSubfileAsXmlDocument(sqlMapNode, this.configScope.Properties);
 
             if (this.configScope.ValidateSqlMap)
             {
@@ -1618,41 +1708,51 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// </summary>
         private void ParseGlobalProperties()
         {
+            this.configScope.ErrorContext.Activity = "loading global properties";
+
             string _xPath = ApplyDataMapperNamespacePrefix(XML_PROPERTIES);
-            XmlNode _nodeProperties = configScope.NodeContext.SelectSingleNode(_xPath, configScope.XmlNamespaceManager);
-            configScope.ErrorContext.Activity = "loading global properties";
+            XmlNode _nodeProperties = this.configScope.NodeContext.SelectSingleNode(_xPath, this.configScope.XmlNamespaceManager);
 
             if (_nodeProperties != null)
             {
                 if (_nodeProperties.HasChildNodes)
                 {
-                    foreach (XmlNode propertyNode in _nodeProperties.SelectNodes(ApplyDataMapperNamespacePrefix(XML_PROPERTY), configScope.XmlNamespaceManager))
+                    foreach (XmlNode _propertyNode in _nodeProperties.SelectNodes(ApplyDataMapperNamespacePrefix(XML_PROPERTY), this.configScope.XmlNamespaceManager))
                     {
-                        XmlAttribute keyAttrib = propertyNode.Attributes[PROPERTY_ELEMENT_KEY_ATTR];
-                        XmlAttribute valueAttrib = propertyNode.Attributes[PROPERTY_ELEMENT_VALUE_ATTR];
+                        XmlAttribute _keyAttr = _propertyNode.Attributes[PROPERTY_ELEMENT_KEY_ATTR];
+                        XmlAttribute _valueAttr = _propertyNode.Attributes[PROPERTY_ELEMENT_VALUE_ATTR];
 
-                        if (keyAttrib != null && valueAttrib != null)
+                        /*    <properties>   
+                         *       <property  key="Host" value="localhost"/>
+                         *       <property  key="Port" value="1521"/>
+                         *     </properties >
+                         */
+                        if (_keyAttr != null && _valueAttr != null)
                         {
-                            configScope.Properties.Add(keyAttrib.Value, valueAttrib.Value);
+                            configScope.Properties.Add(_keyAttr.Value, _valueAttr.Value);
 
-                            //if (_logger.IsDebugEnabled)
-                            //{
-                            //	_logger.Debug(string.Format("Add property \"{0}\" value \"{1}\"", keyAttrib.Value, valueAttrib.Value));
-                            //}
+                            if (logger.IsDebugEnabled)
+                            {
+                                logger.Debug(string.Format("获取 property \"{0}\" value \"{1}\"", _keyAttr.Value, _valueAttr.Value));
+                            }
                         }
                         else
                         {
                             // Load the file defined by the attribute
-                            XmlDocument propertiesConfig = Resources.GetAsXmlDocument(propertyNode, configScope.Properties);
+                            /*例如：  <properties>
+	                                    <property  resource="DataBase.config"/>
+                                     </properties>
+                            */
+                            XmlDocument _propertiesConfig = Resources.GetSubfileAsXmlDocument(_propertyNode, configScope.Properties);
 
-                            foreach (XmlNode node in propertiesConfig.SelectNodes(XML_GLOBAL_PROPERTIES, configScope.XmlNamespaceManager))
+                            foreach (XmlNode _node in _propertiesConfig.SelectNodes(XML_GLOBAL_PROPERTIES, configScope.XmlNamespaceManager))
                             {
-                                configScope.Properties[node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value] = node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
+                                configScope.Properties[_node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value] = _node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
 
-                                //if (_logger.IsDebugEnabled)
-                                //{
-                                //	_logger.Debug(string.Format("Add property \"{0}\" value \"{1}\"", node.Attributes[PROPERTY_ELEMENT_KEY_ATTRIB].Value, node.Attributes[PROPERTY_ELEMENT_VALUE_ATTRIB].Value));
-                                //}
+                                if (logger.IsDebugEnabled)
+                                {
+                                    logger.Debug(string.Format("获取 property \"{0}\" value \"{1}\"", _node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value, _node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value));
+                                }
                             }
                         }
                     }
@@ -1661,24 +1761,25 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 {
                     // <properties> element's InnerXml is currently an empty string anyway
                     // since <settings> are in properties file
+                    //例如：<properties resource="DataBase.config"/>
 
                     configScope.ErrorContext.Resource = _nodeProperties.OuterXml.ToString();
 
                     // Load the file defined by the attribute
-                    XmlDocument propertiesConfig = Resources.GetAsXmlDocument(_nodeProperties, configScope.Properties);
+                    XmlDocument propertiesConfig = Resources.GetSubfileAsXmlDocument(_nodeProperties, configScope.Properties);
 
                     foreach (XmlNode node in propertiesConfig.SelectNodes(XML_SETTINGS_ADD))
                     {
                         configScope.Properties[node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value] = node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
 
-                        //if (_logger.IsDebugEnabled)
-                        //{
-                        //	_logger.Debug(string.Format("Add property \"{0}\" value \"{1}\"", node.Attributes[PROPERTY_ELEMENT_KEY_ATTRIB].Value, node.Attributes[PROPERTY_ELEMENT_VALUE_ATTRIB].Value));
-                        //}
+                        if (logger.IsDebugEnabled)
+                        {
+                            logger.Debug(string.Format("Add property \"{0}\" value \"{1}\"", node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value, node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value));
+                        }
                     }
                 }
             }
-            configScope.ErrorContext.Reset();
+            this.configScope.ErrorContext.Reset();
         }
 
 
@@ -1875,6 +1976,8 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// <summary>
         /// Apply the dataMapper namespace prefix
         /// </summary>
+        /// <example>参数:sqlMapConfig/providers 结果：mapper:sqlMapConfig/mapper:providers
+        /// </example>
         /// <param name="elementName"></param>
         /// <returns></returns>
         public string ApplyDataMapperNamespacePrefix(string elementName)

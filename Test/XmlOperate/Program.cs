@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Reflection.PortableExecutable;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Schema;
 
 namespace XmlOperate
@@ -12,12 +13,51 @@ namespace XmlOperate
         {
             XmlDocument _xmlDoc = Resources.GetResourceAsXmlDocument("SqlMap.config");
 
-            XmlNamespaceManager _xmlNS = new XmlNamespaceManager(_xmlDoc.NameTable);
-            _xmlNS.AddNamespace("mapper", "http://ibatis.apache.org/dataMapper");
-            _xmlNS.AddNamespace("provider", "http://ibatis.apache.org/providers");
-            _xmlNS.AddNamespace("mapping", "http://ibatis.apache.org/mapping");
+            XmlNamespaceManager _xmlNameSpace = new XmlNamespaceManager(_xmlDoc.NameTable);
+            _xmlNameSpace.AddNamespace("mapper", "http://ibatis.apache.org/dataMapper");
+            _xmlNameSpace.AddNamespace("provider", "http://ibatis.apache.org/providers");
+            _xmlNameSpace.AddNamespace("mapping", "http://ibatis.apache.org/mapping");
 
             ValidateSchema(_xmlDoc.ChildNodes[1]);
+
+            XmlNode _node = _xmlDoc.SelectSingleNode("mapper:sqlMapConfig", _xmlNameSpace);
+
+            XmlNode _node1 = _node.SelectSingleNode("mapper:properties", _xmlNameSpace);
+
+            if (_node1.HasChildNodes)
+            {
+                Console.WriteLine($"子节点");
+                foreach (XmlNode _node2 in _node1.SelectNodes("mapper:property", _xmlNameSpace))
+                {
+
+                    XmlAttribute _keyAttr = _node2.Attributes["key"];
+                    XmlAttribute _valueAttr = _node2.Attributes["value"];
+                    if (_keyAttr != null && _valueAttr != null)
+                    {
+                        Console.WriteLine($"Add property \"{_keyAttr.Value}\" value \"{_valueAttr.Value}\"");
+                    }
+                    else
+                    {
+                        XmlDocument _propertiesConfig = Resources.GetSubfileAsXmlDocument(_node2, new System.Collections.Specialized.NameValueCollection());
+
+                        foreach (XmlNode _node3 in _propertiesConfig.SelectNodes("*/add", _xmlNameSpace))
+                        {
+                            Console.WriteLine($"Add property \"{_node3.Attributes["key"].Value}\" value \"{_node3.Attributes["value"].Value}\"");
+                        }
+                    }
+                }
+
+            }
+            else
+            {
+                Console.WriteLine($"没有子节点");
+                XmlDocument _propertiesConfig = Resources.GetSubfileAsXmlDocument(_node1,new System.Collections.Specialized.NameValueCollection());
+
+                foreach (XmlNode _node3 in _propertiesConfig.SelectNodes("*/add", _xmlNameSpace))
+                {
+                    Console.WriteLine($"Add property \"{_node3.Attributes["key"].Value}\" value \"{_node3.Attributes["value"].Value}\"");
+                }
+            }
 
         }
 
