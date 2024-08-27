@@ -36,7 +36,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Serializers
             statement.ResultClassName = XmlNodeUtils.GetStringAttribute(prop, "resultClass");
             statement.ResultMapName = XmlNodeUtils.GetStringAttribute(prop, "resultMap");
             statement.AllowRemapping = XmlNodeUtils.GetBooleanAttribute(prop, "remapResults", false);
-
+            
             return statement;
         }
     }

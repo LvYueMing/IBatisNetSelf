@@ -57,13 +57,13 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                 _parameterClassType = aStatement.ParameterClass;
             }
 
-            Common.Utilities.StringTokenizer _parser = new Common.Utilities.StringTokenizer(aStringSql, PARAMETER_TOKEN, true);
+            Common.Utilities.StringTokenizer _sqlTokens = new Common.Utilities.StringTokenizer(aStringSql, PARAMETER_TOKEN, true);
             StringBuilder _newSqlBuffer = new StringBuilder();
 
             string _token = null;
             string _lastToken = null;
 
-            IEnumerator _enumerator = _parser.GetEnumerator();
+            IEnumerator _enumerator = _sqlTokens.GetEnumerator();
 
             while (_enumerator.MoveNext())
             {

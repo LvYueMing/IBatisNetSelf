@@ -24,21 +24,21 @@ namespace IBatisNetSelf.DataMapper.Configuration.Serializers
         /// <returns></returns>
         public static void Deserialize(XmlNode node, ConfigurationScope configScope)
         {
-            NameValueCollection prop = XmlNodeUtils.ParseAttributes(node, configScope.Properties);
+            NameValueCollection _prop = XmlNodeUtils.ParseAttributes(node, configScope.Properties);
 
-            string id = XmlNodeUtils.GetStringAttribute(prop, "id");
+            string _id = XmlNodeUtils.GetStringAttribute(_prop, "id");
 
             if (configScope.UseStatementNamespaces)
             {
-                id = configScope.ApplyNamespace(id);
+                _id = configScope.ApplyNamespace(_id);
             }
-            if (configScope.SqlIncludes.Contains(id))
+            if (configScope.SqlIncludes.Contains(_id))
             {
-                throw new ConfigurationException("Duplicate <sql>-include '" + id + "' found.");
+                throw new ConfigurationException("Duplicate <sql>-include '" + _id + "' found.");
             }
             else
             {
-                configScope.SqlIncludes.Add(id, node);
+                configScope.SqlIncludes.Add(_id, node);
             }
         }
     }

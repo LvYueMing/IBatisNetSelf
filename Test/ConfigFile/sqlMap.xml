@@ -1,17 +1,47 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <sqlMap namespace="Circulation" xmlns="http://ibatis.apache.org/mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
+	<alias>
+		<typeAlias></typeAlias>
+	</alias>
+	
+	<resultMaps>
+		<resultMap id="" class="" extends="" groupBy=",">
+			<constructor>
+				<argument argumentName="" select="" type="" typeHandler="" columnIndex="" column="" dbType="" resultMapping="" nullValue="" />
+			</constructor>
+			<result></result>
+		</resultMap>
+	</resultMaps>
+	
 	<parameterMaps>
-		<parameterMap class="Hashtable" id="PM.HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收">
+		<parameterMap class="Hashtable" id="PM.HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收" extends="" >
 			<parameter column="IN_MR_FILE_ID" direction="Input" property="inMrFileId"/>
 		</parameterMap>
 	</parameterMaps>
 	
 	<statements>
+	
+	    <sql></sql>
+		
+		<statement></statement>
+		
 	    <select id="Circulation_GetMrFileCirculation" parameterClass="Hashtable">
 		</select>
+		
+		<insert></insert>
+		
+		<update></update>
+		
+		<delete></delete>
 		
 		<procedure id="HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收" parameterMap="PM.HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收">
 			HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收
 		</procedure>
 	</statements>
+	
+	<cacheModels>
+		<cacheModel></cacheModel>
+	</cacheModels>
+	
+	
 </sqlMap>

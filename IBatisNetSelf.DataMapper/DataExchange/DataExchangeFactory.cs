@@ -28,19 +28,19 @@ namespace IBatisNetSelf.DataMapper.DataExchange
         /// <summary>
         ///  Getter for the type handler factory
         /// </summary>
-        public TypeHandlerFactory TypeHandlerFactory=> typeHandlerFactory;
+        public TypeHandlerFactory TypeHandlerFactory => typeHandlerFactory;
 
 
         /// <summary>
         /// The factory for object
         /// </summary>
-        public IObjectFactory ObjectFactory=> objectFactory;
+        public IObjectFactory ObjectFactory => objectFactory;
 
 
         /// <summary>
         /// The factory which build <see cref="ISetAccessor"/>
         /// </summary>
-        public AccessorFactory AccessorFactory=> accessorFactory;
+        public AccessorFactory AccessorFactory => accessorFactory;
 
 
 
@@ -74,11 +74,11 @@ namespace IBatisNetSelf.DataMapper.DataExchange
             {
                 _dataExchange = this.complexDataExchange;
             }
-            else if (typeof(IList).IsAssignableFrom(clazz))
+            else if (typeof(IList).IsAssignableFrom(clazz)) 
             {
                 _dataExchange = this.listDataExchange;
             }
-            else if (typeof(IDictionary).IsAssignableFrom(clazz))
+            else if (typeof(IDictionary).IsAssignableFrom(clazz))// HashTable implements interface IDictionary
             {
                 _dataExchange = this.dictionaryDataExchange;
             }

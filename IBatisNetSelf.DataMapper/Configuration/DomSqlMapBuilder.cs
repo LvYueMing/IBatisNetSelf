@@ -266,7 +266,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
         private ConfigurationScope configScope = null;
         private DeSerializerFactory deSerializerFactory = null;
-        private InlineParameterMapParser paramParser = null;
+        private InlineParameterMapParser inlineParamMapParser = null;
         private IObjectFactory objectFactory = null;
         private ISetAccessorFactory setAccessorFactory = null;
         private IGetAccessorFactory getAccessorFactory = null;
@@ -334,7 +334,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
         public DomSqlMapBuilder()
         {
             this.configScope = new ConfigurationScope();
-            this.paramParser = new InlineParameterMapParser();
+            this.inlineParamMapParser = new InlineParameterMapParser();
             this.deSerializerFactory = new DeSerializerFactory(this.configScope);
         }
 
@@ -669,7 +669,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             if (this.configScope.IsCallFromDao == false)
             {
                 string _xPathProperties = ApplyDataMapperNamespacePrefix(XML_DATAMAPPER_CONFIG_ROOT);
-                this.configScope.NodeContext = this.configScope.SqlMapConfigDocument.SelectSingleNode(_xPathProperties, this.configScope.XmlNamespaceManager);
+                this.configScope.CurrentNodeContext = this.configScope.SqlMapConfigDocument.SelectSingleNode(_xPathProperties, this.configScope.XmlNamespaceManager);
 
                 this.ParseGlobalProperties();
             }
@@ -904,7 +904,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             #region Load sqlMap mapping files
             foreach (XmlNode xmlNode in this.configScope.SqlMapConfigDocument.SelectNodes(ApplyDataMapperNamespacePrefix(XML_SQLMAP), this.configScope.XmlNamespaceManager))
             {
-                this.configScope.NodeContext = xmlNode;
+                this.configScope.CurrentNodeContext = xmlNode;
                 this.ConfigureSqlMap();
             }
             if (logger.IsDebugEnabled)
@@ -1125,7 +1125,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// </summary>
         private void ConfigureSqlMap()
         {
-            XmlNode _sqlMapNode = this.configScope.NodeContext;
+            XmlNode _sqlMapNode = this.configScope.CurrentNodeContext;
 
             this.configScope.ErrorContext.Activity = "loading sqlMap file";
             this.configScope.ErrorContext.Resource = _sqlMapNode.OuterXml.ToString();
@@ -1164,7 +1164,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             foreach (XmlNode xmlNode in this.configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(XML_RESULTMAP), this.configScope.XmlNamespaceManager))
             {
                 this.configScope.ErrorContext.MoreInfo = "loading resultMap tag";
-                this.configScope.NodeContext = xmlNode; // A ResultMap node
+                this.configScope.CurrentNodeContext = xmlNode; // A ResultMap node
 
                 this.BuildResultMap();
             }
@@ -1176,7 +1176,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             foreach (XmlNode xmlNode in this.configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(XML_PARAMETERMAP), this.configScope.XmlNamespaceManager))
             {
                 this.configScope.ErrorContext.MoreInfo = "loading parameterMap tag";
-                this.configScope.NodeContext = xmlNode; // A ParameterMap node
+                this.configScope.CurrentNodeContext = xmlNode; // A ParameterMap node
 
                 this.BuildParameterMap();
             }
@@ -1185,11 +1185,12 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
             #region Load statements
 
-            #region Sql tag
+            #region Sql tag  
+            //可被其它语句引用的可重用语句块。
             foreach (XmlNode xmlNode in this.configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(SQL_STATEMENT), this.configScope.XmlNamespaceManager))
             {
                 this.configScope.ErrorContext.MoreInfo = "loading sql tag";
-                this.configScope.NodeContext = xmlNode; // A sql tag
+                this.configScope.CurrentNodeContext = xmlNode; // A sql tag
 
                 SqlDeSerializer.Deserialize(xmlNode, this.configScope);
             }
@@ -1200,12 +1201,11 @@ namespace IBatisNetSelf.DataMapper.Configuration
             foreach (XmlNode xmlNode in this.configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(XML_STATEMENT), this.configScope.XmlNamespaceManager))
             {
                 this.configScope.ErrorContext.MoreInfo = "loading statement tag";
-                this.configScope.NodeContext = xmlNode; // A statement tag
+                this.configScope.CurrentNodeContext = xmlNode; // A statement tag
 
                 _statement = StatementDeSerializer.Deserialize(xmlNode, this.configScope);
                 _statement.CacheModelName = this.configScope.ApplyNamespace(_statement.CacheModelName);
                 _statement.ParameterMapName = this.configScope.ApplyNamespace(_statement.ParameterMapName);
-                //statement.ResultMapName = ApplyNamespace( statement.ResultMapName );
 
                 if (this.configScope.UseStatementNamespaces)
                 {
@@ -1218,14 +1218,14 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 this.ProcessSqlStatement(_statement);
 
                 // Build MappedStatement
-                MappedStatement mappedStatement = new MappedStatement(this.configScope.SqlMapper, _statement);
-                IMappedStatement mapStatement = mappedStatement;
+                MappedStatement _mappedStatement = new MappedStatement(this.configScope.SqlMapper, _statement);
+                IMappedStatement _mapStatement = _mappedStatement;
                 if (_statement.CacheModelName != null && _statement.CacheModelName.Length > 0 && this.configScope.IsCacheModelsEnabled)
                 {
-                    mapStatement = new CachingStatement(mappedStatement);
+                    _mapStatement = new CachingStatement(_mappedStatement);
                 }
 
-                this.configScope.SqlMapper.AddMappedStatement(mapStatement.Id, mapStatement);
+                this.configScope.SqlMapper.AddMappedStatement(_mapStatement.Id, _mapStatement);
             }
             #endregion
 
@@ -1234,12 +1234,11 @@ namespace IBatisNetSelf.DataMapper.Configuration
             foreach (XmlNode xmlNode in this.configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(XML_SELECT), this.configScope.XmlNamespaceManager))
             {
                 this.configScope.ErrorContext.MoreInfo = "loading select tag";
-                this.configScope.NodeContext = xmlNode; // A select node
+                this.configScope.CurrentNodeContext = xmlNode; // A select node
 
                 _select = SelectDeSerializer.Deserialize(xmlNode, this.configScope);
                 _select.CacheModelName = this.configScope.ApplyNamespace(_select.CacheModelName);
                 _select.ParameterMapName = this.configScope.ApplyNamespace(_select.ParameterMapName);
-                //select.ResultMapName = ApplyNamespace( select.ResultMapName );
 
                 if (this.configScope.UseStatementNamespaces)
                 {
@@ -1272,61 +1271,60 @@ namespace IBatisNetSelf.DataMapper.Configuration
             #endregion
 
             #region Insert tag
-            Insert insert;
+            Insert _insert;
             foreach (XmlNode xmlNode in this.configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(XML_INSERT), this.configScope.XmlNamespaceManager))
             {
                 this.configScope.ErrorContext.MoreInfo = "loading insert tag";
-                this.configScope.NodeContext = xmlNode; // A insert tag
+                this.configScope.CurrentNodeContext = xmlNode; // A insert tag
 
                 MappedStatement mappedStatement;
 
-                insert = InsertDeSerializer.Deserialize(xmlNode, this.configScope);
-                insert.CacheModelName = this.configScope.ApplyNamespace(insert.CacheModelName);
-                insert.ParameterMapName = this.configScope.ApplyNamespace(insert.ParameterMapName);
-                //insert.ResultMapName = ApplyNamespace( insert.ResultMapName );
+                _insert = InsertDeSerializer.Deserialize(xmlNode, this.configScope);
+                _insert.CacheModelName = this.configScope.ApplyNamespace(_insert.CacheModelName);
+                _insert.ParameterMapName = this.configScope.ApplyNamespace(_insert.ParameterMapName);
 
                 if (this.configScope.UseStatementNamespaces)
                 {
-                    insert.Id = this.configScope.ApplyNamespace(insert.Id);
+                    _insert.Id = this.configScope.ApplyNamespace(_insert.Id);
                 }
-                this.configScope.ErrorContext.ObjectId = insert.Id;
-                insert.Initialize(this.configScope);
+                this.configScope.ErrorContext.ObjectId = _insert.Id;
+                _insert.Initialize(this.configScope);
 
                 // Build ISql (analyse sql command text)
-                if (insert.Generate != null)
+                if (_insert.Generate != null)
                 {
-                    GenerateCommandText(this.configScope, insert);
+                    GenerateCommandText(this.configScope, _insert);
                 }
                 else
                 {
-                    ProcessSqlStatement(insert);
+                    ProcessSqlStatement(_insert);
                 }
 
                 // Build MappedStatement
-                mappedStatement = new InsertMappedStatement(this.configScope.SqlMapper, insert);
+                mappedStatement = new InsertMappedStatement(this.configScope.SqlMapper, _insert);
 
                 this.configScope.SqlMapper.AddMappedStatement(mappedStatement.Id, mappedStatement);
 
                 #region statement SelectKey
                 // Set sql statement SelectKey 
-                if (insert.SelectKey != null)
+                if (_insert.SelectKey != null)
                 {
                     this.configScope.ErrorContext.MoreInfo = "loading selectKey tag";
-                    this.configScope.NodeContext = xmlNode.SelectSingleNode(ApplyMappingNamespacePrefix(XML_SELECTKEY), this.configScope.XmlNamespaceManager);
+                    this.configScope.CurrentNodeContext = xmlNode.SelectSingleNode(ApplyMappingNamespacePrefix(XML_SELECTKEY), this.configScope.XmlNamespaceManager);
 
-                    insert.SelectKey.Id = insert.Id;
-                    insert.SelectKey.Initialize(this.configScope);
-                    insert.SelectKey.Id += DOT + "SelectKey";
+                    _insert.SelectKey.Id = _insert.Id;
+                    _insert.SelectKey.Initialize(this.configScope);
+                    _insert.SelectKey.Id += DOT + "SelectKey";
 
                     // Initialize can also use this.configScope.ErrorContext.ObjectId to get the id
                     // of the parent <select> node
                     // insert.SelectKey.Initialize( this.configScope );
                     // insert.SelectKey.Id = insert.Id + DOT + "SelectKey";
 
-                    ProcessSqlStatement(insert.SelectKey);
+                    ProcessSqlStatement(_insert.SelectKey);
 
                     // Build MappedStatement
-                    mappedStatement = new MappedStatement(this.configScope.SqlMapper, insert.SelectKey);
+                    mappedStatement = new MappedStatement(this.configScope.SqlMapper, _insert.SelectKey);
 
                     this.configScope.SqlMapper.AddMappedStatement(mappedStatement.Id, mappedStatement);
                 }
@@ -1339,14 +1337,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
             foreach (XmlNode xmlNode in this.configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(XML_UPDATE), this.configScope.XmlNamespaceManager))
             {
                 this.configScope.ErrorContext.MoreInfo = "loading update tag";
-                this.configScope.NodeContext = xmlNode; // A update tag
+                this.configScope.CurrentNodeContext = xmlNode; // A update tag
 
                 MappedStatement mappedStatement;
 
                 update = UpdateDeSerializer.Deserialize(xmlNode, this.configScope);
                 update.CacheModelName = this.configScope.ApplyNamespace(update.CacheModelName);
                 update.ParameterMapName = this.configScope.ApplyNamespace(update.ParameterMapName);
-                //update.ResultMapName = ApplyNamespace( update.ResultMapName );
 
                 if (this.configScope.UseStatementNamespaces)
                 {
@@ -1378,13 +1375,12 @@ namespace IBatisNetSelf.DataMapper.Configuration
             foreach (XmlNode xmlNode in this.configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(XML_DELETE), this.configScope.XmlNamespaceManager))
             {
                 this.configScope.ErrorContext.MoreInfo = "loading delete tag";
-                this.configScope.NodeContext = xmlNode; // A delete tag
+                this.configScope.CurrentNodeContext = xmlNode; // A delete tag
                 MappedStatement mappedStatement;
 
                 delete = DeleteDeSerializer.Deserialize(xmlNode, this.configScope);
                 delete.CacheModelName = this.configScope.ApplyNamespace(delete.CacheModelName);
                 delete.ParameterMapName = this.configScope.ApplyNamespace(delete.ParameterMapName);
-                //delete.ResultMapName = ApplyNamespace( delete.ResultMapName );
 
                 if (this.configScope.UseStatementNamespaces)
                 {
@@ -1416,12 +1412,11 @@ namespace IBatisNetSelf.DataMapper.Configuration
             foreach (XmlNode xmlNode in this.configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(XML_PROCEDURE), this.configScope.XmlNamespaceManager))
             {
                 this.configScope.ErrorContext.MoreInfo = "loading procedure tag";
-                this.configScope.NodeContext = xmlNode; // A procedure tag
+                this.configScope.CurrentNodeContext = xmlNode; // A procedure tag
 
                 _procedure = ProcedureDeSerializer.Deserialize(xmlNode, this.configScope);
                 _procedure.CacheModelName = this.configScope.ApplyNamespace(_procedure.CacheModelName);
                 _procedure.ParameterMapName = this.configScope.ApplyNamespace(_procedure.ParameterMapName);
-                //procedure.ResultMapName = ApplyNamespace( procedure.ResultMapName );
 
                 if (this.configScope.UseStatementNamespaces)
                 {
@@ -1504,7 +1499,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
         private void ProcessSqlStatement(IStatement aStatement)
         {
             bool _isDynamic = false;
-            XmlNode _commandTextNode = this.configScope.NodeContext;
+            XmlNode _commandTextNode = this.configScope.CurrentNodeContext;
             DynamicSql _dynamicSql = new DynamicSql(this.configScope, aStatement);
             StringBuilder _sqlBuffer = new StringBuilder();
 
@@ -1575,7 +1570,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                     }
                     else
                     {
-                        _sqlText = this.paramParser.ParseInlineParameterMap(this.configScope, null, _text);
+                        _sqlText = this.inlineParamMapParser.ParseInlineParameterMap(this.configScope, null, _text);
                     }
 
                     aDynamic.AddChild(_sqlText);
@@ -1642,7 +1637,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 // Build a Parametermap with the inline parameters.
                 // if they exist. Then delete inline infos from sqltext.
 
-                SqlText _sqlText = this.paramParser.ParseInlineParameterMap(this.configScope, aStatement, _newSql);
+                SqlText _sqlText = this.inlineParamMapParser.ParseInlineParameterMap(this.configScope, aStatement, _newSql);
 
                 if (_sqlText.Parameters.Length > 0)
                 {
@@ -1711,7 +1706,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             this.configScope.ErrorContext.Activity = "loading global properties";
 
             string _xPath = ApplyDataMapperNamespacePrefix(XML_PROPERTIES);
-            XmlNode _nodeProperties = this.configScope.NodeContext.SelectSingleNode(_xPath, this.configScope.XmlNamespaceManager);
+            XmlNode _nodeProperties = this.configScope.CurrentNodeContext.SelectSingleNode(_xPath, this.configScope.XmlNamespaceManager);
 
             if (_nodeProperties != null)
             {
@@ -1810,7 +1805,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
         private void BuildParameterMap()
         {
             ParameterMap _parameterMap;
-            XmlNode _parameterMapNode = this.configScope.NodeContext;
+            XmlNode _parameterMapNode = this.configScope.CurrentNodeContext;
 
             this.configScope.ErrorContext.MoreInfo = "Build ParameterMap";
 
@@ -1827,18 +1822,20 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 string _extendMapAttribute = _parameterMap.ExtendMap;
                 _parameterMap.ExtendMap = this.configScope.ApplyNamespace(_parameterMap.ExtendMap);
 
+                //extends属性
                 if (_parameterMap.ExtendMap.Length > 0)
                 {
                     ParameterMap _superMap;
                     // Did we already build Extend ParameterMap ?
                     if (this.configScope.SqlMapper.ParameterMaps.Contains(_parameterMap.ExtendMap) == false)
                     {
-                        XmlNode superNode = this.configScope.SqlMapDocument.SelectSingleNode(ApplyMappingNamespacePrefix(XML_SEARCH_PARAMETER) + _extendMapAttribute + "']", this.configScope.XmlNamespaceManager);
+                        //sqlMap/parameterMaps/parameterMap[@id='value'] 选取属性id='value'的parameterMap节点
+                        XmlNode _superNode = this.configScope.SqlMapDocument.SelectSingleNode(ApplyMappingNamespacePrefix(XML_SEARCH_PARAMETER) + _extendMapAttribute + "']", this.configScope.XmlNamespaceManager);
 
-                        if (superNode != null)
+                        if (_superNode != null)
                         {
                             this.configScope.ErrorContext.MoreInfo = "Build parent ParameterMap";
-                            this.configScope.NodeContext = superNode;
+                            this.configScope.CurrentNodeContext = _superNode;
                             this.BuildParameterMap();
                             _superMap = this.configScope.SqlMapper.GetParameterMap(_parameterMap.ExtendMap);
                         }
@@ -1856,12 +1853,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
                     foreach (string propertyName in _superMap.GetPropertyNameArray())
                     {
-                        ParameterProperty property = _superMap.GetProperty(propertyName).Clone();
-                        property.Initialize(this.configScope, _parameterMap.Class);
-                        _parameterMap.InsertParameterProperty(index, property);
+                        ParameterProperty _property = _superMap.GetProperty(propertyName).Clone();
+                        _property.Initialize(this.configScope, _parameterMap.Class);
+                        _parameterMap.InsertParameterProperty(index, _property);
                         index++;
                     }
                 }
+                
                 this.configScope.SqlMapper.AddParameterMap(_parameterMap);
             }
         }
@@ -1872,92 +1870,93 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// </summary>
         private void BuildResultMap()
         {
-            ResultMap resultMap;
-            XmlNode resultMapNode = this.configScope.NodeContext;
+            ResultMap _resultMap;
+            XmlNode _resultMapNode = this.configScope.CurrentNodeContext;
 
             this.configScope.ErrorContext.MoreInfo = "build ResultMap";
 
-            string id = this.configScope.ApplyNamespace((resultMapNode.Attributes.GetNamedItem("id")).Value);
-            this.configScope.ErrorContext.ObjectId = id;
+            string _id = this.configScope.ApplyNamespace((_resultMapNode.Attributes.GetNamedItem("id")).Value);
+            this.configScope.ErrorContext.ObjectId = _id;
 
             // Did we alredy process it
-            if (this.configScope.SqlMapper.ResultMaps.Contains(id) == false)
+            if (this.configScope.SqlMapper.ResultMaps.Contains(_id) == false)
             {
-                resultMap = ResultMapDeSerializer.Deserialize(resultMapNode, this.configScope);
+                _resultMap = ResultMapDeSerializer.Deserialize(_resultMapNode, this.configScope);
 
-                string attributeExtendMap = resultMap.ExtendMap;
-                resultMap.ExtendMap = this.configScope.ApplyNamespace(resultMap.ExtendMap);
+                string _attributeExtendMap = _resultMap.ExtendMap;
+                _resultMap.ExtendMap = this.configScope.ApplyNamespace(_resultMap.ExtendMap);
 
-                if (resultMap.ExtendMap != null && resultMap.ExtendMap.Length > 0)
+                if (_resultMap.ExtendMap != null && _resultMap.ExtendMap.Length > 0)
                 {
-                    IResultMap superMap = null;
+                    IResultMap _superMap = null;
                     // Did we already build Extend ResultMap?
-                    if (this.configScope.SqlMapper.ResultMaps.Contains(resultMap.ExtendMap) == false)
+                    if (this.configScope.SqlMapper.ResultMaps.Contains(_resultMap.ExtendMap) == false)
                     {
-                        XmlNode superNode = this.configScope.SqlMapDocument.SelectSingleNode(ApplyMappingNamespacePrefix(XML_SEARCH_RESULTMAP) + attributeExtendMap + "']", this.configScope.XmlNamespaceManager);
+                        XmlNode superNode = this.configScope.SqlMapDocument.SelectSingleNode(ApplyMappingNamespacePrefix(XML_SEARCH_RESULTMAP) + _attributeExtendMap + "']", this.configScope.XmlNamespaceManager);
 
                         if (superNode != null)
                         {
                             this.configScope.ErrorContext.MoreInfo = "Build parent ResultMap";
-                            this.configScope.NodeContext = superNode;
+                            this.configScope.CurrentNodeContext = superNode;
                             BuildResultMap();
-                            superMap = this.configScope.SqlMapper.GetResultMap(resultMap.ExtendMap);
+                            _superMap = this.configScope.SqlMapper.GetResultMap(_resultMap.ExtendMap);
                         }
                         else
                         {
-                            throw new ConfigurationException("In mapping file '" + this.configScope.SqlMapNamespace + "' the resultMap '" + resultMap.Id + "' can not resolve extends attribute '" + resultMap.ExtendMap + "'");
+                            throw new ConfigurationException("In mapping file '" + this.configScope.SqlMapNamespace + "' the resultMap '" + _resultMap.Id + "' can not resolve extends attribute '" + _resultMap.ExtendMap + "'");
                         }
                     }
                     else
                     {
-                        superMap = this.configScope.SqlMapper.GetResultMap(resultMap.ExtendMap);
+                        _superMap = this.configScope.SqlMapper.GetResultMap(_resultMap.ExtendMap);
                     }
 
                     // Add parent property
-                    for (int index = 0; index < superMap.Properties.Count; index++)
+                    for (int index = 0; index < _superMap.Properties.Count; index++)
                     {
-                        ResultProperty property = superMap.Properties[index].Clone();
-                        property.Initialize(this.configScope, resultMap.Class);
-                        resultMap.Properties.Add(property);
+                        ResultProperty property = _superMap.Properties[index].Clone();
+                        property.Initialize(this.configScope, _resultMap.Class);
+                        _resultMap.Properties.Add(property);
                     }
                     // Add groupBy properties
-                    if (resultMap.GroupByPropertyNames.Count == 0)
+                    if (_resultMap.GroupByPropertyNames.Count == 0)
                     {
-                        for (int i = 0; i < superMap.GroupByPropertyNames.Count; i++)
+                        for (int i = 0; i < _superMap.GroupByPropertyNames.Count; i++)
                         {
-                            resultMap.GroupByPropertyNames.Add(superMap.GroupByPropertyNames[i]);
+                            _resultMap.GroupByPropertyNames.Add(_superMap.GroupByPropertyNames[i]);
                         }
                     }
                     // Add constructor arguments 
-                    if (resultMap.Parameters.Count == 0)
+                    if (_resultMap.Parameters.Count == 0)
                     {
-                        for (int i = 0; i < superMap.Parameters.Count; i++)
+                        for (int i = 0; i < _superMap.Parameters.Count; i++)
                         {
-                            resultMap.Parameters.Add(superMap.Parameters[i]);
+                            _resultMap.Parameters.Add(_superMap.Parameters[i]);
                         }
-                        if (resultMap.Parameters.Count > 0)
+                        if (_resultMap.Parameters.Count > 0)
                         {
-                            resultMap.SetObjectFactory(this.configScope);
+                            _resultMap.SetObjectFactory(this.configScope);
                         }
                     }
 
 
                     // Verify that that each groupBy element correspond to a class member
                     // of one of result property
-                    for (int i = 0; i < resultMap.GroupByPropertyNames.Count; i++)
+                    for (int i = 0; i < _resultMap.GroupByPropertyNames.Count; i++)
                     {
-                        string memberName = resultMap.GroupByPropertyNames[i];
-                        if (!resultMap.Properties.Contains(memberName))
+                        string memberName = _resultMap.GroupByPropertyNames[i];
+                        if (!_resultMap.Properties.Contains(memberName))
                         {
                             throw new ConfigurationException(
                                 string.Format(
                                     "Could not configure ResultMap named \"{0}\". Check the groupBy attribute. Cause: there's no result property named \"{1}\".",
-                                    resultMap.Id, memberName));
+                                    _resultMap.Id, memberName));
                         }
                     }
                 }
-                resultMap.InitializeGroupByProperties();
-                this.configScope.SqlMapper.AddResultMap(resultMap);
+                
+                _resultMap.InitializeGroupByProperties();
+                this.configScope.SqlMapper.AddResultMap(_resultMap);
             }
         }
 

@@ -359,27 +359,26 @@ namespace IBatisNetSelf.Common.Utilities.Objects
         /// <param name="memberName">Name of the member.</param>
         /// <param name="accessorFactory">The accessor factory.</param>
         /// <returns>An Object representing the return value of the invoked property.</returns>
-        public static object GetMemberValue(object obj, string memberName,
-            AccessorFactory accessorFactory)
+        public static object GetMemberValue(object obj, string memberName, AccessorFactory accessorFactory)
         {
             if (memberName.IndexOf('.') > -1)
             {
-                StringTokenizer parser = new StringTokenizer(memberName, ".");
-                IEnumerator enumerator = parser.GetEnumerator();
-                object value = obj;
-                string token = null;
+                StringTokenizer _parser = new StringTokenizer(memberName, ".");
+                IEnumerator _enumerator = _parser.GetEnumerator();
+                object _value = obj;
+                string _token = null;
 
-                while (enumerator.MoveNext())
+                while (_enumerator.MoveNext())
                 {
-                    token = (string)enumerator.Current;
-                    value = GetMember(value, token, accessorFactory);
+                    _token = (string)_enumerator.Current;
+                    _value = GetMember(_value, _token, accessorFactory);
 
-                    if (value == null)
+                    if (_value == null)
                     {
                         break;
                     }
                 }
-                return value;
+                return _value;
             }
             else
             {
@@ -401,6 +400,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects
             {
                 object _value = null;
 
+                // Is this an array member?
                 if (memberName.IndexOf("[") > -1)
                 {
                     _value = GetArrayMember(obj, memberName, accessorFactory);

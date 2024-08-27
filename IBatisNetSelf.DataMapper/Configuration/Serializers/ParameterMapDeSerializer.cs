@@ -34,7 +34,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Serializers
             _parameterMap.ClassName = XmlNodeUtils.GetStringAttribute(_prop, "class");
 
             aConfigScope.ErrorContext.MoreInfo = "Initialize ParameterMap";
-            aConfigScope.NodeContext = aParameterMapNode;
+            aConfigScope.CurrentNodeContext = aParameterMapNode;
             _parameterMap.Initialize(aConfigScope.DataSource.DbProvider.UsePositionalParameters, aConfigScope);
             _parameterMap.BuildProperties(aConfigScope);
             aConfigScope.ErrorContext.MoreInfo = string.Empty;

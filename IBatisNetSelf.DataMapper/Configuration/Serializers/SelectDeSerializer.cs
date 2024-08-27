@@ -27,9 +27,9 @@ namespace IBatisNetSelf.DataMapper.Configuration.Serializers
             Select _select = new Select();
             NameValueCollection _prop = XmlNodeUtils.ParseAttributes(aXmlNode, aConfigScope.Properties);
 
+            _select.Id = XmlNodeUtils.GetStringAttribute(_prop, "id");
             _select.CacheModelName = XmlNodeUtils.GetStringAttribute(_prop, "cacheModel");
             _select.ExtendStatement = XmlNodeUtils.GetStringAttribute(_prop, "extends");
-            _select.Id = XmlNodeUtils.GetStringAttribute(_prop, "id");
             _select.ListClassName = XmlNodeUtils.GetStringAttribute(_prop, "listClass");
             _select.ParameterClassName = XmlNodeUtils.GetStringAttribute(_prop, "parameterClass");
             _select.ParameterMapName = XmlNodeUtils.GetStringAttribute(_prop, "parameterMap");

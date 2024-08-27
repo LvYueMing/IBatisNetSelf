@@ -254,8 +254,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                 this.direction = (ParameterDirection)Enum.Parse(typeof(ParameterDirection), directionAttribute, true);
             }
 
-            if (!typeof(IDictionary).IsAssignableFrom(aParameterClass) // Hashtable parameter map
-                && aParameterClass != null // value property
+            if (aParameterClass != null
+                && !typeof(IDictionary).IsAssignableFrom(aParameterClass) // Hashtable parameter map
                 && !aConfigScope.DataExchangeFactory.TypeHandlerFactory.IsSimpleType(aParameterClass)) // value property
             {
                 if (!isComplexMemberName)
@@ -310,7 +310,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                     if (aConfigScope.DataExchangeFactory.TypeHandlerFactory.IsSimpleType(_type))
                     {
                         // Primitive
-                        this.typeHandler = aConfigScope.DataExchangeFactory.TypeHandlerFactory.GetTypeHandler(_type, dbType);
+                        this.typeHandler = aConfigScope.DataExchangeFactory.TypeHandlerFactory.GetTypeHandler(_type, this.dbType);
                     }
                     else
                     {

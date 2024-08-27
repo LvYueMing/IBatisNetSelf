@@ -322,13 +322,13 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
         {
             ParameterProperty _property = null;
 
-            foreach (XmlNode parameterNode in aConfigScope.NodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_PARAMATER), aConfigScope.XmlNamespaceManager))
+            foreach (XmlNode parameterNode in aConfigScope.CurrentNodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_PARAMATER), aConfigScope.XmlNamespaceManager))
             {
                 _property = ParameterPropertyDeSerializer.Deserialize(parameterNode, aConfigScope);
 
                 _property.Initialize(aConfigScope, this.parameterClass);
 
-                AddParameterProperty(_property);
+                this.AddParameterProperty(_property);
             }
         }
 

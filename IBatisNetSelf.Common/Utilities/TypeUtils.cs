@@ -57,7 +57,7 @@ namespace IBatisNetSelf.Common.Utilities
         }
 
         /// <summary>
-        /// Instantiate a 'Primitive' Type.
+        /// Instantiate a 'Primitive'(原始的) Type.
         /// </summary>
         /// <param name="typeCode">a typeCode.</param>
         /// <returns>An object.</returns>

@@ -13,7 +13,7 @@ namespace IBatisNetSelf.Common.Utilities
     public class StringTokenizer : IEnumerable
     {
         private static readonly string defaultDelim = " \t\n\r\f";
-        string origin = string.Empty;
+        string originStr = string.Empty;
         string delimiters = string.Empty;
         bool returnDelimiters = false;
 
@@ -24,7 +24,7 @@ namespace IBatisNetSelf.Common.Utilities
         /// <param name="str">The input String</param>
         public StringTokenizer(string str)
         {
-            this.origin = str;
+            this.originStr = str;
             this.delimiters = defaultDelim;
             this.returnDelimiters = false;
         }
@@ -38,7 +38,7 @@ namespace IBatisNetSelf.Common.Utilities
         /// <param name="delimiters">The delimiter String</param>
         public StringTokenizer(string str, string delimiters)
         {
-            this.origin = str;
+            this.originStr = str;
             this.delimiters = delimiters;
             this.returnDelimiters = false;
         }
@@ -53,7 +53,7 @@ namespace IBatisNetSelf.Common.Utilities
         /// <param name="returnDelimiters">Returns delimiters as tokens or skip them</param>
         public StringTokenizer(string str, string delimiters, bool returnDelimiters)
         {
-            this.origin = str;
+            this.originStr = str;
             this.delimiters = delimiters;
             this.returnDelimiters = returnDelimiters;
         }
@@ -83,13 +83,13 @@ namespace IBatisNetSelf.Common.Utilities
             {
                 int _count = 0;
                 int _currPos = 0;
-                int _maxPosition = origin.Length;
+                int _maxPosition = originStr.Length;
 
                 while (_currPos < _maxPosition)
                 {
                     while (!returnDelimiters &&
                         (_currPos < _maxPosition) &&
-                        (delimiters.IndexOf(origin[_currPos]) >= 0))
+                        (delimiters.IndexOf(originStr[_currPos]) >= 0))
                     {
                         _currPos++;
                     }
@@ -101,12 +101,12 @@ namespace IBatisNetSelf.Common.Utilities
 
                     int start = _currPos;
                     while ((_currPos < _maxPosition) &&
-                        (delimiters.IndexOf(origin[_currPos]) < 0))
+                        (delimiters.IndexOf(originStr[_currPos]) < 0))
                     {
                         _currPos++;
                     }
                     if (returnDelimiters && (start == _currPos) &&
-                        (delimiters.IndexOf(origin[_currPos]) >= 0))
+                        (delimiters.IndexOf(originStr[_currPos]) >= 0))
                     {
                         _currPos++;
                     }
@@ -121,63 +121,63 @@ namespace IBatisNetSelf.Common.Utilities
 
         private class StringTokenizerEnumerator : IEnumerator
         {
-            private StringTokenizer _stokenizer;
-            private int _cursor = 0;
-            private string _next = null;
+            private StringTokenizer strTokenizer;
+            private int cursor = 0;
+            private string next = null;
 
-            public StringTokenizerEnumerator(StringTokenizer stok)
+            public StringTokenizerEnumerator(StringTokenizer strToken)
             {
-                _stokenizer = stok;
+                strTokenizer = strToken;
             }
 
             public bool MoveNext()
             {
-                _next = GetNext();
-                return _next != null;
+                next = GetNext();
+                return next != null;
             }
 
             public void Reset()
             {
-                _cursor = 0;
+                cursor = 0;
             }
 
             public object Current
             {
                 get
                 {
-                    return _next;
+                    return next;
                 }
             }
 
             private string GetNext()
             {
-                char _c;
+                char _char;
                 bool _isDelim;
 
-                if (_cursor >= _stokenizer.origin.Length)
+                if (cursor >= strTokenizer.originStr.Length)
                     return null;
 
-                _c = _stokenizer.origin[_cursor];
-                _isDelim = (_stokenizer.delimiters.IndexOf(_c) != -1);
+                _char = strTokenizer.originStr[cursor];
+                _isDelim = (strTokenizer.delimiters.IndexOf(_char) != -1);
 
                 if (_isDelim)
                 {
-                    _cursor++;
-                    if (_stokenizer.returnDelimiters)
+                    cursor++;
+                    if (strTokenizer.returnDelimiters)
                     {
-                        return _c.ToString();
+                        return _char.ToString();
                     }
                     return GetNext();
                 }
 
-                int _nextDelimPos = _stokenizer.origin.IndexOfAny(_stokenizer.delimiters.ToCharArray(), _cursor);
+                int _nextDelimPos = strTokenizer.originStr.IndexOfAny(strTokenizer.delimiters.ToCharArray(), cursor);
                 if (_nextDelimPos == -1)
                 {
-                    _nextDelimPos = _stokenizer.origin.Length;
+                    _nextDelimPos = strTokenizer.originStr.Length;
                 }
 
-                string _nextToken = _stokenizer.origin.Substring(_cursor, _nextDelimPos - _cursor);
-                _cursor = _nextDelimPos;
+                string _nextToken = strTokenizer.originStr.Substring(cursor, _nextDelimPos - cursor);
+                cursor = _nextDelimPos;
                 return _nextToken;
             }
 

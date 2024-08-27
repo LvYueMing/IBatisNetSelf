@@ -25,11 +25,11 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
 
         #region Fields
         [NonSerialized]
-        private string _argumentName = string.Empty;
+        private string argumentName = string.Empty;
         [NonSerialized]
-        private Type _argumentType = null;
+        private Type argumentType = null;
         [NonSerialized]
-        private IArgumentStrategy _argumentStrategy = null;
+        private IArgumentStrategy argumentStrategy = null;
         #endregion
 
         #region Properties
@@ -40,8 +40,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         [XmlIgnore]
         public override IArgumentStrategy ArgumentStrategy
         {
-            set { _argumentStrategy = value; }
-            get { return _argumentStrategy; }
+            set { argumentStrategy = value; }
+            get { return argumentStrategy; }
         }
 
         /// <summary>
@@ -50,14 +50,14 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         [XmlAttribute("argumentName")]
         public string ArgumentName
         {
-            get { return _argumentName; }
+            get { return argumentName; }
             set
             {
                 if ((value == null) || (value.Length < 1))
                 {
                     throw new ArgumentNullException("The name attribute is mandatory in a argument tag.");
                 }
-                _argumentName = value;
+                argumentName = value;
             }
         }
 
@@ -77,7 +77,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         [XmlIgnore]
         public override Type MemberType
         {
-            get { return _argumentType; }
+            get { return argumentType; }
         }
 
         #endregion
@@ -96,31 +96,31 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         /// <summary>
         /// Initialize the argument property.
         /// </summary>
-        /// <param name="constructorInfo"></param>
-        /// <param name="configScope"></param>
-        public void Initialize(ConfigurationScope configScope, ConstructorInfo constructorInfo)
+        /// <param name="aConstructorInfo"></param>
+        /// <param name="aConfigScope"></param>
+        public void Initialize(ConfigurationScope aConfigScope, ConstructorInfo aConstructorInfo)
         {
             // Search argument by his name to set his type
-            ParameterInfo[] parameters = constructorInfo.GetParameters();
+            ParameterInfo[] _parameters = aConstructorInfo.GetParameters();
 
-            bool found = false;
-            for (int i = 0; i < parameters.Length; i++)
+            bool _found = false;
+            for (int i = 0; i < _parameters.Length; i++)
             {
-                found = (parameters[i].Name == _argumentName);
-                if (found)
+                _found = (_parameters[i].Name == this.argumentName);
+                if (_found)
                 {
-                    _argumentType = parameters[i].ParameterType;
+                    this.argumentType = _parameters[i].ParameterType;
                     break;
                 }
             }
             if (this.CallBackName != null && this.CallBackName.Length > 0)
             {
-                configScope.ErrorContext.MoreInfo = "Argument property (" + _argumentName + "), check the typeHandler attribute '" + this.CallBackName + "' (must be a ITypeHandlerCallback implementation).";
+                aConfigScope.ErrorContext.MoreInfo = "Argument property (" + argumentName + "), check the typeHandler attribute '" + this.CallBackName + "' (must be a ITypeHandlerCallback implementation).";
                 try
                 {
-                    Type type = configScope.SqlMapper.TypeHandlerFactory.GetType(this.CallBackName);
-                    ITypeHandlerCallback typeHandlerCallback = (ITypeHandlerCallback)Activator.CreateInstance(type);
-                    this.TypeHandler = new CustomTypeHandler(typeHandlerCallback);
+                    Type _type = aConfigScope.SqlMapper.TypeHandlerFactory.GetType(this.CallBackName);
+                    ITypeHandlerCallback _typeHandlerCallback = (ITypeHandlerCallback)Activator.CreateInstance(_type);
+                    this.TypeHandler = new CustomTypeHandler(_typeHandlerCallback);
                 }
                 catch (Exception e)
                 {
@@ -129,8 +129,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
             }
             else
             {
-                configScope.ErrorContext.MoreInfo = "Argument property (" + _argumentName + ") set the typeHandler attribute.";
-                this.TypeHandler = this.ResolveTypeHandler(configScope, _argumentType, this.CLRType, this.DbType);
+                aConfigScope.ErrorContext.MoreInfo = "Argument property (" + argumentName + ") set the typeHandler attribute.";
+                this.TypeHandler = this.ResolveTypeHandler(aConfigScope, argumentType, this.CLRType, this.DbType);
             }
         }
 

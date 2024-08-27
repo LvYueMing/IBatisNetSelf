@@ -22,7 +22,7 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
 
         #region Fields
 
-        private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private IDictionary typeHandlerMap = new HybridDictionary();
         private ITypeHandler unknownTypeHandler = null;
@@ -141,23 +141,23 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
         /// <summary>
         ///  Get a TypeHandler for a type and a dbType type
         /// </summary>
-        /// <param name="type">the type</param>
-        /// <param name="dbType">the dbType type</param>
+        /// <param name="aType">the type</param>
+        /// <param name="aDbType">the dbType type</param>
         /// <returns>the handler</returns>
-        private ITypeHandler GetPrivateTypeHandler(Type type, string dbType)
+        private ITypeHandler GetPrivateTypeHandler(Type aType, string aDbType)
         {
-            IDictionary _dbTypeHandlerMap = (IDictionary)this.typeHandlerMap[type];
+            IDictionary _dbTypeHandlerMap = (IDictionary)this.typeHandlerMap[aType];
             ITypeHandler _handler = null;
 
             if (_dbTypeHandlerMap != null)
             {
-                if (dbType == null)
+                if (aDbType == null)
                 {
                     _handler = (ITypeHandler)_dbTypeHandlerMap[NULL];
                 }
                 else
                 {
-                    _handler = (ITypeHandler)_dbTypeHandlerMap[dbType];
+                    _handler = (ITypeHandler)_dbTypeHandlerMap[aDbType];
                     if (_handler == null)
                     {
                         _handler = (ITypeHandler)_dbTypeHandlerMap[NULL];
@@ -165,7 +165,7 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
                 }
                 if (_handler == null)
                 {
-                    throw new DataMapperException(String.Format("Type handler for {0} not registered.", type.Name));
+                    throw new DataMapperException(String.Format("Type handler for {0} not registered.", aType.Name));
                 }
             }
 
@@ -197,9 +197,10 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
                 _map = new HybridDictionary();
                 this.typeHandlerMap.Add(aType, _map);
             }
+
             if (aDbType == null)
             {
-                if (_logger.IsInfoEnabled)
+                if (logger.IsInfoEnabled)
                 {
                     // notify the user that they are no longer using one of the built-in type handlers
                     ITypeHandler _oldTypeHandler = (ITypeHandler)_map[NULL];
@@ -222,7 +223,7 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
                         }
 
                         // should oldTypeHandler be checked if its a CustomTypeHandler and if so report the Callback property ???
-                        _logger.Info("Replacing type handler [" + _oldTypeHandler.ToString() + "] with [" + _replacement + "].");
+                        logger.Info("Replacing type handler [" + _oldTypeHandler.ToString() + "] with [" + _replacement + "].");
                     }
                 }
 

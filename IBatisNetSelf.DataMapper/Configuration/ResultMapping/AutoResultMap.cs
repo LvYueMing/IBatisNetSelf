@@ -142,7 +142,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         /// <param name="dataBaseValue">The database value to set.</param>
         public void SetValueOfProperty(ref object target, ResultProperty property, object dataBaseValue)
         {
-            dataExchange.SetData(ref target, property, dataBaseValue);
+            this.dataExchange.SetData(ref target, property, dataBaseValue);
         }
 
         /// <summary>

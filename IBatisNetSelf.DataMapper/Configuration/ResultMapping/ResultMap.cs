@@ -203,12 +203,13 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
             this.sqlMapNameSpace = aConfigScope.SqlMapNamespace;
             if ((aId == null) || (aId.Length < 1))
             {
-                throw new ArgumentNullException("The id attribute is mandatory in a ResultMap tag.");
+                throw new ArgumentNullException("在ResultMap标签中，id属性是必选的");
             }
+            //Namespace.id
             this.id = aConfigScope.ApplyNamespace(aId);
             if ((aClassName == null) || (aClassName.Length < 1))
             {
-                throw new ArgumentNullException("The class attribute is mandatory in the ResultMap tag id:" + this.id);
+                throw new ArgumentNullException("在ResultMap标签id中，class属性是必需的:" + this.id);
             }
             this.resultClassName = aClassName;
             this.extendMap = aExtendMap;
@@ -217,8 +218,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
                 string[] groupByProperties = aGroupBy.Split(',');
                 for (int i = 0; i < groupByProperties.Length; i++)
                 {
-                    string memberName = groupByProperties[i].Trim();
-                    groupByPropertyNames.Add(memberName);
+                    string _memberName = groupByProperties[i].Trim();
+                    groupByPropertyNames.Add(_memberName);
                 }
             }
 
@@ -232,36 +233,31 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         /// <summary>
         /// Initialize the resultMap from an xmlNode..
         /// </summary>
-        /// <param name="configScope"></param>
-        public void Initialize(ConfigurationScope configScope)
+        /// <param name="aConfigScope"></param>
+        public void Initialize(ConfigurationScope aConfigScope)
         {
             try
             {
-                resultClass = configScope.SqlMapper.TypeHandlerFactory.GetType(resultClassName);
-                dataExchange = dataExchangeFactory.GetDataExchangeForClass(resultClass);
+                this.resultClass = aConfigScope.SqlMapper.TypeHandlerFactory.GetType(resultClassName);
+                this.dataExchange = this.dataExchangeFactory.GetDataExchangeForClass(resultClass);
 
                 // Load the child node
-                GetChildNode(configScope);
+                GetChildNode(aConfigScope);
 
                 // Verify that that each groupBy element correspond to a class member
                 // of one of result property
-                for (int i = 0; i < groupByProperties.Count; i++)
+                for (int i = 0; i < this.groupByProperties.Count; i++)
                 {
-                    string memberName = GroupByPropertyNames[i];
-                    if (!resultProperties.Contains(memberName))
+                    string _memberName = this.GroupByPropertyNames[i];
+                    if (!resultProperties.Contains(_memberName))
                     {
-                        throw new ConfigurationException(
-                            string.Format(
-                                "Could not configure ResultMap named \"{0}\". Check the groupBy attribute. Cause: there's no result property named \"{1}\".",
-                                id, memberName));
+                        throw new ConfigurationException($"Could not configure ResultMap named \"{id}\". Check the groupBy attribute. Cause: there's no result property named \"{_memberName}\".");
                     }
                 }
             }
             catch (Exception e)
             {
-                throw new ConfigurationException(
-                    string.Format("Could not configure ResultMap named \"{0}\", Cause: {1}", id, e.Message)
-                    , e);
+                throw new ConfigurationException($"Could not configure ResultMap named \"{id}\", Cause: {e.Message}", e);
             }
         }
 
@@ -281,41 +277,41 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         /// <summary>
         /// Get the result properties and the subMap properties.
         /// </summary>
-        /// <param name="configScope"></param>
-        private void GetChildNode(ConfigurationScope configScope)
+        /// <param name="aConfigScope"></param>
+        private void GetChildNode(ConfigurationScope aConfigScope)
         {
-            ResultProperty mapping = null;
-            SubMap subMap = null;
+            ResultProperty _mapping = null;
+            SubMap _subMap = null;
 
             #region Load the parameters constructor
-            XmlNodeList nodeList = configScope.NodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_CONSTRUCTOR_ARGUMENT), configScope.XmlNamespaceManager);
-            if (nodeList.Count > 0)
+            XmlNodeList _nodeList = aConfigScope.CurrentNodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_CONSTRUCTOR_ARGUMENT), aConfigScope.XmlNamespaceManager);
+            if (_nodeList.Count > 0)
             {
-                Type[] parametersType = new Type[nodeList.Count];
-                string[] parametersName = new string[nodeList.Count];
-                for (int i = 0; i < nodeList.Count; i++)
+                Type[] _parametersType = new Type[_nodeList.Count];
+                string[] _parametersName = new string[_nodeList.Count];
+                for (int i = 0; i < _nodeList.Count; i++)
                 {
-                    ArgumentProperty argumentMapping = ArgumentPropertyDeSerializer.Deserialize(nodeList[i], configScope);
-                    parameters.Add(argumentMapping);
-                    parametersName[i] = argumentMapping.ArgumentName;
+                    ArgumentProperty _argumentMapping = ArgumentPropertyDeSerializer.Deserialize(_nodeList[i], aConfigScope);
+                    this.parameters.Add(_argumentMapping);
+                    _parametersName[i] = _argumentMapping.ArgumentName;
                 }
-                ConstructorInfo constructorInfo = this.GetConstructor(resultClass, parametersName);
+                ConstructorInfo _constructorInfo = this.GetConstructor(this.resultClass, _parametersName);
                 for (int i = 0; i < parameters.Count; i++)
                 {
-                    ArgumentProperty argumentMapping = (ArgumentProperty)parameters[i];
+                    ArgumentProperty _argumentMapping = (ArgumentProperty)this.parameters[i];
 
-                    configScope.ErrorContext.MoreInfo = "initialize argument property : " + argumentMapping.ArgumentName;
-                    argumentMapping.Initialize(configScope, constructorInfo);
-                    parametersType[i] = argumentMapping.MemberType;
+                    aConfigScope.ErrorContext.MoreInfo = "initialize argument property : " + _argumentMapping.ArgumentName;
+                    _argumentMapping.Initialize(aConfigScope, _constructorInfo);
+                    _parametersType[i] = _argumentMapping.MemberType;
                 }
                 // Init the object factory
-                objectFactory = configScope.SqlMapper.ObjectFactory.CreateFactory(resultClass, parametersType);
+                objectFactory = aConfigScope.SqlMapper.ObjectFactory.CreateFactory(resultClass, _parametersType);
             }
             else
             {
                 if (Type.GetTypeCode(resultClass) == TypeCode.Object)
                 {
-                    objectFactory = configScope.SqlMapper.ObjectFactory.CreateFactory(resultClass, Type.EmptyTypes);
+                    objectFactory = aConfigScope.SqlMapper.ObjectFactory.CreateFactory(resultClass, Type.EmptyTypes);
                 }
             }
 
@@ -323,42 +319,42 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
 
             #region Load the Result Properties
 
-            foreach (XmlNode resultNode in configScope.NodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_RESULT), configScope.XmlNamespaceManager))
+            foreach (XmlNode resultNode in aConfigScope.CurrentNodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_RESULT), aConfigScope.XmlNamespaceManager))
             {
-                mapping = ResultPropertyDeSerializer.Deserialize(resultNode, configScope);
+                _mapping = ResultPropertyDeSerializer.Deserialize(resultNode, aConfigScope);
 
-                configScope.ErrorContext.MoreInfo = "initialize result property: " + mapping.PropertyName;
+                aConfigScope.ErrorContext.MoreInfo = "initialize result property: " + _mapping.PropertyName;
 
-                mapping.Initialize(configScope, resultClass);
+                _mapping.Initialize(aConfigScope, resultClass);
 
-                resultProperties.Add(mapping);
+                resultProperties.Add(_mapping);
             }
             #endregion
 
             #region Load the Discriminator Property
 
-            XmlNode discriminatorNode = configScope.NodeContext.SelectSingleNode(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_DISCRIMNATOR), configScope.XmlNamespaceManager);
+            XmlNode discriminatorNode = aConfigScope.CurrentNodeContext.SelectSingleNode(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_DISCRIMNATOR), aConfigScope.XmlNamespaceManager);
             if (discriminatorNode != null)
             {
-                configScope.ErrorContext.MoreInfo = "initialize discriminator";
+                aConfigScope.ErrorContext.MoreInfo = "initialize discriminator";
 
-                this.Discriminator = DiscriminatorDeSerializer.Deserialize(discriminatorNode, configScope);
-                this.Discriminator.SetMapping(configScope, resultClass);
+                this.Discriminator = DiscriminatorDeSerializer.Deserialize(discriminatorNode, aConfigScope);
+                this.Discriminator.SetMapping(aConfigScope, resultClass);
             }
             #endregion
 
             #region Load the SubMap Properties
 
-            if (configScope.NodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_SUBMAP), configScope.XmlNamespaceManager).Count > 0 && this.Discriminator == null)
+            if (aConfigScope.CurrentNodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_SUBMAP), aConfigScope.XmlNamespaceManager).Count > 0 && this.Discriminator == null)
             {
                 throw new ConfigurationException("The discriminator is null, but somehow a subMap was reached.  This is a bug.");
             }
-            foreach (XmlNode resultNode in configScope.NodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_SUBMAP), configScope.XmlNamespaceManager))
+            foreach (XmlNode resultNode in aConfigScope.CurrentNodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_SUBMAP), aConfigScope.XmlNamespaceManager))
             {
-                configScope.ErrorContext.MoreInfo = "initialize subMap";
-                subMap = SubMapDeSerializer.Deserialize(resultNode, configScope);
+                aConfigScope.ErrorContext.MoreInfo = "initialize subMap";
+                _subMap = SubMapDeSerializer.Deserialize(resultNode, aConfigScope);
 
-                this.Discriminator.Add(subMap);
+                this.Discriminator.Add(_subMap);
             }
             #endregion
         }
@@ -381,8 +377,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         /// <summary>
         /// Finds the constructor that takes the parameters.
         /// </summary>
-        /// <param name="type">The <see cref="System.Type"/> to find the constructor in.</param> 
-        /// <param name="parametersName">The parameters name to use to find the appropriate constructor.</param>
+        /// <param name="aType">The <see cref="System.Type"/> to find the constructor in.</param> 
+        /// <param name="aParametersName">The parameters name to use to find the appropriate constructor.</param>
         /// <returns>
         /// An <see cref="ConstructorInfo"/> that can be used to create the type with 
         /// the specified parameters.
@@ -390,34 +386,34 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         /// <exception cref="DataMapperException">
         /// Thrown when no constructor with the correct signature can be found.
         /// </exception> 
-        private ConstructorInfo GetConstructor(Type type, string[] parametersName)
+        private ConstructorInfo GetConstructor(Type aType, string[] aParametersName)
         {
-            ConstructorInfo[] candidates = type.GetConstructors(ANY_VISIBILITY_INSTANCE);
-            foreach (ConstructorInfo constructor in candidates)
+            ConstructorInfo[] _constructors = aType.GetConstructors(ANY_VISIBILITY_INSTANCE);
+            foreach (ConstructorInfo _constructor in _constructors)
             {
-                ParameterInfo[] parameters = constructor.GetParameters();
+                ParameterInfo[] _parameters = _constructor.GetParameters();
 
-                if (parameters.Length == parametersName.Length)
+                if (_parameters.Length == aParametersName.Length)
                 {
-                    bool found = true;
+                    bool _found = true;
 
-                    for (int j = 0; j < parameters.Length; j++)
+                    for (int j = 0; j < _parameters.Length; j++)
                     {
-                        bool ok = (parameters[j].Name == parametersName[j]);
-                        if (!ok)
+                        bool _equal = (_parameters[j].Name == aParametersName[j]);
+                        if (!_equal)
                         {
-                            found = false;
+                            _found = false;
                             break;
                         }
                     }
 
-                    if (found)
+                    if (_found)
                     {
-                        return constructor;
+                        return _constructor;
                     }
                 }
             }
-            throw new DataMapperException("Cannot find an appropriate constructor which map parameters in class: " + type.Name);
+            throw new DataMapperException("Cannot find an appropriate constructor which map parameters in class: " + aType.Name);
         }
 
         #endregion

@@ -36,7 +36,7 @@ namespace IBatisNetSelf.DataMapper.Scope
 
         private XmlDocument sqlMapConfigDocument = null;
         private XmlDocument sqlMapDocument = null;
-        private XmlNode nodeContext = null;
+        private XmlNode currentNodeContext = null;
 
         //settings
         private bool useStatementNamespaces = false;
@@ -165,10 +165,10 @@ namespace IBatisNetSelf.DataMapper.Scope
         /// <summary>
         /// The current context node we are analizing
         /// </summary>
-        public XmlNode NodeContext
+        public XmlNode CurrentNodeContext
         {
-            set => this.nodeContext = value;
-            get => this.nodeContext;
+            set => this.currentNodeContext = value;
+            get => this.currentNodeContext;
         }
 
         /// <summary>
