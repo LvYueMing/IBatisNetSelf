@@ -79,14 +79,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                     else
                     {
                         ParameterProperty _paramProperty = null;
-                        if (_token.IndexOf(PARAM_DELIM) > -1)
-                        {
-                            _paramProperty = OldParseMapping(_token, _parameterClassType, aConfigScope);
-                        }
-                        else
-                        {
-                            _paramProperty = NewParseMapping(_token, _parameterClassType, aConfigScope);
-                        }
+                        _paramProperty = NewParseMapping(_token, _parameterClassType, aConfigScope);
 
                         _paramPropertyList.Add(_paramProperty);
                         _newSqlBuffer.Append("? ");
@@ -143,33 +136,33 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
 
             while (_enumeratorParam.MoveNext())
             {
-                string field = (string)_enumeratorParam.Current;
+                string _field = (string)_enumeratorParam.Current;
                 if (_enumeratorParam.MoveNext())
                 {
-                    string value = (string)_enumeratorParam.Current;
-                    if ("type".Equals(field))
+                    string _value = (string)_enumeratorParam.Current;
+                    if ("type".Equals(_field))
                     {
-                        _mapping.CLRType = value;
+                        _mapping.CLRType = _value;
                     }
-                    else if ("dbType".Equals(field))
+                    else if ("dbType".Equals(_field))
                     {
-                        _mapping.DbType = value;
+                        _mapping.DbType = _value;
                     }
-                    else if ("direction".Equals(field))
+                    else if ("direction".Equals(_field))
                     {
-                        _mapping.DirectionAttribute = value;
+                        _mapping.DirectionAttribute = _value;
                     }
-                    else if ("nullValue".Equals(field))
+                    else if ("nullValue".Equals(_field))
                     {
-                        _mapping.NullValue = value;
+                        _mapping.NullValue = _value;
                     }
-                    else if ("handler".Equals(field))
+                    else if ("handler".Equals(_field))
                     {
-                        _mapping.CallBackName = value;
+                        _mapping.CallBackName = _value;
                     }
                     else
                     {
-                        throw new DataMapperException("Unrecognized parameter mapping field: '" + field + "' in " + token);
+                        throw new DataMapperException("Unrecognized parameter mapping field: '" + _field + "' in " + token);
                     }
                 }
                 else
@@ -202,100 +195,6 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
             return _mapping;
         }
 
-
-        /// <summary>
-        /// Parse inline parameter with syntax as
-        /// #propertyName:dbType:nullValue#
-        /// </summary>
-        /// <param name="aToken"></param>
-        /// <param name="aParameterClassType"></param>
-        /// <param name="aConfigScope"></param>
-        /// <returns></returns>
-        private ParameterProperty OldParseMapping(string aToken, Type aParameterClassType, IScope aConfigScope)
-        {
-            ParameterProperty _mapping = new ParameterProperty();
-
-            if (aToken.IndexOf(PARAM_DELIM) > -1)
-            {
-                Common.Utilities.StringTokenizer _paramParser = new Common.Utilities.StringTokenizer(aToken, PARAM_DELIM, true);
-                IEnumerator _enumeratorParam = _paramParser.GetEnumerator();
-
-                int _n1 = _paramParser.TokenNumber;
-                if (_n1 == 3)
-                {
-                    _enumeratorParam.MoveNext();
-                    string _propertyName = ((string)_enumeratorParam.Current).Trim();
-                    _mapping.PropertyName = _propertyName;
-
-                    _enumeratorParam.MoveNext();
-                    _enumeratorParam.MoveNext(); //ignore ":"
-                    string _dBType = ((string)_enumeratorParam.Current).Trim();
-                    _mapping.DbType = _dBType;
-
-                    ITypeHandler _handler = null;
-                    if (aParameterClassType == null)
-                    {
-                        _handler = aConfigScope.DataExchangeFactory.TypeHandlerFactory.GetUnkownTypeHandler();
-                    }
-                    else
-                    {
-                        _handler = ResolveTypeHandler(aConfigScope.DataExchangeFactory.TypeHandlerFactory, aParameterClassType, _propertyName, null, _dBType);
-                    }
-                    _mapping.TypeHandler = _handler;
-                    _mapping.Initialize(aConfigScope, aParameterClassType);
-                }
-                else if (_n1 >= 5)
-                {
-                    _enumeratorParam.MoveNext();
-                    string propertyName = ((string)_enumeratorParam.Current).Trim();
-                    _enumeratorParam.MoveNext();
-                    _enumeratorParam.MoveNext(); //ignore ":"
-                    string dBType = ((string)_enumeratorParam.Current).Trim();
-                    _enumeratorParam.MoveNext();
-                    _enumeratorParam.MoveNext(); //ignore ":"
-                    string nullValue = ((string)_enumeratorParam.Current).Trim();
-                    while (_enumeratorParam.MoveNext())
-                    {
-                        nullValue = nullValue + ((string)_enumeratorParam.Current).Trim();
-                    }
-
-                    _mapping.PropertyName = propertyName;
-                    _mapping.DbType = dBType;
-                    _mapping.NullValue = nullValue;
-                    ITypeHandler handler = null;
-                    if (aParameterClassType == null)
-                    {
-                        handler = aConfigScope.DataExchangeFactory.TypeHandlerFactory.GetUnkownTypeHandler();
-                    }
-                    else
-                    {
-                        handler = ResolveTypeHandler(aConfigScope.DataExchangeFactory.TypeHandlerFactory, aParameterClassType, propertyName, null, dBType);
-                    }
-                    _mapping.TypeHandler = handler;
-                    _mapping.Initialize(aConfigScope, aParameterClassType);
-                }
-                else
-                {
-                    throw new ConfigurationException("Incorrect inline parameter map format: " + aToken);
-                }
-            }
-            else
-            {
-                _mapping.PropertyName = aToken;
-                ITypeHandler _handler = null;
-                if (aParameterClassType == null)
-                {
-                    _handler = aConfigScope.DataExchangeFactory.TypeHandlerFactory.GetUnkownTypeHandler();
-                }
-                else
-                {
-                    _handler = ResolveTypeHandler(aConfigScope.DataExchangeFactory.TypeHandlerFactory, aParameterClassType, aToken, null, null);
-                }
-                _mapping.TypeHandler = _handler;
-                _mapping.Initialize(aConfigScope, aParameterClassType);
-            }
-            return _mapping;
-        }
 
 
         /// <summary>

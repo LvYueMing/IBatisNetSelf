@@ -25,7 +25,8 @@
 		
 		<statement></statement>
 		
-	    <select id="Circulation_GetMrFileCirculation" parameterClass="Hashtable">
+	    <select id="" parameterClass="" listClass="" parameterMap="" resultClass="" resultMap="" remapResults="" extends="" cacheModel="">
+			<generate by="" table=""></generate>
 		</select>
 		
 		<insert></insert>
