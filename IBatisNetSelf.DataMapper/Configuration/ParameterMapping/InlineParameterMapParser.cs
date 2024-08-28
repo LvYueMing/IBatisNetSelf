@@ -79,7 +79,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                     else
                     {
                         ParameterProperty _paramProperty = null;
-                        _paramProperty = NewParseMapping(_token, _parameterClassType, aConfigScope);
+                        _paramProperty = ParseMapping(_token, _parameterClassType, aConfigScope);
 
                         _paramPropertyList.Add(_paramProperty);
                         _newSqlBuffer.Append("? ");
@@ -123,7 +123,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
         /// <param name="parameterClassType"></param>
         /// <param name="scope"></param>
         /// <returns></returns>
-        private ParameterProperty NewParseMapping(string token, Type parameterClassType, IScope scope)
+        private ParameterProperty ParseMapping(string token, Type parameterClassType, IScope scope)
         {
             ParameterProperty _mapping = new ParameterProperty();
 
