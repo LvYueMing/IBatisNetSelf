@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="Test" xmlns="http://ibatis.apache.org/mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
+	<statements>
+		<select id="Test_GetInPatient" parameterClass="Hashtable">
+				select t.resident_id, a.id, a.name, t.baby_flag, t.visit_type
+				from hsemr.patient_visit_ t, hospital.patient a
+				where t.patient_id = a.id
+						and t.visit_type = 'ZY'
+						and t.status = 2
+						and a.id = #in_patient_id#
+		</select>
+	</statements>
+
+
+</sqlMap>

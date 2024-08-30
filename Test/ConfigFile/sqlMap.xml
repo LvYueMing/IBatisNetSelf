@@ -27,6 +27,7 @@
 		
 	    <select id="" parameterClass="" listClass="" parameterMap="" resultClass="" resultMap="" remapResults="" extends="" cacheModel="">
 			<generate by="" table=""></generate>
+			<include refid=""/>
 		</select>
 		
 		<insert></insert>

@@ -41,7 +41,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// </summary>
         public IPreparedCommand PreparedCommand
         {
-            get { return mappedStatement.PreparedCommand; }
+            get { return this.mappedStatement.PreparedCommand; }
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// </summary>
         public string Id
         {
-            get { return mappedStatement.Id; }
+            get { return this.mappedStatement.Id; }
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// </summary>
         public IStatement Statement
         {
-            get { return mappedStatement.Statement; }
+            get { return this.mappedStatement.Statement; }
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// </summary>
         public ISqlMapper SqlMap
         {
-            get { return mappedStatement.SqlMap; }
+            get { return this.mappedStatement.SqlMap; }
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
             IDictionary map = new Hashtable();
             RequestScope request = this.Statement.Sql.GetRequestScope(this, parameterObject, session);
 
-            mappedStatement.PreparedCommand.Create(request, session, this.Statement, parameterObject);
+            this.mappedStatement.PreparedCommand.Create(request, session, this.Statement, parameterObject);
 
             CacheKey cacheKey = this.GetCacheKey(request);
             cacheKey.Update("ExecuteQueryForMap");
@@ -101,7 +101,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
             map = this.Statement.CacheModel[cacheKey] as IDictionary;
             if (map == null)
             {
-                map = mappedStatement.RunQueryForMap(request, session, parameterObject, keyProperty, valueProperty, null);
+                map = this.mappedStatement.RunQueryForMap(request, session, parameterObject, keyProperty, valueProperty, null);
                 this.Statement.CacheModel[cacheKey] = map;
             }
 
@@ -118,7 +118,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// <returns>The number of row effected.</returns>
         public int ExecuteUpdate(ISqlMapSession session, object parameterObject)
         {
-            return mappedStatement.ExecuteUpdate(session, parameterObject);
+            return this.mappedStatement.ExecuteUpdate(session, parameterObject);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// <returns>Can return the insert generated key.</returns>
         public object ExecuteInsert(ISqlMapSession session, object parameterObject)
         {
-            return mappedStatement.ExecuteInsert(session, parameterObject);
+            return this.mappedStatement.ExecuteInsert(session, parameterObject);
         }
 
         #region ExecuteQueryForList
@@ -143,7 +143,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// <param name="resultObject">A strongly typed collection of result objects.</param>
         public void ExecuteQueryForList(ISqlMapSession session, object parameterObject, IList resultObject)
         {
-            mappedStatement.ExecuteQueryForList(session, parameterObject, resultObject);
+            this.mappedStatement.ExecuteQueryForList(session, parameterObject, resultObject);
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
             IList list = null;
             RequestScope request = this.Statement.Sql.GetRequestScope(this, parameterObject, session);
 
-            mappedStatement.PreparedCommand.Create(request, session, this.Statement, parameterObject);
+            this.mappedStatement.PreparedCommand.Create(request, session, this.Statement, parameterObject);
 
             CacheKey cacheKey = this.GetCacheKey(request);
             cacheKey.Update("ExecuteQueryForList");
@@ -169,7 +169,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
             list = this.Statement.CacheModel[cacheKey] as IList;
             if (list == null)
             {
-                list = mappedStatement.RunQueryForList(request, session, parameterObject, skipResults, maxResults);
+                list = this.mappedStatement.RunQueryForList(request, session, parameterObject, skipResults, maxResults);
                 this.Statement.CacheModel[cacheKey] = list;
             }
 
@@ -215,7 +215,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
             object obj = null;
             RequestScope request = this.Statement.Sql.GetRequestScope(this, parameterObject, session);
 
-            mappedStatement.PreparedCommand.Create(request, session, this.Statement, parameterObject);
+            this.mappedStatement.PreparedCommand.Create(request, session, this.Statement, parameterObject);
 
             CacheKey cacheKey = this.GetCacheKey(request);
             cacheKey.Update("ExecuteQueryForObject");
@@ -229,7 +229,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
             }
             else if (obj == null)
             {
-                obj = mappedStatement.RunQueryForObject(request, session, parameterObject, resultObject);
+                obj = this.mappedStatement.RunQueryForObject(request, session, parameterObject, resultObject);
                 this.Statement.CacheModel[cacheKey] = obj;
             }
 
@@ -247,7 +247,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// <param name="rowDelegate"></param>
         public IList ExecuteQueryForRowDelegate(ISqlMapSession session, object parameterObject, RowDelegate rowDelegate)
         {
-            return mappedStatement.ExecuteQueryForRowDelegate(session, parameterObject, rowDelegate);
+            return this.mappedStatement.ExecuteQueryForRowDelegate(session, parameterObject, rowDelegate);
         }
 
 
@@ -264,7 +264,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// <exception cref="IBatisNet.DataMapper.Exceptions.DataMapperException">If a transaction is not in progress, or the database throws an exception.</exception>
         public IDictionary ExecuteQueryForMapWithRowDelegate(ISqlMapSession session, object parameterObject, string keyProperty, string valueProperty, DictionaryRowDelegate rowDelegate)
         {
-            return mappedStatement.ExecuteQueryForMapWithRowDelegate(session, parameterObject, keyProperty, valueProperty, rowDelegate);
+            return this.mappedStatement.ExecuteQueryForMapWithRowDelegate(session, parameterObject, keyProperty, valueProperty, rowDelegate);
         }
 
 
@@ -277,7 +277,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// <returns>A DataSet objects.</returns>
         public DataSet ExecuteQueryForDataSet(ISqlMapSession aSession, object aParameterObject)
         {
-            return mappedStatement.ExecuteQueryForDataSet(aSession, aParameterObject);
+            return this.mappedStatement.ExecuteQueryForDataSet(aSession, aParameterObject);
         }
         #endregion
 

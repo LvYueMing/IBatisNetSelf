@@ -46,11 +46,11 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
         /// <param name="aStringSql"></param>
         /// <returns>A new sql command text.</returns>
         /// <param name="aConfigScope"></param>
-        public SqlText ParseInlineParameterMap(IScope aConfigScope, IStatement aStatement, string aStringSql)
+        public SqlText ParseInlineParameterMap(IScope aConfigScope, IStatement? aStatement, string aStringSql)
         {
             string _newSql = aStringSql;
             ArrayList _paramPropertyList = new ArrayList();
-            Type _parameterClassType = null;
+            Type? _parameterClassType = null;
 
             if (aStatement != null)
             {
@@ -60,8 +60,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
             Common.Utilities.StringTokenizer _sqlTokens = new Common.Utilities.StringTokenizer(aStringSql, PARAMETER_TOKEN, true);
             StringBuilder _newSqlBuffer = new StringBuilder();
 
-            string _token = null;
-            string _lastToken = null;
+            string? _token = null;
+            string? _lastToken = null;
 
             IEnumerator _enumerator = _sqlTokens.GetEnumerator();
 
@@ -123,7 +123,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
         /// <param name="parameterClassType"></param>
         /// <param name="scope"></param>
         /// <returns></returns>
-        private ParameterProperty ParseMapping(string token, Type parameterClassType, IScope scope)
+        private ParameterProperty ParseMapping(string token, Type? parameterClassType, IScope scope)
         {
             ParameterProperty _mapping = new ParameterProperty();
 

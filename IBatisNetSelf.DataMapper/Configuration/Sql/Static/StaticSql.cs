@@ -18,9 +18,9 @@ namespace IBatisNetSelf.DataMapper.Configuration.Sql.Static
 
         #region Fields
 
-        private IStatement statement = null;
+        private IStatement statement;
         private PreparedStatement preparedStatement = null;
-        private DataExchangeFactory dataExchangeFactory = null;
+        private DataExchangeFactory dataExchangeFactory;
 
         #endregion
 
@@ -33,7 +33,6 @@ namespace IBatisNetSelf.DataMapper.Configuration.Sql.Static
         public StaticSql(IScope scope, IStatement statement)
         {
             this.statement = statement;
-
             this.dataExchangeFactory = scope.DataExchangeFactory;
         }
         #endregion

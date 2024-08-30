@@ -21,11 +21,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmitDllSave", "Test\EmitDll
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "Test\Logger\Logger.csproj", "{EE5A05C5-AF69-47EA-BD20-93CBD5E296AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlOperate", "Test\XmlOperate\XmlOperate.csproj", "{23F50E51-45E1-4FFE-8D4C-1902E942A5B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlOperate", "Test\XmlOperate\XmlOperate.csproj", "{23F50E51-45E1-4FFE-8D4C-1902E942A5B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomSqlMap", "Test\DomSqlMap\DomSqlMap.csproj", "{8FA226DD-8B93-4751-91F2-EC172346EF96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomSqlMap", "Test\DomSqlMap\DomSqlMap.csproj", "{8FA226DD-8B93-4751-91F2-EC172346EF96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mappers", "Test\Mappers\Mappers.csproj", "{B2D4D5DD-903C-4EB3-B4C4-C2CBF39DA6FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mappers", "Test\Mappers\Mappers.csproj", "{B2D4D5DD-903C-4EB3-B4C4-C2CBF39DA6FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParseSelectSql", "Test\ParseSelectSql\ParseSelectSql.csproj", "{10BAC18D-825B-41B4-A23B-C8549D36AB33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +79,10 @@ Global
 		{B2D4D5DD-903C-4EB3-B4C4-C2CBF39DA6FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2D4D5DD-903C-4EB3-B4C4-C2CBF39DA6FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2D4D5DD-903C-4EB3-B4C4-C2CBF39DA6FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10BAC18D-825B-41B4-A23B-C8549D36AB33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10BAC18D-825B-41B4-A23B-C8549D36AB33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10BAC18D-825B-41B4-A23B-C8549D36AB33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10BAC18D-825B-41B4-A23B-C8549D36AB33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -91,6 +97,7 @@ Global
 		{23F50E51-45E1-4FFE-8D4C-1902E942A5B9} = {8B50026E-AE90-4146-8C58-3582087AFC54}
 		{8FA226DD-8B93-4751-91F2-EC172346EF96} = {8B50026E-AE90-4146-8C58-3582087AFC54}
 		{B2D4D5DD-903C-4EB3-B4C4-C2CBF39DA6FC} = {8B50026E-AE90-4146-8C58-3582087AFC54}
+		{10BAC18D-825B-41B4-A23B-C8549D36AB33} = {8B50026E-AE90-4146-8C58-3582087AFC54}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {54C20C75-FD35-4BE5-BB00-808F6DD58821}

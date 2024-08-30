@@ -9,11 +9,13 @@
   <ItemGroup>
     <None Remove="Xml\Common.xml" />
     <None Remove="Xml\Patient.xml" />
+    <None Remove="Xml\Test.xml" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Xml\Common.xml" />
     <EmbeddedResource Include="Xml\Patient.xml" />
+    <EmbeddedResource Include="Xml\Test.xml" />
   </ItemGroup>
 
 </Project>

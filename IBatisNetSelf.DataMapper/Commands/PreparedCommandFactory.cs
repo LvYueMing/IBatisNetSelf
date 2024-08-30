@@ -17,7 +17,7 @@ namespace IBatisNetSelf.DataMapper.Commands
         /// <returns></returns>
         static public IPreparedCommand GetPreparedCommand(bool isEmbedStatementParams)
         {
-            IPreparedCommand _preparedCommand = null;
+            IPreparedCommand _preparedCommand;
 
             //			if (isEmbedStatementParams)
             //			{

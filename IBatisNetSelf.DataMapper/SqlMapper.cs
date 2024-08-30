@@ -143,7 +143,7 @@ namespace IBatisNetSelf.DataMapper
         public SqlMapper(IObjectFactory aObjectFactory, AccessorFactory aAccessorFactory)
         {
             this.typeHandlerFactory = new TypeHandlerFactory();
-            //this.dbHelperParameterCache = new DBHelperParameterCache();
+            this.dbHelperParameterCache = new DBHelperParameterCache();
             this.objectFactory = aObjectFactory;
             this.accessorFactory = aAccessorFactory;
 

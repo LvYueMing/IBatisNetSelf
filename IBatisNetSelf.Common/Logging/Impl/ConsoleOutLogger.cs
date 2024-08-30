@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace IBatisNetSelf.Common.Logging.Impl
 {
@@ -31,14 +27,14 @@ namespace IBatisNetSelf.Common.Logging.Impl
                                  , bool showDateTime, bool showLogName, string dateTimeFormat)
         {
             this.logName = logName;
-            this.currentLogLevel = logLevel;
+            currentLogLevel = logLevel;
             this.showDateTime = showDateTime;
             this.showLogName = showLogName;
             this.dateTimeFormat = dateTimeFormat;
 
             if (this.dateTimeFormat != null && this.dateTimeFormat.Length > 0)
             {
-                this.hasDateTimeFormat = true;
+                hasDateTimeFormat = true;
             }
         }
 
@@ -54,11 +50,11 @@ namespace IBatisNetSelf.Common.Logging.Impl
             // Use a StringBuilder for better performance
             StringBuilder _sb = new StringBuilder();
             // Append date-time if so configured
-            if (this.showDateTime)
+            if (showDateTime)
             {
-                if (this.hasDateTimeFormat)
+                if (hasDateTimeFormat)
                 {
-                    _sb.Append(DateTime.Now.ToString(this.dateTimeFormat, CultureInfo.InvariantCulture));
+                    _sb.Append(DateTime.Now.ToString(dateTimeFormat, CultureInfo.InvariantCulture));
                 }
                 else
                 {
@@ -68,15 +64,17 @@ namespace IBatisNetSelf.Common.Logging.Impl
                 _sb.Append(" ");
             }
             // Append a readable representation of the log level
-            _sb.Append(string.Format("[{0}]", aLevel.ToString().ToUpper()).PadRight(8));
+            _sb.Append($"[{aLevel.ToString().ToUpper()}]{"".PadRight(2)}");
 
             // Append the name of the log instance if so configured
-            if (this.showLogName)
+            if (showLogName)
             {
-                _sb.Append(this.logName).Append(" - ");
+                _sb.Append(logName).Append(" :");
+                _sb.Append(Environment.NewLine);
             }
 
             // Append the message
+            _sb.Append("".PadRight(2));
             _sb.Append(aMessage.ToString());
 
             // Append stack trace if not null
@@ -84,7 +82,7 @@ namespace IBatisNetSelf.Common.Logging.Impl
             {
                 _sb.Append(Environment.NewLine).Append(ex.ToString());
             }
-
+            _sb.Append(Environment.NewLine);
             // Print to the appropriate destination
             Console.Out.WriteLine(_sb.ToString());
         }

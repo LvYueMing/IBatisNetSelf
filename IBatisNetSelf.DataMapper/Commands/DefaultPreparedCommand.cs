@@ -4,14 +4,10 @@ using IBatisNetSelf.Common.Utilities.Objects;
 using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
 using IBatisNetSelf.DataMapper.Configuration.Statements;
 using IBatisNetSelf.DataMapper.Scope;
-using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace IBatisNetSelf.DataMapper.Commands
 {
@@ -20,7 +16,7 @@ namespace IBatisNetSelf.DataMapper.Commands
     /// </summary>
     internal class DefaultPreparedCommand : IPreparedCommand
     {
-        private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         #region IPreparedCommand Members
 
@@ -43,12 +39,12 @@ namespace IBatisNetSelf.DataMapper.Commands
 
             aRequest.IDbCommand.CommandText = aRequest.PreparedStatement.PreparedSql;
 
-            if (_logger.IsDebugEnabled)
+            if (logger.IsDebugEnabled)
             {
-                _logger.Debug("Statement Id: [" + aStatement.Id + "] PreparedStatement : [" + aRequest.IDbCommand.CommandText + "]");
+                logger.Debug("Statement Id: [" + aStatement.Id + "] PreparedStatement : [" + aRequest.IDbCommand.CommandText + "]");
             }
             //给执行命令创建参数，并赋值，从aParameterObject获取参数对应的值。
-            this.ApplyParameterMap(aSession, aRequest.IDbCommand, aRequest, aStatement, aParameterObject);
+            ApplyParameterMap(aSession, aRequest.IDbCommand, aRequest, aStatement, aParameterObject);
         }
 
 
@@ -77,7 +73,7 @@ namespace IBatisNetSelf.DataMapper.Commands
                 ParameterProperty _parameterProperty = aRequest.ParameterMap.GetProperty(i);
 
                 #region Logging
-                if (_logger.IsDebugEnabled)
+                if (logger.IsDebugEnabled)
                 {
                     _paramListLog.Append(_preparedDbParameter.ParameterName);
                     _paramListLog.Append("=[");
@@ -109,7 +105,7 @@ namespace IBatisNetSelf.DataMapper.Commands
                 }
 
                 #region Logging
-                if (_logger.IsDebugEnabled)
+                if (logger.IsDebugEnabled)
                 {
                     _paramListLog.Append(_parameterProperty.PropertyName);
                     _paramListLog.Append(",");
@@ -145,7 +141,7 @@ namespace IBatisNetSelf.DataMapper.Commands
 
 
                 #region Logging
-                if (_logger.IsDebugEnabled)
+                if (logger.IsDebugEnabled)
                 {
                     if (_dbParameter.Value == DBNull.Value)
                     {
@@ -200,10 +196,10 @@ namespace IBatisNetSelf.DataMapper.Commands
 
             #region Logging
 
-            if (_logger.IsDebugEnabled && _dbParameterNames.Count > 0)
+            if (logger.IsDebugEnabled && _dbParameterNames.Count > 0)
             {
-                _logger.Debug("Statement Id: [" + aStatement.Id + "] Parameters: [" + _paramListLog.ToString(0, _paramListLog.Length - 2) + "]");
-                _logger.Debug("Statement Id: [" + aStatement.Id + "] Types: [" + _typeListLog.ToString(0, _typeListLog.Length - 2) + "]");
+                logger.Debug("Statement Id: [" + aStatement.Id + "] Parameters: [" + _paramListLog.ToString(0, _paramListLog.Length - 2) + "]");
+                logger.Debug("Statement Id: [" + aStatement.Id + "] Types: [" + _typeListLog.ToString(0, _typeListLog.Length - 2) + "]");
             }
             #endregion
         }

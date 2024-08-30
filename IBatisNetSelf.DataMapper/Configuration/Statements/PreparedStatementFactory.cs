@@ -60,7 +60,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         public PreparedStatement Prepare()
         {
             this.preparedStatement = new PreparedStatement();
-            this.parameterPrefix = session.DataSource.DbProvider.ParameterPrefix;
+            this.parameterPrefix = this.session.DataSource.DbProvider.ParameterPrefix;
 
             this.preparedStatement.PreparedSql = this.commandText;
 
@@ -182,11 +182,11 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
                 for (int i = 0; i < parameters.Length; i++)
                 {
                     string parameterName = parameters[i].ParameterName;
-                    if (session.DataSource.DbProvider.UseParameterPrefixInParameter)
+                    if (this.session.DataSource.DbProvider.UseParameterPrefixInParameter)
                     {
-                        if (parameterName.StartsWith(session.DataSource.DbProvider.ParameterPrefix))
+                        if (parameterName.StartsWith(this.session.DataSource.DbProvider.ParameterPrefix))
                         {
-                            int prefixLength = session.DataSource.DbProvider.ParameterPrefix.Length;
+                            int prefixLength = this.session.DataSource.DbProvider.ParameterPrefix.Length;
                             parameterName = parameterName.Substring(prefixLength);
                         }
                     }
@@ -213,9 +213,9 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
             string _sqlParamName = string.Empty;
             string _dbTypePropertyName = this.session.DataSource.DbProvider.ParameterDbTypeProperty;
             Type _enumDbType = this.session.DataSource.DbProvider.ParameterDbType;
-            ParameterPropertyCollection _list = null;
+            ParameterPropertyCollection _list;
 
-            if (session.DataSource.DbProvider.UsePositionalParameters) //obdc/oledb
+            if (this.session.DataSource.DbProvider.UsePositionalParameters) //obdc/oledb
             {
                 _list = this.request.ParameterMap.Properties;
             }
@@ -230,7 +230,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
             {
                 ParameterProperty _property = _list[i];
 
-                if (session.DataSource.DbProvider.UseParameterPrefixInParameter)
+                if (this.session.DataSource.DbProvider.UseParameterPrefixInParameter)
                 {
                     // From Ryan Yao: JIRA-27, used "param" + i++ for sqlParamName
                     _sqlParamName = this.parameterPrefix + "param" + i;
@@ -255,8 +255,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
                 }
 
                 // Set IDbDataParameter
-                // JIRA-49 Fixes (size, precision, and scale)
-                if (session.DataSource.DbProvider.SetDbParameterSize)
+                if (this.session.DataSource.DbProvider.SetDbParameterSize)
                 {
                     if (_property.Size != -1)
                     {
@@ -264,12 +263,12 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
                     }
                 }
 
-                if (session.DataSource.DbProvider.SetDbParameterPrecision)
+                if (this.session.DataSource.DbProvider.SetDbParameterPrecision)
                 {
                     _dataParameter.Precision = _property.Precision;
                 }
 
-                if (session.DataSource.DbProvider.SetDbParameterScale)
+                if (this.session.DataSource.DbProvider.SetDbParameterScale)
                 {
                     _dataParameter.Scale = _property.Scale;
                 }
@@ -282,7 +281,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
                 this.preparedStatement.DbParametersName.Add(_property.PropertyName);
                 this.preparedStatement.DbParameters[i] = _dataParameter;
 
-                if (session.DataSource.DbProvider.UsePositionalParameters == false)
+                if (this.session.DataSource.DbProvider.UsePositionalParameters == false)
                 {
                     this.propertyDbParameterMap.Add(_property, _dataParameter);
                 }
@@ -300,7 +299,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
             Type _enumDbType = this.session.DataSource.DbProvider.ParameterDbType;
             ParameterPropertyCollection _list = null;
 
-            if (session.DataSource.DbProvider.UsePositionalParameters) //obdc/oledb
+            if (this.session.DataSource.DbProvider.UsePositionalParameters) //obdc/oledb
             {
                 _list = this.request.ParameterMap.Properties;
             }
@@ -388,7 +387,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         private void EvaluateParameterMap()
         {
             string _delimiter = "?";
-            string _token = null;
+            string _token;
             int _index = 0;
             //sql中有效参数占位符定义
             string _sqlParamName = string.Empty;
@@ -403,10 +402,10 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
 
                 if (_delimiter.Equals(_token)) // ?
                 {
-                    ParameterProperty _property = request.ParameterMap.Properties[_index];
-                    IDataParameter _dataParameter = null;
+                    ParameterProperty _property = this.request.ParameterMap.Properties[_index];
+                    IDataParameter _dataParameter;
 
-                    if (session.DataSource.DbProvider.UsePositionalParameters)
+                    if (this.session.DataSource.DbProvider.UsePositionalParameters)
                     {
                         // TODO Refactor?
                         if (this.parameterPrefix.Equals(":"))
@@ -425,16 +424,13 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
                     {
                         _dataParameter = (IDataParameter)this.propertyDbParameterMap[_property];
 
-                        // 5 May 2004
-                        // Need to check UseParameterPrefixInParameter here 
-                        // since CreateParametersForStatementText now does
-                        // a check for UseParameterPrefixInParameter before 
-                        // creating the parameter name!
-                        if (session.DataSource.DbProvider.UseParameterPrefixInParameter)
+                        // Need to check UseParameterPrefixInParameter here since CreateParametersForStatementText() now does
+                        // a check for UseParameterPrefixInParameter before creating the parameter name!
+                        if (this.session.DataSource.DbProvider.UseParameterPrefixInParameter)
                         {
                             // Fix ByteFX.Data.MySqlClient.MySqlParameter
                             // who strip prefix in Parameter Name ?!
-                            if (session.DataSource.DbProvider.Name.IndexOf("ByteFx") >= 0)
+                            if (this.session.DataSource.DbProvider.Name.IndexOf("ByteFx") >= 0)
                             {
                                 _sqlParamName = this.parameterPrefix + _dataParameter.ParameterName;
                             }
