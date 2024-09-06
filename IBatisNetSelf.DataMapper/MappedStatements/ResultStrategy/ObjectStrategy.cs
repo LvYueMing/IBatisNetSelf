@@ -26,7 +26,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy
         /// <param name="aResultObject">The result object.</param>
         public object Process(RequestScope aRequest, ref IDataReader aReader, object aResultObject)
         {
-            object _outObject = aResultObject;
+            object _outObject = aResultObject; 
 
             if (aReader.FieldCount == 1)
             {
@@ -38,7 +38,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy
             }
             else if (aReader.FieldCount > 1)
             {
-                object[] _newOutObject = new object[aReader.FieldCount];
+                object[] _newOutObject = new object[aReader.FieldCount]; 
                 int count = aReader.FieldCount;
                 for (int i = 0; i < count; i++)
                 {

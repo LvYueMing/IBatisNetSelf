@@ -7,7 +7,7 @@
 				where t.patient_id = a.id
 						and t.visit_type = 'ZY'
 						and t.status = 2
-						and a.id = #in_patient_id#
+						and a.id like #in_patient_id#
 		</select>
 	</statements>
 

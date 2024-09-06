@@ -46,8 +46,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Sql.Static
         /// <param name="aSession">The current session</param>
         /// <param name="aMappedStatement">The <see cref="IMappedStatement"/>.</param>
         /// <returns>A new <see cref="RequestScope"/>.</returns>
-        public RequestScope GetRequestScope(IMappedStatement aMappedStatement,
-            object aParameterObject, ISqlMapSession aSession)
+        public RequestScope GetRequestScope(IMappedStatement aMappedStatement,object aParameterObject, ISqlMapSession aSession)
         {
             RequestScope _request = new RequestScope(this.dataExchangeFactory, aSession, this.statement);
 

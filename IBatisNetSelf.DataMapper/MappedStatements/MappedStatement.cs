@@ -217,10 +217,10 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
                 {
                     while (_reader.Read())
                     {
-                        object obj = this.resultStrategy.Process(request, ref _reader, resultObject);
-                        if (obj != BaseStrategy.SKIP)
+                        object _obj = this.resultStrategy.Process(request, ref _reader, resultObject);
+                        if (_obj != BaseStrategy.SKIP)
                         {
-                            _result = obj;
+                            _result = _obj;
                         }
                     }
                 }
@@ -253,6 +253,28 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
 
 
         #region ExecuteQueryForList
+
+
+        /// <summary>
+        /// Executes the SQL and retuns all rows selected. This is exactly the same as
+        /// calling ExecuteQueryForList(session, parameterObject, NO_SKIPPED_RESULTS, NO_MAXIMUM_RESULTS).
+        /// </summary>
+        /// <param name="aSession">The session used to execute the statement.</param>
+        /// <param name="aParameterObject">The object used to set the parameters in the SQL.</param>
+        /// <returns>A List of result objects.</returns>
+        public virtual IList ExecuteQueryForList(ISqlMapSession aSession, object aParameterObject)
+        {
+            //创建请求对象_request
+            RequestScope _request = this.statement.Sql.GetRequestScope(this, aParameterObject, aSession);
+
+            //创建命令对象IDbCommand，_request.IDbCommand=aSession.CreateCommand(aStatement.CommandType)
+            //命令对象执行语句CommandText赋值，_request.IDbCommand.CommandText = _request.PreparedStatement.PreparedSql
+            //给命令对象创建参数列表（aRequest.IDbCommand.Parameters），并赋值（从aParameterObject获取参数对应的值）
+            //一切准备就绪，可执行命令获取数据
+            this.preparedCommand.Create(_request, aSession, this.Statement, aParameterObject);
+
+            return RunQueryForList(_request, aSession, aParameterObject, null, null);
+        }
 
         /// <summary>
         /// Runs a query with a custom object that gets a chance 
@@ -298,28 +320,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
             this.preparedCommand.Create(request, session, this.Statement, parameterObject);
 
             return RunQueryForMap(request, session, parameterObject, keyProperty, valueProperty, rowDelegate);
-        }
-
-
-        /// <summary>
-        /// Executes the SQL and retuns all rows selected. This is exactly the same as
-        /// calling ExecuteQueryForList(session, parameterObject, NO_SKIPPED_RESULTS, NO_MAXIMUM_RESULTS).
-        /// </summary>
-        /// <param name="aSession">The session used to execute the statement.</param>
-        /// <param name="aParameterObject">The object used to set the parameters in the SQL.</param>
-        /// <returns>A List of result objects.</returns>
-        public virtual IList ExecuteQueryForList(ISqlMapSession aSession, object aParameterObject)
-        {
-            //创建请求对象_request
-            RequestScope _request = this.statement.Sql.GetRequestScope(this, aParameterObject, aSession);
-
-            //创建命令对象IDbCommand，_request.IDbCommand=aSession.CreateCommand(aStatement.CommandType)
-            //命令对象执行语句CommandText赋值，_request.IDbCommand.CommandText = _request.PreparedStatement.PreparedSql
-            //给命令对象创建参数列表（aRequest.IDbCommand.Parameters），并赋值（从aParameterObject获取参数对应的值）
-            //一切准备就绪，可执行命令获取数据
-            this.preparedCommand.Create(_request, aSession, this.Statement, aParameterObject);
-
-            return RunQueryForList(_request, aSession, aParameterObject, null, null);
         }
 
 
@@ -489,7 +489,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// <param name="aResultObject">A strongly typed collection of result objects.</param>
         public virtual void ExecuteQueryForList(ISqlMapSession aSession, object aParameterObject, IList aResultObject)
         {
-            RequestScope _request = statement.Sql.GetRequestScope(this, aParameterObject, aSession);
+            RequestScope _request = this.statement.Sql.GetRequestScope(this, aParameterObject, aSession);
 
             this.preparedCommand.Create(_request, aSession, this.Statement, aParameterObject);
 
@@ -542,7 +542,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         {
             object generatedKey = null;
             SelectKey selectKeyStatement = null;
-            RequestScope request = statement.Sql.GetRequestScope(this, parameterObject, session);
+            RequestScope request = this.statement.Sql.GetRequestScope(this, parameterObject, session);
 
             if (statement is Insert)
             {
@@ -759,7 +759,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
                 {
                     throw;
                 }
-
             }
 
             return _ds;

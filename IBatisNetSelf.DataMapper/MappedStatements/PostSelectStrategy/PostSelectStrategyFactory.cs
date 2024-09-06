@@ -14,17 +14,17 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.PostSelectStrategy
     /// </summary>
     public sealed class PostSelectStrategyFactory
     {
-        private static IDictionary _strategies = new HybridDictionary();
+        private static IDictionary strategies = new HybridDictionary();
 
         /// <summary>
         /// Initializes the <see cref="PostSelectStrategyFactory"/> class.
         /// </summary>
         static PostSelectStrategyFactory()
         {
-            _strategies.Add(PostBindind.ExecuteMethod.ExecuteQueryForArrayList, new ArrayStrategy());
-            _strategies.Add(PostBindind.ExecuteMethod.ExecuteQueryForIList, new ListStrategy());
-            _strategies.Add(PostBindind.ExecuteMethod.ExecuteQueryForObject, new ObjectStrategy());
-            _strategies.Add(PostBindind.ExecuteMethod.ExecuteQueryForStrongTypedIList, new StrongTypedListStrategy());
+            strategies.Add(PostBindind.ExecuteMethod.ExecuteQueryForArrayList, new ArrayStrategy());
+            strategies.Add(PostBindind.ExecuteMethod.ExecuteQueryForIList, new ListStrategy());
+            strategies.Add(PostBindind.ExecuteMethod.ExecuteQueryForObject, new ObjectStrategy());
+            strategies.Add(PostBindind.ExecuteMethod.ExecuteQueryForStrongTypedIList, new StrongTypedListStrategy());
         }
 
 
@@ -35,7 +35,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.PostSelectStrategy
         /// <returns>The <see cref="IPostSelectStrategy"/></returns>
         public static IPostSelectStrategy Get(PostBindind.ExecuteMethod method)
         {
-            return (IPostSelectStrategy)_strategies[method];
+            return (IPostSelectStrategy)strategies[method];
         }
     }
 }

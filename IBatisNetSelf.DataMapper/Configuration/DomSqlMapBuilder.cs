@@ -1268,62 +1268,62 @@ namespace IBatisNetSelf.DataMapper.Configuration
             #endregion
 
             #region Insert tag
-            Insert _insert;
+            Insert _insertSql;
             foreach (XmlNode xmlNode in configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(XML_INSERT), configScope.XmlNamespaceManager))
             {
                 configScope.ErrorContext.MoreInfo = "loading insert tag";
                 configScope.CurrentNodeContext = xmlNode; // A insert tag
 
-                MappedStatement mappedStatement;
+                MappedStatement _mappedStatement;
 
-                _insert = InsertDeSerializer.Deserialize(xmlNode, configScope);
-                _insert.CacheModelName = configScope.ApplyNamespace(_insert.CacheModelName);
-                _insert.ParameterMapName = configScope.ApplyNamespace(_insert.ParameterMapName);
+                _insertSql = InsertDeSerializer.Deserialize(xmlNode, configScope);
+                _insertSql.CacheModelName = configScope.ApplyNamespace(_insertSql.CacheModelName);
+                _insertSql.ParameterMapName = configScope.ApplyNamespace(_insertSql.ParameterMapName);
 
                 if (configScope.UseStatementNamespaces)
                 {
-                    _insert.Id = configScope.ApplyNamespace(_insert.Id);
+                    _insertSql.Id = configScope.ApplyNamespace(_insertSql.Id);
                 }
-                configScope.ErrorContext.ObjectId = _insert.Id;
-                _insert.Initialize(configScope);
+                configScope.ErrorContext.ObjectId = _insertSql.Id;
+                _insertSql.Initialize(configScope);
 
                 // Build ISql (analyse sql command text)
-                if (_insert.Generate != null)
+                if (_insertSql.Generate != null)
                 {
-                    GenerateCommandText(configScope, _insert);
+                    GenerateCommandText(configScope, _insertSql);
                 }
                 else
                 {
-                    ProcessSqlStatement(_insert);
+                    ProcessSqlStatement(_insertSql);
                 }
 
                 // Build MappedStatement
-                mappedStatement = new InsertMappedStatement(configScope.SqlMapper, _insert);
+                _mappedStatement = new InsertMappedStatement(configScope.SqlMapper, _insertSql);
 
-                configScope.SqlMapper.AddMappedStatement(mappedStatement.Id, mappedStatement);
+                configScope.SqlMapper.AddMappedStatement(_mappedStatement.Id, _mappedStatement);
 
                 #region statement SelectKey
                 // Set sql statement SelectKey 
-                if (_insert.SelectKey != null)
+                if (_insertSql.SelectKey != null)
                 {
                     configScope.ErrorContext.MoreInfo = "loading selectKey tag";
                     configScope.CurrentNodeContext = xmlNode.SelectSingleNode(ApplyMappingNamespacePrefix(XML_SELECTKEY), configScope.XmlNamespaceManager);
 
-                    _insert.SelectKey.Id = _insert.Id;
-                    _insert.SelectKey.Initialize(configScope);
-                    _insert.SelectKey.Id += DOT + "SelectKey";
+                    _insertSql.SelectKey.Id = _insertSql.Id;
+                    _insertSql.SelectKey.Initialize(configScope);
+                    _insertSql.SelectKey.Id += DOT + "SelectKey";
 
                     // Initialize can also use this.configScope.ErrorContext.ObjectId to get the id
                     // of the parent <select> node
                     // insert.SelectKey.Initialize( this.configScope );
                     // insert.SelectKey.Id = insert.Id + DOT + "SelectKey";
 
-                    ProcessSqlStatement(_insert.SelectKey);
+                    ProcessSqlStatement(_insertSql.SelectKey);
 
                     // Build MappedStatement
-                    mappedStatement = new MappedStatement(configScope.SqlMapper, _insert.SelectKey);
+                    _mappedStatement = new MappedStatement(configScope.SqlMapper, _insertSql.SelectKey);
 
-                    configScope.SqlMapper.AddMappedStatement(mappedStatement.Id, mappedStatement);
+                    configScope.SqlMapper.AddMappedStatement(_mappedStatement.Id, _mappedStatement);
                 }
                 #endregion
             }

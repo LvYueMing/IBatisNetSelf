@@ -13,6 +13,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
     /// <remarks>
     /// As ADO.NET allows one open <see cref="IDataReader"/> per connection at once, we keep
     /// all the datas to open the next <see cref="IDataReader"/> after having closed the current. 
+    /// ADO.NET允许每个连接打开一个“IDataReader”，我们保留所有数据以在关闭当前连接后打开下一个“IDataReader”。
     /// </remarks>
     public sealed class PostBindind
     {

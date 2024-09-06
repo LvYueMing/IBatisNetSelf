@@ -27,15 +27,15 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         /// <summary>
         /// The list of IDataParameter name used by the PreparedSql.
         /// </summary>
-        public StringCollection DbParametersName => dbParametersName;
+        public StringCollection DbParametersName => this.dbParametersName;
 
         /// <summary>
         /// The list of IDataParameter to use for the PreparedSql.
         /// </summary>
         public IDbDataParameter[] DbParameters
         {
-            get => dbParameters;
-            set => dbParameters = value;
+            get => this.dbParameters;
+            set => this.dbParameters = value;
         }
 
         /// <summary>
@@ -43,8 +43,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         /// </summary>
         public string PreparedSql
         {
-            get => preparedSql;
-            set => preparedSql = value;
+            get => this.preparedSql;
+            set => this.preparedSql = value;
         }
 
         #endregion

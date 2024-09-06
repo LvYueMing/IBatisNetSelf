@@ -259,25 +259,25 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
         /// <summary>
         /// Set parameter value, replace the null value if any.
         /// </summary>
-        /// <param name="mapping"></param>
+        /// <param name="aParamProperty"></param>
         /// <param name="dataParameter"></param>
         /// <param name="parameterValue"></param>
-        public void SetParameter(ParameterProperty mapping, IDataParameter dataParameter, object parameterValue)
+        public void SetParameter(ParameterProperty aParamProperty, IDataParameter dataParameter, object parameterValue)
         {
-            object _value = this.dataExchange.GetData(mapping, parameterValue);
+            object _value = this.dataExchange.GetData(aParamProperty, parameterValue);
 
-            ITypeHandler _typeHandler = mapping.TypeHandler;
+            ITypeHandler _typeHandler = aParamProperty.TypeHandler;
 
             // Apply Null Value
-            if (mapping.HasNullValue)
+            if (aParamProperty.HasNullValue)
             {
-                if (_typeHandler.Equals(_value, mapping.NullValue))
+                if (_typeHandler.Equals(_value, aParamProperty.NullValue))
                 {
                     _value = null;
                 }
             }
 
-            _typeHandler.SetParameter(dataParameter, _value, mapping.DbType);
+            _typeHandler.SetParameter(dataParameter, _value, aParamProperty.DbType);
         }
 
         /// <summary>

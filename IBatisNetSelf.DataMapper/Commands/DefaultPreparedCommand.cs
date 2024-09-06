@@ -41,7 +41,7 @@ namespace IBatisNetSelf.DataMapper.Commands
 
             if (logger.IsDebugEnabled)
             {
-                logger.Debug("Statement Id: [" + aStatement.Id + "] PreparedStatement : [" + aRequest.IDbCommand.CommandText + "]");
+                logger.Debug("创建IDbCommand对象， Statement Id: [" + aStatement.Id + "] PreparedStatement : [" + aRequest.IDbCommand.CommandText + "]");
             }
             //给执行命令创建参数，并赋值，从aParameterObject获取参数对应的值。
             ApplyParameterMap(aSession, aRequest.IDbCommand, aRequest, aStatement, aParameterObject);
@@ -56,8 +56,7 @@ namespace IBatisNetSelf.DataMapper.Commands
         /// <param name="aRequest">The request.</param>
         /// <param name="aStatement">The statement.</param>
         /// <param name="aParameterObject">The parameter object.</param>
-        protected virtual void ApplyParameterMap(ISqlMapSession aSession, IDbCommand aCommand,
-            RequestScope aRequest, IStatement aStatement, object aParameterObject)
+        protected virtual void ApplyParameterMap(ISqlMapSession aSession, IDbCommand aCommand, RequestScope aRequest, IStatement aStatement, object aParameterObject)
         {
             StringCollection _dbParameterNames = aRequest.PreparedStatement.DbParametersName;
             IDbDataParameter[] _preparedDbParameters = aRequest.PreparedStatement.DbParameters;

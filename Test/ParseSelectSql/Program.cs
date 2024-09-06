@@ -1,6 +1,7 @@
 ﻿using IBatisNetSelf.DataMapper;
 using IBatisNetSelf.DataMapper.Configuration;
 using System.Collections;
+using System.Data;
 
 namespace ParseSelectSql
 {
@@ -14,8 +15,9 @@ namespace ParseSelectSql
             ISqlMapper _sqlMapper = _sqlMapBuilder.Configure();
 
             Hashtable param = new Hashtable();
-            param.Add("in_patient_id", "000023");
+            param.Add("in_patient_id", "0000%");
             IList list = _sqlMapper.QueryForList("Test_GetInPatient", param);
+            //DataSet ds = _sqlMapper.QueryForDataSet("Test_GetInPatient", param);
         }
     }
 }
