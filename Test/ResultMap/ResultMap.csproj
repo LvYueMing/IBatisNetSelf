@@ -8,16 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="IBatisNetSelf.Common">
-      <HintPath>..\..\IBatisNetSelf.Common\bin\Debug\net6.0\IBatisNetSelf.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="IBatisNetSelf.DataMapper">
-      <HintPath>..\..\IBatisNetSelf.DataMapper\bin\Debug\net6.0\IBatisNetSelf.DataMapper.dll</HintPath>
-    </Reference>
-    <Reference Include="Mappers">
-      <HintPath>..\Mappers\bin\Debug\net6.0\Mappers.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <ProjectReference Include="..\..\IBatisNetSelf.Common\IBatisNetSelf.Common.csproj" />
+    <ProjectReference Include="..\..\IBatisNetSelf.DataMapper\IBatisNetSelf.DataMapper.csproj" />
   </ItemGroup>
 
   <ItemGroup>
