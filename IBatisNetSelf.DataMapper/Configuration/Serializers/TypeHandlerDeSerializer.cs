@@ -51,7 +51,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Serializers
             }
             else
             {
-                throw new ConfigurationException("The callBack type is not a valid implementation of ITypeHandler or ITypeHandlerCallback");
+                throw new IBatisConfigException("The callBack type is not a valid implementation of ITypeHandler or ITypeHandlerCallback");
             }
 
             // 

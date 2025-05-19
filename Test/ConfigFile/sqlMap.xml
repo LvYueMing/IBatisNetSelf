@@ -20,13 +20,25 @@
 	</parameterMaps>
 	
 	<statements>
-	
-	    <sql></sql>
+		<!--include中引用-->
+	    <sql id=""></sql>
 		
-		<statement></statement>
+		<statement id="" cacheModel="" extends="" listClass="" parameterClass="" parameterMap="" resultClass="" resultMap="" remapResults="">
+		</statement>
 		
 	    <select id="" parameterClass="" listClass="" parameterMap="" resultClass="" resultMap="" remapResults="" extends="" cacheModel="">
-			<generate by="" table=""></generate>
+			<!--内联参数格式-->
+			select * from dual
+			where id = #propertyName,type=string,dbype=Varchar,direction=Input,nullValue=N/A,handler=string#
+			<!--动态sql标志-->
+			<dynamic/>
+			<isEqual/>
+			...
+			<iterate/>
+			
+			<generate by="" table="">
+			</generate>
+			
 			<include refid=""/>
 		</select>
 		

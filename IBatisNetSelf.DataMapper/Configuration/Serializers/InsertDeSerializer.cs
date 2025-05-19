@@ -72,7 +72,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Serializers
             {
                 case @"pre": return IBatisNetSelf.DataMapper.SelectKeyType.@pre;
                 case @"post": return IBatisNetSelf.DataMapper.SelectKeyType.@post;
-                default: throw new ConfigurationException("Unknown selectKey type : '" + s + "'");
+                default: throw new IBatisConfigException("Unknown selectKey type : '" + s + "'");
             }
         }
     }

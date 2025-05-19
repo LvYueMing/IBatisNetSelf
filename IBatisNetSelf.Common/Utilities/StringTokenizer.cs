@@ -113,7 +113,6 @@ namespace IBatisNetSelf.Common.Utilities
                     _count++;
                 }
                 return _count;
-
             }
 
         }

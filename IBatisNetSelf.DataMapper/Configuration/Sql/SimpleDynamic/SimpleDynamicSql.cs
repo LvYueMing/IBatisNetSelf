@@ -61,11 +61,11 @@ namespace IBatisNetSelf.DataMapper.Configuration.Sql.SimpleDynamic
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sqlStatement"></param>
+        /// <param name="sqlStr"></param>
         /// <returns></returns>
-        public static bool IsSimpleDynamicSql(string sqlStatement)
+        public static bool IsSimpleDynamicSql(string sqlStr)
         {
-            return ((sqlStatement != null) && (sqlStatement.IndexOf(ELEMENT_TOKEN) > -1));
+            return ((sqlStr != null) && (sqlStr.IndexOf(ELEMENT_TOKEN) > -1));
         }
 
         /// <summary>

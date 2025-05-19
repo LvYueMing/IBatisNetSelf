@@ -41,7 +41,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy
         /// <param name="aResultObject">The result object.</param>
         public object Process(RequestScope aRequest, ref IDataReader aReader, object aResultObject)
         {
-
             // Check if the ResultClass is a 'primitive' Type
             if (aRequest.DataExchangeFactory.TypeHandlerFactory.IsSimpleType(aRequest.CurrentResultMap.Class))
             {

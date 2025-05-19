@@ -56,6 +56,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
 
         /// <summary>
         /// Create a list of IDataParameter for the statement and build the sql string.
+        /// 创建一个 IDataParameter 列表用于语句，并构建 SQL 字符串
         /// </summary>
         public PreparedStatement Prepare()
         {
@@ -84,6 +85,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
                 }
                 else //use the parameterMap
                 {
+                    //使用派生的参数
                     if (this.session.DataSource.DbProvider.UseDeriveParameters)
                     {
                         this.DiscoverParameter(session);
@@ -105,6 +107,9 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
                 // see the page entitled "Procedure Calls" in the ODBC Programmer's Reference 
                 // in the MSDN Library. 
                 //http://support.microsoft.com/default.aspx?scid=kb;EN-US;Q309486
+                //尽管使用 ODBC .NET 驱动执行参数化存储过程与使用 SQL 或 OLE DB 驱动执行相同的存储过程略有不同，
+                //但有一个重要的区别——必须使用 ODBC 的 CALL 语法来调用存储过程，而不是直接使用存储过程的名字。
+                //关于这种CALL语法的更多信息，请参见MSDN库中ODBC编程参考里的“Procedure Calls”页面
 
                 if (this.session.DataSource.DbProvider.IsObdc == true)
                 {
@@ -215,7 +220,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
             Type _enumDbType = this.session.DataSource.DbProvider.ParameterDbType;
             ParameterPropertyCollection _list;
 
-            if (this.session.DataSource.DbProvider.UsePositionalParameters) //obdc/oledb
+            if (this.session.DataSource.DbProvider.UsePositionalParameters) //obdc/ole db
             {
                 _list = this.request.ParameterMap.Properties;
             }
@@ -232,7 +237,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
 
                 if (this.session.DataSource.DbProvider.UseParameterPrefixInParameter)
                 {
-                    // From Ryan Yao: JIRA-27, used "param" + i++ for sqlParamName
+                    // used "param" + i++ for sqlParamName
                     _sqlParamName = this.parameterPrefix + "param" + i;
                 }
                 else
@@ -248,7 +253,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
                     // Exemple : Enum.parse(System.Data.SqlDbType, 'VarChar')
                     object dbType = Enum.Parse(_enumDbType, _property.DbType, true);
 
-                    // Exemple : ObjectHelper.SetProperty(sqlparameter, 'SqlDbType', SqlDbType.Int);
+                    //Exemple : ObjectHelper.SetProperty(sqlparameter, 'SqlDbType', SqlDbType.Int);
+                    //不同的驱动，数据库类型不一样，需要做兼容性处理
                     ObjectProbe.SetMemberValue(_dataParameter, _dbTypePropertyName, dbType,
                         request.DataExchangeFactory.ObjectFactory,
                         request.DataExchangeFactory.AccessorFactory);

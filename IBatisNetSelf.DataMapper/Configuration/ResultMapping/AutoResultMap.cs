@@ -75,7 +75,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         /// The collection of constructor parameters.
         /// </summary>
         [XmlIgnore]
-        public ResultPropertyCollection Parameters
+        public ResultPropertyCollection ConstructorParams
         {
             get { throw new NotImplementedException("The property 'Parameters' is not implemented."); }
         }

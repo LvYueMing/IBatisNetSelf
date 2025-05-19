@@ -23,7 +23,7 @@ namespace IBatisNetSelf.Common.Logging.Impl
         /// Constructor
         /// </summary>
         /// <param name="properties"></param>
-        public FileTxtLoggerFactory(NameValueCollection properties)
+        public FileTxtLoggerFactory(Dictionary<string, string> properties)
         {
             try
             {

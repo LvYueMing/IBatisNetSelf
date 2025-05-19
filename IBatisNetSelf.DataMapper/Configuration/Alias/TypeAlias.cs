@@ -27,7 +27,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Alias
 
         #region Properties
         /// <summary>
-        /// Name used to identify the typeAlias amongst the others.
+        /// 用于唯一标识typeAlias别名的名称
         /// </summary>
         /// <example> Account</example>
         [XmlAttribute("alias")]
@@ -56,7 +56,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Alias
 
 
         /// <summary>
-        /// The class name to identify the typeAlias.
+        /// typeAlias 对应的类型类
         /// </summary>
         /// <example>Com.Site.Domain.Product</example>
         [XmlAttribute("type")]

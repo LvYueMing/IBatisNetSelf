@@ -8,8 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\IBatisNetSelf.DataMapper\IBatisNetSelf.DataMapper.csproj" />
     <ProjectReference Include="..\Mappers\Mappers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="IBatisNetSelf.Common">
+      <HintPath>..\..\publish\net6.0\IBatisNetSelf.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="IBatisNetSelf.DataMapper">
+      <HintPath>..\..\publish\net6.0\IBatisNetSelf.DataMapper.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

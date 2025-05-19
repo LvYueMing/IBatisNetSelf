@@ -401,7 +401,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
                 }
                 catch (Exception e)
                 {
-                    throw new ConfigurationException("Error occurred during custom type handler configuration.  Cause: " + e.Message, e);
+                    throw new IBatisConfigException("Error occurred during custom type handler configuration.  Cause: " + e.Message, e);
                 }
             }
             else

@@ -76,7 +76,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         /// <summary>
         /// The collection of constructor parameters.
         /// </summary>
-        public ResultPropertyCollection Parameters
+        public ResultPropertyCollection ConstructorParams
         {
             get { return _parameters; }
         }

@@ -19,7 +19,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         /// The collection of constructor parameters.
         /// </summary>
         [XmlIgnore]
-        ResultPropertyCollection Parameters { get; }
+        ResultPropertyCollection ConstructorParams { get; }
 
         /// <summary>
         /// The collection of ResultProperty.

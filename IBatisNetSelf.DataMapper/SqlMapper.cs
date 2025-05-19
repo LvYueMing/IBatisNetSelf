@@ -129,6 +129,35 @@ namespace IBatisNetSelf.DataMapper
             get { return this.cacheModelsEnabled; }
         }
 
+        /// <summary>
+        /// The MappedStatements collection
+        /// </summary>
+        public HybridDictionary MappedStatements
+        {
+            get { return mappedStatements; }
+        }
+
+        /// <summary>
+        /// The ParameterMap collection
+        /// </summary>
+        public HybridDictionary ParameterMaps => this.parameterMaps;
+
+
+        /// <summary>
+        /// The ResultMap collection
+        /// </summary>
+        public HybridDictionary ResultMaps => this.resultMaps;
+
+
+        /// <summary>
+        /// The DataSource
+        /// </summary>
+        public IDataSource DataSource
+        {
+            get { return dataSource; }
+            set { dataSource = value; }
+        }
+
         #endregion
 
 
@@ -215,13 +244,6 @@ namespace IBatisNetSelf.DataMapper
             this.mappedStatements.Add(key, mappedStatement);
         }
 
-        /// <summary>
-        /// The MappedStatements collection
-        /// </summary>
-        public HybridDictionary MappedStatements
-        {
-            get { return mappedStatements; }
-        }
 
         /// <summary>
         /// Get a ParameterMap by name
@@ -277,26 +299,6 @@ namespace IBatisNetSelf.DataMapper
             resultMaps.Add(resultMap.Id, resultMap);
         }
 
-        /// <summary>
-        /// The ParameterMap collection
-        /// </summary>
-        public HybridDictionary ParameterMaps => this.parameterMaps;
-
-
-        /// <summary>
-        /// The ResultMap collection
-        /// </summary>
-        public HybridDictionary ResultMaps => this.resultMaps;
-
-
-        /// <summary>
-        /// The DataSource
-        /// </summary>
-        public IDataSource DataSource
-        {
-            get { return dataSource; }
-            set { dataSource = value; }
-        }
 
         /// <summary>
         /// Flushes all cached objects that belong to this SqlMap
@@ -730,8 +732,7 @@ namespace IBatisNetSelf.DataMapper
         }
 
         /// <summary>
-        /// Executes a Sql SELECT statement that returns a single object of the type of the
-        /// resultObject parameter.
+        /// Executes a Sql SELECT statement that returns a single object of the type of the resultObject parameter.
         /// </summary>
         /// <param name="statementName">The name of the sql statement to execute.</param>
         /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>

@@ -254,9 +254,9 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                 this.direction = (ParameterDirection)Enum.Parse(typeof(ParameterDirection), directionAttribute, true);
             }
 
-            if (aParameterClass != null
-                && !typeof(IDictionary).IsAssignableFrom(aParameterClass) // Hashtable parameter map
-                && !aConfigScope.DataExchangeFactory.TypeHandlerFactory.IsSimpleType(aParameterClass)) // value property
+            if (aParameterClass != null &&
+                !typeof(IDictionary).IsAssignableFrom(aParameterClass) && // Hashtable parameter map
+                !aConfigScope.DataExchangeFactory.TypeHandlerFactory.IsSimpleType(aParameterClass)) // value property
             {
                 if (!isComplexMemberName)
                 {
@@ -285,7 +285,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                 }
                 catch (Exception e)
                 {
-                    throw new ConfigurationException("Error occurred during custom type handler configuration.  Cause: " + e.Message, e);
+                    throw new IBatisConfigException("Error occurred during custom type handler configuration.  Cause: " + e.Message, e);
                 }
             }
             else

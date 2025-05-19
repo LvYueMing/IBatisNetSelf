@@ -33,7 +33,7 @@ namespace IBatisNetSelf.DataMapper.Commands
         /// <returns>An IDbCommand with all the IDataParameter filled.</returns>
         public void Create(RequestScope aRequest, ISqlMapSession aSession, IStatement aStatement, object aParameterObject)
         {
-            // the IDbConnection & the IDbTransaction are assign in the CreateCommand 
+            //the IDbConnection & the IDbTransaction are assign in the CreateCommand 
             IDbCommand _dbComnand = aSession.CreateCommand(aStatement.CommandType);
             aRequest.IDbCommand = new DbCommandDecorator(_dbComnand, aRequest);
 

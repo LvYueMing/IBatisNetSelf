@@ -10,34 +10,42 @@ using System.Threading.Tasks;
 namespace IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy
 {
     /// <summary>
-    /// <see cref="IResultStrategy"/> implementation used when implicit 'ResultMap'.
+    /// `AutoMapStrategy` 是一个 `IResultStrategy` 实现，
+    /// 当映射文件未显式声明 `<resultMap>` 时，
+    /// 它会自动根据查询结果集字段名与目标对象属性名进行映射。
     /// </summary>
     public sealed class AutoMapStrategy : IResultStrategy
     {
         /// <summary>
-        /// Auto-map the reader to the result object.
+        /// 初始化 AutoResultMap，用于将 reader 中的数据自动映射到结果对象。
         /// </summary>
-        /// <param name="aRequest">The request.</param>
-        /// <param name="aReader">The reader.</param>
-        /// <param name="aResultObject">The result object.</param>
-        /// <returns>The AutoResultMap use to map the resultset.</returns>
+        /// <param name="aRequest">当前请求上下文</param>
+        /// <param name="aReader">数据库读取器</param>
+        /// <param name="aResultObject">输出结果对象（可能是 null）</param>
+        /// <returns>构建好的 AutoResultMap</returns>
         private AutoResultMap InitializeAutoResultMap(RequestScope aRequest, ref IDataReader aReader, ref object aResultObject)
         {
+            // 获取当前的 ResultMap，并转换为 AutoResultMap 类型
             AutoResultMap _resultMap = aRequest.CurrentResultMap as AutoResultMap;
 
+            // 如果配置允许每次都重新映射（常用于动态 SQL）
             if (aRequest.Statement.AllowRemapping)
             {
+                // 克隆出一个新的 AutoResultMap，避免线程冲突
                 _resultMap = _resultMap.Clone();
 
+                // 构建属性集合（从 reader 映射到 resultObject 的属性集合）
                 ResultPropertyCollection _properties = ReaderAutoMapper.Build(
                     aRequest.DataExchangeFactory,
                     aReader,
                     ref aResultObject);
 
+                // 添加到 AutoResultMap 中
                 _resultMap.Properties.AddRange(_properties);
             }
             else
             {
+                // 如果未初始化过 AutoResultMap，则进行线程安全的初始化
                 if (!_resultMap.IsInitalized)
                 {
                     lock (_resultMap)
@@ -50,7 +58,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy
                                ref aResultObject);
 
                             _resultMap.Properties.AddRange(_properties);
-                            _resultMap.IsInitalized = true;
+                            _resultMap.IsInitalized = true;// 标记已初始化
                         }
                     }
                 }
@@ -64,14 +72,15 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy
         #region IResultStrategy Members
 
         /// <summary>
-        /// Processes the specified <see cref="IDataReader"/> 
-        /// a an auto result map is used.
+        /// 使用自动映射策略从 DataReader 生成结果对象。
         /// </summary>
-        /// <param name="aRequest">The request.</param>
-        /// <param name="aReader">The reader.</param>
-        /// <param name="aResultObject">The result object.</param>
+        /// <param name="aRequest">请求上下文</param>
+        /// <param name="aReader">数据读取器</param>
+        /// <param name="aResultObject">输入或输出结果对象</param>
+        /// <returns>完整填充后的结果对象</returns>
         public object Process(RequestScope aRequest, ref IDataReader aReader, object aResultObject)
         {
+            // 如果 resultObject 为 null，则创建一个新的对象实例（用于接收映射数据）
             object _outObject = aResultObject;
 
             if (_outObject == null)
@@ -79,14 +88,10 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy
                 _outObject = (aRequest.CurrentResultMap as AutoResultMap).CreateInstanceOfResultClass();
             }
 
+            // 初始化自动映射配置
             AutoResultMap _resultMap = InitializeAutoResultMap(aRequest, ref aReader, ref _outObject);
 
-            // En configuration initialiser des AutoResultMap (IResultMap) avec uniquement leur class name et class et les mettres
-            // ds Statement.ResultsMap puis ds AutoMapStrategy faire comme AutoResultMap ds Java
-            // tester si la request.CurrentResultMap [AutoResultMap (IResultMap)] est initialis閑 
-            // [if (allowRemapping || getResultMappings() == null) {initialize(rs);] java
-            // si ( request.Statement.AllowRemapping || (request.CurrentResultMap as AutoResultMap).IsInitalized) ....
-
+            // 遍历所有自动识别出的属性，逐个从 reader 中读取值，并赋值到结果对象的对应属性上
             for (int index = 0; index < _resultMap.Properties.Count; index++)
             {
                 ResultProperty _property = _resultMap.Properties[index];

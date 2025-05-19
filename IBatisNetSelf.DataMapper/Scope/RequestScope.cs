@@ -16,6 +16,7 @@ namespace IBatisNetSelf.DataMapper.Scope
 {
     /// <summary>
     /// Hold data during the process of a mapped statement.
+    /// 在Mapped Statement的处理过程中持有数据。这里的“持有数据”指的是在执行一个SQL映射语句（即Mapped Statement）的过程中，保持或维持某些状态或数据
     /// </summary>
     public class RequestScope : IScope
     {

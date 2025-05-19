@@ -32,19 +32,19 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy
 
             if (outObject == null)
             {
-                object[] parameters = null;
-                if (resultMap.Parameters.Count > 0)
+                object[] _constructorParams = null;
+                if (resultMap.ConstructorParams.Count > 0)
                 {
-                    parameters = new object[resultMap.Parameters.Count];
+                    _constructorParams = new object[resultMap.ConstructorParams.Count];
                     // Fill parameters array
-                    for (int index = 0; index < resultMap.Parameters.Count; index++)
+                    for (int index = 0; index < resultMap.ConstructorParams.Count; index++)
                     {
-                        ResultProperty resultProperty = resultMap.Parameters[index];
-                        parameters[index] = resultProperty.ArgumentStrategy.GetValue(request, resultProperty, ref reader, null);
+                        ResultProperty resultProperty = resultMap.ConstructorParams[index];
+                        _constructorParams[index] = resultProperty.ArgumentStrategy.GetValue(request, resultProperty, ref reader, null);
                     }
                 }
 
-                outObject = resultMap.CreateInstanceOfResult(parameters);
+                outObject = resultMap.CreateInstanceOfResult(_constructorParams);
             }
 
             // For each Property in the ResultMap, set the property in the object 

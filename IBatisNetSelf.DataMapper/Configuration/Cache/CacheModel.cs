@@ -185,7 +185,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Cache
             }
             catch (Exception e)
             {
-                throw new ConfigurationException("Error instantiating cache controller for cache named '" + id + ". Cause: " + e.Message, e);
+                throw new IBatisConfigException("Error instantiating cache controller for cache named '" + id + ". Cause: " + e.Message, e);
             }
 
             //------------ configure Controller---------------------
@@ -195,7 +195,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Cache
             }
             catch (Exception e)
             {
-                throw new ConfigurationException("Error configuring controller named '" + id + "'. Cause: " + e.Message, e);
+                throw new IBatisConfigException("Error configuring controller named '" + id + "'. Cause: " + e.Message, e);
             }
         }
 

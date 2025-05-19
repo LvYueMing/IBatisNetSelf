@@ -34,7 +34,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Serializers
             }
             if (configScope.SqlIncludes.Contains(_id))
             {
-                throw new ConfigurationException("Duplicate <sql>-include '" + _id + "' found.");
+                throw new IBatisConfigException("Duplicate <sql>-include '" + _id + "' found.");
             }
             else
             {

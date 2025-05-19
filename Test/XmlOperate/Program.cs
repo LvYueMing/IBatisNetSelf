@@ -1,4 +1,5 @@
 ﻿using IBatisNetSelf.Common.Utilities;
+using IBatisNetSelf.Common.Exceptions;
 using System.Configuration;
 using System.Reflection.PortableExecutable;
 using System.Xml;
@@ -77,7 +78,7 @@ namespace XmlOperate
                 if (_xsdStream == null)
                 {
                     // TODO: avoid using hard-coded value "IBatisNet.DataMapper"
-                    throw new ConfigurationException("Unable to locate embedded resource [IBatisNet.DataMapper." + _schemaFileName + "]. If you are building from source, verfiy the file is marked as an embedded resource.");
+                    throw new IBatisConfigException("Unable to locate embedded resource [IBatisNet.DataMapper." + _schemaFileName + "]. If you are building from source, verfiy the file is marked as an embedded resource.");
                 }
 
                 XmlSchema _schema = XmlSchema.Read(_xsdStream, new ValidationEventHandler(ValidationCallBack));

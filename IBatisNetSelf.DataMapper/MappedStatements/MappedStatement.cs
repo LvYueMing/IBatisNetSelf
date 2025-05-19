@@ -768,6 +768,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
 
         /// <summary>
         /// Executes the <see cref="PostBindind"/>.
+        /// 后绑定的策略
         /// </summary>
         /// <param name="aRequest">The current <see cref="RequestScope"/>.</param>
         private void ExecutePostSelect(RequestScope aRequest)

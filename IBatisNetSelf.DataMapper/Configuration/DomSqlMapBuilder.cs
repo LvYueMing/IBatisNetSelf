@@ -576,7 +576,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             catch (Exception e)
             {
-                throw new ConfigurationException(configScope.ErrorContext.ToString(), e);
+                throw new IBatisConfigException(configScope.ErrorContext.ToString(), e);
             }
         }
 
@@ -600,7 +600,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 if (_xsdStream == null)
                 {
                     // TODO: avoid using hard-coded value "IBatisNet.DataMapper"
-                    throw new ConfigurationException("Unable to locate embedded resource [IBatisNetSelf.DataMapper." + aSchemaFileName + "]. If you are building from source, verfiy the file is marked as an embedded resource.");
+                    throw new IBatisConfigException("Unable to locate embedded resource [IBatisNetSelf.DataMapper." + aSchemaFileName + "]. If you are building from source, verfiy the file is marked as an embedded resource.");
                 }
 
                 XmlSchema? _schema = XmlSchema.Read(_xsdStream, new ValidationEventHandler(ValidationCallBack));
@@ -620,7 +620,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
                 if (!configScope.IsXmlValid)
                 {
-                    throw new ConfigurationException("Invalid SqlMap.config document. cause :" + configScope.ErrorContext.Resource);
+                    throw new IBatisConfigException("Invalid SqlMap.config document. cause :" + configScope.ErrorContext.Resource);
                 }
             }
             finally
@@ -662,7 +662,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 _sw = Stopwatch.StartNew();
             }
 
-            #region Load Global Properties
+            #region Load Global Properties from sqlmap.config
             if (configScope.IsCallFromDao == false)
             {
                 string _xPathProperties = ApplyDataMapperNamespacePrefix(XML_DATAMAPPER_CONFIG_ROOT);
@@ -679,7 +679,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Load settings
+            #region Load Settings from sqlmap.config
             configScope.ErrorContext.Activity = "loading global settings";
 
             string _xPathSettings = ApplyDataMapperNamespacePrefix(XML_CONFIG_SETTINGS);
@@ -782,14 +782,14 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
             #endregion
 
-            #region Load providers
+            #region Load providers from sqlmap.config
             if (configScope.IsCallFromDao == false)
             {
                 GetProviders();
             }
             #endregion
 
-            #region Load DataBase
+            #region Load DataBase from sqlmap.config
 
             #region Choose the  provider
             IDbProvider _provider = null;
@@ -807,7 +807,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Load the DataSources
+            #region Load the DataSources from sqlmap.config
             configScope.ErrorContext.Activity = "loading Database DataSource";
             XmlNode _nodeDataSource = configScope.SqlMapConfigDocument.SelectSingleNode(ApplyDataMapperNamespacePrefix(XML_DATABASE_DATASOURCE), configScope.XmlNamespaceManager);
 
@@ -815,7 +815,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             {
                 if (configScope.IsCallFromDao == false)
                 {
-                    throw new ConfigurationException("There's no dataSource tag in SqlMap.config.");
+                    throw new IBatisConfigException("There's no dataSource tag in SqlMap.config.");
                 }
                 else  // patch from Luke Yang
                 {
@@ -853,7 +853,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             #endregion
             #endregion 
 
-            #region Load Global TypeAlias
+            #region Load Global TypeAlias from sqlmap.config
             foreach (XmlNode xmlNode in configScope.SqlMapConfigDocument.SelectNodes(ApplyDataMapperNamespacePrefix(XML_GLOBAL_TYPEALIAS), configScope.XmlNamespaceManager))
             {
                 configScope.ErrorContext.Activity = "loading global Type alias";
@@ -868,7 +868,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Load TypeHandlers
+            #region Load TypeHandlers from sqlmap.config
             foreach (XmlNode xmlNode in configScope.SqlMapConfigDocument.SelectNodes(ApplyDataMapperNamespacePrefix(XML_GLOBAL_TYPEHANDLER), configScope.XmlNamespaceManager))
             {
                 try
@@ -880,7 +880,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 {
                     NameValueCollection prop = XmlNodeUtils.ParseAttributes(xmlNode, configScope.Properties);
 
-                    throw new ConfigurationException(
+                    throw new IBatisConfigException(
                         String.Format("Error registering TypeHandler class \"{0}\" for handling .Net type \"{1}\" and dbType \"{2}\". Cause: {3}",
                         XmlNodeUtils.GetStringAttribute(prop, "callback"),
                         XmlNodeUtils.GetStringAttribute(prop, "type"),
@@ -898,7 +898,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Load sqlMap mapping files
+            #region Load sqlMap mapping files from sqlmap.config
             foreach (XmlNode xmlNode in configScope.SqlMapConfigDocument.SelectNodes(ApplyDataMapperNamespacePrefix(XML_SQLMAP), configScope.XmlNamespaceManager))
             {
                 configScope.CurrentNodeContext = xmlNode;
@@ -981,6 +981,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             #endregion
 
             #region Resolve resultMap / Discriminator / PropertyStategy attributes on Result/Argument Property 
+            // 解析 Result、Argument 属性上的 resultMap、Discriminator 和 PropertyStrategy 属性
             foreach (DictionaryEntry entry in configScope.SqlMapper.ResultMaps)
             {
                 configScope.ErrorContext.Activity = "Resolve 'resultMap' attribute on Result Property";
@@ -995,9 +996,9 @@ namespace IBatisNetSelf.DataMapper.Configuration
                     }
                     result.PropertyStrategy = PropertyStrategyFactory.Get(result);
                 }
-                for (int index = 0; index < _resultMap.Parameters.Count; index++)
+                for (int index = 0; index < _resultMap.ConstructorParams.Count; index++)
                 {
-                    ResultProperty result = _resultMap.Parameters[index];
+                    ResultProperty result = _resultMap.ConstructorParams[index];
                     if (result.NestedResultMapName.Length > 0)
                     {
                         result.NestedResultMap = configScope.SqlMapper.GetResultMap(result.NestedResultMapName);
@@ -1065,7 +1066,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                         }
                         else
                         {
-                            throw new ConfigurationException(
+                            throw new IBatisConfigException(
                                 string.Format("Error while configuring the Provider named \"{0}\" There can be only one default Provider.", _provider.Name));
                         }
                     }
@@ -1097,7 +1098,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 }
                 else
                 {
-                    throw new ConfigurationException(
+                    throw new IBatisConfigException(
                         string.Format("Error while configuring the Provider named \"{0}\". Cause : The provider is not in 'providers.config' or is not enabled.",
                             providerName));
                 }
@@ -1110,7 +1111,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 }
                 else
                 {
-                    throw new ConfigurationException(
+                    throw new IBatisConfigException(
                         string.Format("Error while configuring the SqlMap. There is no provider marked default in 'providers.config' file."));
                 }
             }
@@ -1138,6 +1139,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             // Load the file 
             configScope.SqlMapDocument = Resources.GetSubfileAsXmlDocument(_sqlMapNode, configScope.Properties);
 
+            //Validate SqlMap
             if (configScope.ValidateSqlMap)
             {
                 ValidateSchema(configScope.SqlMapDocument.ChildNodes[1], "SqlMap.xsd");
@@ -1189,6 +1191,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 configScope.ErrorContext.MoreInfo = "loading sql tag";
                 configScope.CurrentNodeContext = xmlNode; // A sql tag
 
+                //存储到 ConfigurationScope.SqlIncludes 集合中
                 SqlDeSerializer.Deserialize(xmlNode, configScope);
             }
             #endregion
@@ -1227,42 +1230,56 @@ namespace IBatisNetSelf.DataMapper.Configuration
             #endregion
 
             #region Select tag
+
             Select _selectSql;
+
+            // 遍历所有 SQL 映射文件中的 <select> 节点
             foreach (XmlNode xmlNode in configScope.SqlMapDocument.SelectNodes(ApplyMappingNamespacePrefix(XML_SELECT), configScope.XmlNamespaceManager))
             {
+                // 设置错误上下文提示，用于异常信息中指出当前处理的是哪部分
                 configScope.ErrorContext.MoreInfo = "loading select tag";
+                // 当前解析节点上下文设置为当前 select 节点
                 configScope.CurrentNodeContext = xmlNode; // A select node
 
+                // 反序列化 select 节点，转换为 Select 对象（包含 id、sql 语句、参数映射、结果映射等）
                 _selectSql = SelectDeSerializer.Deserialize(xmlNode, configScope);
+                // 将 CacheModelName 和 ParameterMapName 应用命名空间前缀（如果配置开启了命名空间）
                 _selectSql.CacheModelName = configScope.ApplyNamespace(_selectSql.CacheModelName);
                 _selectSql.ParameterMapName = configScope.ApplyNamespace(_selectSql.ParameterMapName);
 
+                // 如果启用了 statement 命名空间机制，则给当前 select 的 Id 添加命名空间前缀
                 if (configScope.UseStatementNamespaces)
                 {
                     _selectSql.Id = configScope.ApplyNamespace(_selectSql.Id);
                 }
+                // 设置错误上下文对象 ID 为当前 select 的 ID（用于报错信息中指明哪个 statement 出错）
                 configScope.ErrorContext.ObjectId = _selectSql.Id;
 
+                // 初始化 select 对象（例如解析参数、结果映射等相关逻辑）
                 _selectSql.Initialize(configScope);
 
+
+                // 如果配置了动态 SQL 生成器（<generate> 标签），调用 GenerateCommandText 动态生成 SQL 语句
                 if (_selectSql.Generate != null)
                 {
                     GenerateCommandText(configScope, _selectSql);
                 }
                 else
-                {
-                    //Build ISql (analyse sql statement)		
+                {	
+                    // 否则直接解析静态 SQL，构建 ISql 对象（用于后续执行 SQL）	
                     ProcessSqlStatement(_selectSql);
                 }
 
-                // Build MappedStatement
+                // 创建一个 Select 类型的 MappedStatement，绑定 select SQL 的定义与执行行为
                 MappedStatement _mappedStatement = new SelectMappedStatement(configScope.SqlMapper, _selectSql);
+                // 将其声明为接口类型，方便后续包装处理（如添加缓存）
                 IMappedStatement _mapStatement = _mappedStatement;
+                // 如果启用了缓存功能，并指定了 CacheModel，则用 CachingStatement 包装原始 MappedStatement
                 if (_selectSql.CacheModelName != null && _selectSql.CacheModelName.Length > 0 && configScope.IsCacheModelsEnabled)
                 {
                     _mapStatement = new CachingStatement(_mappedStatement);
                 }
-
+                // 将最终生成的 MappedStatement 注册到 SqlMapper 中，供后续查询执行时使用
                 configScope.SqlMapper.AddMappedStatement(_mapStatement.Id, _mapStatement);
             }
             #endregion
@@ -1506,6 +1523,10 @@ namespace IBatisNetSelf.DataMapper.Configuration
             if (aStatement.ExtendStatement.Length > 0)
             {
                 // Find 'super' statement
+                // child:: 定位子节点
+                // *	   匹配任意元素
+                // @	   属性定位
+                // 根元素 sqlmap 开始，选择其下 statements 子元素中的所有直接子元素，但仅限于那些拥有 id 属性且其值等于 aStatement.ExtendStatement 的元素
                 XmlNode _supperStatementNode = configScope.SqlMapDocument.SelectSingleNode(ApplyMappingNamespacePrefix(XML_SEARCH_STATEMENT) + "/child::*[@id='" + aStatement.ExtendStatement + "']", configScope.XmlNamespaceManager);
                 if (_supperStatementNode != null)
                 {
@@ -1513,12 +1534,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 }
                 else
                 {
-                    throw new ConfigurationException("Unable to find extend statement named '" + aStatement.ExtendStatement + "' on statement '" + aStatement.Id + "'.'");
+                    throw new IBatisConfigException("Unable to find extend statement named '" + aStatement.ExtendStatement + "' on statement '" + aStatement.Id + "'.'");
                 }
             }
 
             configScope.ErrorContext.MoreInfo = "parse dynamic tags on sql statement";
 
+            //是否动态sql,即是否包含sqltag 例如：isEqual
             _isDynamic = ParseDynamicTags(_commandTextNode, _dynamicSql, _sqlBuffer, _isDynamic, false, aStatement);
 
             if (_isDynamic)
@@ -1585,7 +1607,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                         _includeNode = (XmlNode)configScope.SqlIncludes[_nsrefid];
                         if (_includeNode == null)
                         {
-                            throw new ConfigurationException("Could not find SQL tag to include with refid '" + _refid + "'");
+                            throw new IBatisConfigException("Could not find SQL tag to include with refid '" + _refid + "'");
                         }
                     }
                     aIsDynamic = ParseDynamicTags(_includeNode, aDynamic, aSqlBuffer, aIsDynamic, false, aStatement);
@@ -1621,10 +1643,10 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// Apply inline paremeterMap
         /// </summary>
         /// <param name="aStatement"></param>
-        /// <param name="aSqlStatement"></param>
-        private void ApplyInlineParemeterMap(IStatement aStatement, string aSqlStatement)
+        /// <param name="aSqlStr">sql字符串</param>
+        private void ApplyInlineParemeterMap(IStatement aStatement, string aSqlStr)
         {
-            string _newSql = aSqlStatement;
+            string _newSql = aSqlStr;
 
             configScope.ErrorContext.MoreInfo = "apply inline parameterMap";
 
@@ -1638,25 +1660,25 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
                 if (_sqlText.Parameters.Length > 0)
                 {
-                    ParameterMap _inLineParametermap = new ParameterMap(configScope.DataExchangeFactory);
-                    _inLineParametermap.Id = aStatement.Id + "-InLineParameterMap";
+                    ParameterMap _inLineParameterMap = new ParameterMap(configScope.DataExchangeFactory);
+                    _inLineParameterMap.Id = aStatement.Id + "-InLineParameterMap";
                     if (aStatement.ParameterClass != null)
                     {
-                        _inLineParametermap.Class = aStatement.ParameterClass;
+                        _inLineParameterMap.Class = aStatement.ParameterClass;
                     }
-                    _inLineParametermap.Initialize(configScope.DataSource.DbProvider.UsePositionalParameters, configScope);
+                    _inLineParameterMap.Initialize(configScope.DataSource.DbProvider.UsePositionalParameters, configScope);
 
                     if (aStatement.ParameterClass == null &&
                         _sqlText.Parameters.Length == 1 && _sqlText.Parameters[0].PropertyName == "value")//#value# parameter with no parameterClass attribut
                     {
-                        _inLineParametermap.DataExchange = configScope.DataExchangeFactory.GetDataExchangeForClass(typeof(int));//Get the primitiveDataExchange
+                        _inLineParameterMap.DataExchange = configScope.DataExchangeFactory.GetDataExchangeForClass(typeof(int));//Get the primitiveDataExchange
                     }
-                    aStatement.ParameterMap = _inLineParametermap;
+                    aStatement.ParameterMap = _inLineParameterMap;
 
                     int _lenght = _sqlText.Parameters.Length;
                     for (int index = 0; index < _lenght; index++)
                     {
-                        _inLineParametermap.AddParameterProperty(_sqlText.Parameters[index]);
+                        _inLineParameterMap.AddParameterProperty(_sqlText.Parameters[index]);
                     }
                 }
                 _newSql = _sqlText.Text;
@@ -1680,13 +1702,17 @@ namespace IBatisNetSelf.DataMapper.Configuration
                     // Could not call BuildPreparedStatement for procedure because when Unit Test
                     // the database is not here (but in theory procedure must be prepared like statement)
                     // It's even better as we can then switch DataSource.
+                    //无法在单元测试中调用 BuildPreparedStatement 来准备存储过程，因为此时数据库并不存在（但理论上，存储过程应该像预编译语句一样准备好）。这样做还有一个好处，就是我们可以切换数据源。
                 }
-                else if (aStatement is Statement)
+                else if (aStatement is Statement)//select update insert delete 等
                 {
                     _sql = new StaticSql(configScope, aStatement);
                     ISqlMapSession _session = new SqlMapSession(configScope.SqlMapper);
 
-                    ((StaticSql)_sql).BuildPreparedStatement(_session, _newSql);
+                    //1.预先组织好要执行的sql(CommandText)，主要是sql的中参数命名及定位符的确定
+                    //2.根据_sql对象的属性statement.ParameterMap,提前创建执行对象需要的参数对象（IDbDataParameter）
+                    //3.将结果暂存到_sql的属性preparedStatement对象中
+                    ((StaticSql)_sql).BuildPreparedStatement(_session, _newSql); 
                 }
             }
             aStatement.Sql = _sql;
@@ -1839,7 +1865,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                         }
                         else
                         {
-                            throw new ConfigurationException("In mapping file '" + configScope.SqlMapNamespace + "' the parameterMap '" + _parameterMap.Id + "' can not resolve extends attribute '" + _parameterMap.ExtendMap + "'");
+                            throw new IBatisConfigException("In mapping file '" + configScope.SqlMapNamespace + "' the parameterMap '" + _parameterMap.Id + "' can not resolve extends attribute '" + _parameterMap.ExtendMap + "'");
                         }
                     }
                     else
@@ -1901,7 +1927,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                         }
                         else
                         {
-                            throw new ConfigurationException("In mapping file '" + configScope.SqlMapNamespace + "' the resultMap '" + _resultMap.Id + "' can not resolve extends attribute '" + _resultMap.ExtendMap + "'");
+                            throw new IBatisConfigException("In mapping file '" + configScope.SqlMapNamespace + "' the resultMap '" + _resultMap.Id + "' can not resolve extends attribute '" + _resultMap.ExtendMap + "'");
                         }
                     }
                     else
@@ -1925,13 +1951,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
                         }
                     }
                     // Add constructor arguments 
-                    if (_resultMap.Parameters.Count == 0)
+                    if (_resultMap.ConstructorParams.Count == 0)
                     {
-                        for (int i = 0; i < _superMap.Parameters.Count; i++)
+                        for (int i = 0; i < _superMap.ConstructorParams.Count; i++)
                         {
-                            _resultMap.Parameters.Add(_superMap.Parameters[i]);
+                            _resultMap.ConstructorParams.Add(_superMap.ConstructorParams[i]);
                         }
-                        if (_resultMap.Parameters.Count > 0)
+                        if (_resultMap.ConstructorParams.Count > 0)
                         {
                             _resultMap.SetObjectFactory(configScope);
                         }
@@ -1945,7 +1971,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                         string memberName = _resultMap.GroupByPropertyNames[i];
                         if (!_resultMap.Properties.Contains(memberName))
                         {
-                            throw new ConfigurationException(
+                            throw new IBatisConfigException(
                                 string.Format(
                                     "Could not configure ResultMap named \"{0}\". Check the groupBy attribute. Cause: there's no result property named \"{1}\".",
                                     _resultMap.Id, memberName));
@@ -1966,7 +1992,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// <returns>A resource stream.</returns>
         public Stream GetStream(string schemaResourceKey)
         {
-            return Assembly.GetExecutingAssembly().GetManifestResourceStream("IBatisNetCore.DataMapper." + schemaResourceKey);
+            return Assembly.GetExecutingAssembly().GetManifestResourceStream("IBatisNetSelf.DataMapper." + schemaResourceKey);
         }
 
 

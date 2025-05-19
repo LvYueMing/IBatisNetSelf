@@ -1,11 +1,14 @@
 ﻿using IBatisNetSelf.Common.Exceptions;
 using IBatisNetSelf.Common.Logging;
 using IBatisNetSelf.Common.Xml;
+using Microsoft.Extensions.FileProviders;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -114,7 +117,7 @@ namespace IBatisNetSelf.Common.Utilities
             }
             catch (Exception e)
             {
-                throw new ConfigurationException($"Unable to load config file \"{resourcePath}\". Cause : {e.Message}");
+                throw new IBatisConfigException($"Unable to load config file \"{resourcePath}\". Cause : {e.Message}");
             }
             finally
             {
@@ -219,7 +222,7 @@ namespace IBatisNetSelf.Common.Utilities
             }
             catch (Exception e)
             {
-                throw new ConfigurationException($"Unable to load XmlDocument via stream. Cause : {e.Message}", e);
+                throw new IBatisConfigException($"Unable to load XmlDocument via stream. Cause : {e.Message}", e);
             }
 
             return _configXmlDoc;
@@ -240,7 +243,7 @@ namespace IBatisNetSelf.Common.Utilities
             }
             catch (Exception e)
             {
-                throw new ConfigurationException(
+                throw new IBatisConfigException(
                     string.Format("Unable to load XmlDocument via FileInfo. Cause : {0}",
                     e.Message), e);
             }
@@ -263,7 +266,7 @@ namespace IBatisNetSelf.Common.Utilities
             }
             catch (Exception e)
             {
-                throw new ConfigurationException($"Unable to load XmlDocument via Uri. Cause : {e.Message}", e);
+                throw new IBatisConfigException($"Unable to load XmlDocument via Uri. Cause : {e.Message}", e);
             }
 
             return _configXmlDoc;
@@ -284,7 +287,7 @@ namespace IBatisNetSelf.Common.Utilities
             }
             catch (Exception e)
             {
-                throw new ConfigurationException($"Unable to load file via resource \"{resource}\" as resource. Cause : {e.Message}", e);
+                throw new IBatisConfigException($"Unable to load file via resource \"{resource}\" as resource. Cause : {e.Message}", e);
             }
 
             return _configXmlDoc;
@@ -306,7 +309,7 @@ namespace IBatisNetSelf.Common.Utilities
             }
             catch (Exception e)
             {
-                throw new ConfigurationException(
+                throw new IBatisConfigException(
                     string.Format("Unable to load file via url \"{0}\" as url. Cause : {1}",
                     url,
                     e.Message), e);
@@ -323,70 +326,69 @@ namespace IBatisNetSelf.Common.Utilities
         /// <returns></returns>
         public static XmlDocument GetEmbeddedResourceAsXmlDocument(string aResource)
         {
-            XmlDocument _configXmlDoc = new XmlDocument();
-            bool _isLoad = false;
-
             FileAssemblyInfo _fileInfo = new FileAssemblyInfo(aResource);
             if (_fileInfo.IsAssemblyQualified)
             {
-                Assembly _assembly = null;
-                _assembly = Assembly.LoadFrom(_fileInfo.AssemblyName);
-                Stream _stream = _assembly.GetManifestResourceStream(_fileInfo.ResourceFileName);
-                // JIRA - IBATISNET-103 
-                if (_stream == null)
+                // 构建完整路径（如：AppBaseDir/MyAssembly.dll）
+                string _assemblyPath = Path.Combine(AppContext.BaseDirectory, _fileInfo.AssemblyName+".dll");
+                if (!File.Exists(_assemblyPath))
                 {
-                    _stream = _assembly.GetManifestResourceStream(_fileInfo.FileName);
+                    throw new IBatisConfigException($"Assembly not found at path: {_assemblyPath}");
                 }
-                if (_stream != null)
-                {
-                    try
-                    {
-                        _configXmlDoc.Load(_stream);
-                        _isLoad = true;
-                    }
-                    catch (Exception e)
-                    {
-                        throw new ConfigurationException(
-                            string.Format("Unable to load file \"{0}\" in embedded resource. Cause : {1}",
-                            aResource,
-                            e.Message), e);
-                    }
-                }
+
+                //_assembly = Assembly.LoadFrom(_assemblyPath);
+                //_assembly = Assembly.Load(_fileInfo.AssemblyName);
+
+                //按照路径加载到默认加载上下文(Load Context)
+                Assembly _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_assemblyPath);
+
+                // 先尝试用 ResourceFileName 加载，失败再尝试 FileName
+                Stream? stream = _assembly.GetManifestResourceStream(_fileInfo.ResourceFileName)
+                                    ?? _assembly.GetManifestResourceStream(_fileInfo.FileName);
+
+                return LoadXmlFromStream(stream, aResource);
             }
             else
             {
-                // bare type name... loop thru all loaded assemblies
-                Assembly[] _assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (Assembly _assembly in _assemblies)
+                // 无程序集限定名：遍历当前 AppDomain 已加载程序集
+                foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {
-                    Stream _stream = _assembly.GetManifestResourceStream(_fileInfo.FileName);
-                    if (_stream != null)
+                    Stream? stream = assembly.GetManifestResourceStream(_fileInfo.FileName);
+                    if (stream != null)
                     {
-                        try
-                        {
-                            _configXmlDoc.Load(_stream);
-                            _isLoad = true;
-                        }
-                        catch (Exception e)
-                        {
-                            throw new ConfigurationException(
-                                string.Format("Unable to load file \"{0}\" in embedded resource. Cause : ",
-                                aResource,
-                                e.Message), e);
-                        }
-                        break;
+                        return LoadXmlFromStream(stream, aResource);
                     }
                 }
             }
 
-            //{
-            //	_logger.Error("Could not load embedded resource from assembly");
-            //	throw new ConfigurationException(
-            //		string.Format("Unable to load embedded resource from assembly \"{0}\".",
-            //		_fileInfo.OriginalFileName));
-            //}
+            throw new IBatisConfigException($"Unable to find embedded resource: \"{aResource}\"");
+        }
 
-            return _configXmlDoc;
+
+        /// <summary>
+        /// 辅助方法：从资源流中加载 XmlDocument（带异常处理）
+        /// </summary>
+        private static XmlDocument LoadXmlFromStream(Stream? stream, string resourceName)
+        {
+            if (stream == null)
+            {
+                throw new IBatisConfigException($"Stream is null for resource: \"{resourceName}\"");
+            }
+
+            try
+            {
+                using (stream)
+                {
+                    XmlDocument doc = new XmlDocument();
+                    doc.Load(stream);
+                    return doc;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new IBatisConfigException(
+                    $"Unable to load XML from embedded resource \"{resourceName}\". Cause: {ex.Message}", ex);
+            }
         }
 
 
@@ -414,7 +416,7 @@ namespace IBatisNetSelf.Common.Utilities
             }
             catch (Exception e)
             {
-                throw new ConfigurationException(
+                throw new IBatisConfigException(
                     string.Format("Unable to load file \"{0}\". Cause : \"{1}\"", resourcePath, e.Message), e);
             }
             return _fileInfo;

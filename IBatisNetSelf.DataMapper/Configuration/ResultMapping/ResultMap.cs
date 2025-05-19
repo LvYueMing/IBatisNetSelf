@@ -18,71 +18,61 @@ using IBatisNetSelf.DataMapper.Configuration.Serializers;
 namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
 {
     /// <summary>
-    /// Main implementation of ResultMap interface
+    /// IResultMap 接口的主要实现类，负责定义 SQL 查询结果如何映射到 .NET 类
+    /// 它支持复杂的结果结构，包括构造函数映射、子映射（SubMap）、鉴别器（Discriminator）等功能。
     /// </summary>
     [Serializable]
     [XmlRoot("resultMap", Namespace = "http://ibatis.apache.org/mapping")]
     public class ResultMap : IResultMap
     {
         /// <summary>
-        /// Token for xml path to argument constructor elements.
+        /// 用于查找构造函数参数的反射标志，包含公共和非公共实例构造函数
         /// </summary>
         public static BindingFlags ANY_VISIBILITY_INSTANCE = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-        /// <summary>
-        /// Token for xml path to result elements.
-        /// </summary>
+        // 以下常量用于从 XML 配置中查找对应的节点
         private const string XML_RESULT = "result";
-
-        /// <summary>
-        /// Token for xml path to result elements.
-        /// </summary>
         private const string XML_CONSTRUCTOR_ARGUMENT = "constructor/argument";
-
-        /// <summary>
-        /// Token for xml path to discriminator elements.
-        /// </summary>
         private const string XML_DISCRIMNATOR = "discriminator";
-
-        /// <summary>
-        /// Token for xml path to subMap elements.
-        /// </summary>
         private const string XML_SUBMAP = "subMap";
 
+        /// <summary>
+        /// 空对象模式使用的 ResultMap 占位符（用于防止空引用）
+        /// </summary>
         private static IResultMap nullResultMap = null;
 
         #region Fields
         [NonSerialized]
-        private bool isInitalized = true;
+        private bool isInitalized = true;// 是否已初始化
         [NonSerialized]
-        private string id = string.Empty;
+        private string id = string.Empty;// resultMap 的唯一标识
         [NonSerialized]
-        private string resultClassName = string.Empty;
+        private string resultClassName = string.Empty;// 映射的目标类名（字符串）
         [NonSerialized]
-        private string extendMap = string.Empty;
+        private string extendMap = string.Empty;// 要扩展的父映射
         [NonSerialized]
-        private Type resultClass = null;
+        private Type resultClass = null;// 目标类型（Type）
         [NonSerialized]
-        private StringCollection groupByPropertyNames = new StringCollection();
+        private StringCollection groupByPropertyNames = new StringCollection();// groupBy 属性名集合
 
         [NonSerialized]
-        private ResultPropertyCollection resultProperties = new ResultPropertyCollection();
+        private ResultPropertyCollection resultProperties = new ResultPropertyCollection(); // 所有映射属性
         [NonSerialized]
-        private ResultPropertyCollection groupByProperties = new ResultPropertyCollection();
+        private ResultPropertyCollection groupByProperties = new ResultPropertyCollection();// groupBy 的属性集合
 
         [NonSerialized]
-        private ResultPropertyCollection parameters = new ResultPropertyCollection();
+        private ResultPropertyCollection constructorParams = new ResultPropertyCollection();// 构造函数参数属性集合
 
         [NonSerialized]
-        private Discriminator discriminator = null;
+        private Discriminator discriminator = null; // 用于子映射切换的鉴别器
         [NonSerialized]
-        private string sqlMapNameSpace = string.Empty;
+        private string sqlMapNameSpace = string.Empty;// 当前 SQL 映射的命名空间
         [NonSerialized]
-        private IFactory objectFactory = null;
+        private IFactory objectFactory = null;// 对象创建工厂
         [NonSerialized]
-        private DataExchangeFactory dataExchangeFactory = null;
+        private DataExchangeFactory dataExchangeFactory = null;// 数据交换工厂
         [NonSerialized]
-        private IDataExchange dataExchange = null;
+        private IDataExchange dataExchange = null;// 数据交换器
         #endregion
 
         #region Properties
@@ -118,31 +108,25 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
             set { discriminator = value; }
         }
 
-        /// <summary>
-        /// The collection of ResultProperty.
-        /// </summary>
+        /// <summary>所有的 ResultProperty（不包含构造函数参数）</summary>
         [XmlIgnore]
         public ResultPropertyCollection Properties
         {
             get { return resultProperties; }
         }
 
-        /// <summary>
-        /// The GroupBy Properties.
-        /// </summary>
+        /// <summary>所有用于 GroupBy 的 ResultProperty</summary>
         [XmlIgnore]
         public ResultPropertyCollection GroupByProperties
         {
             get { return groupByProperties; }
         }
 
-        /// <summary>
-        /// The collection of constructor parameters.
-        /// </summary>
+        /// <summary>构造函数参数使用的属性集合</summary>
         [XmlIgnore]
-        public ResultPropertyCollection Parameters
+        public ResultPropertyCollection ConstructorParams
         {
-            get { return parameters; }
+            get { return constructorParams; }
         }
 
         /// <summary>
@@ -165,9 +149,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
             set { extendMap = value; }
         }
 
-        /// <summary>
-        /// The output type class of the resultMap.
-        /// </summary>
+        /// <summary>目标映射的 CLR 类型</summary>
         [XmlIgnore]
         public Type Class
         {
@@ -213,6 +195,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
             }
             this.resultClassName = aClassName;
             this.extendMap = aExtendMap;
+
+            // 解析 groupBy 列表（逗号分隔）
             if (aGroupBy != null && aGroupBy.Length > 0)
             {
                 string[] groupByProperties = aGroupBy.Split(',');
@@ -231,9 +215,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         #region Configuration
 
         /// <summary>
-        /// Initialize the resultMap from an xmlNode..
+        /// 初始化 ResultMap：解析类型、数据交换器、子节点（result、argument 等）
         /// </summary>
-        /// <param name="aConfigScope"></param>
         public void Initialize(ConfigurationScope aConfigScope)
         {
             try
@@ -241,28 +224,27 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
                 this.resultClass = aConfigScope.SqlMapper.TypeHandlerFactory.GetType(resultClassName);
                 this.dataExchange = this.dataExchangeFactory.GetDataExchangeForClass(resultClass);
 
-                // Load the child node
+                // 解析 XML 子节点
                 GetChildNode(aConfigScope);
 
-                // Verify that that each groupBy element correspond to a class member
-                // of one of result property
+                // 校验 groupBy 属性名是否都存在于 resultProperties 中
                 for (int i = 0; i < this.groupByProperties.Count; i++)
                 {
                     string _memberName = this.GroupByPropertyNames[i];
                     if (!resultProperties.Contains(_memberName))
                     {
-                        throw new ConfigurationException($"Could not configure ResultMap named \"{id}\". Check the groupBy attribute. Cause: there's no result property named \"{_memberName}\".");
+                        throw new IBatisConfigException($"Could not configure ResultMap named \"{id}\". Check the groupBy attribute. Cause: there's no result property named \"{_memberName}\".");
                     }
                 }
             }
             catch (Exception e)
             {
-                throw new ConfigurationException($"Could not configure ResultMap named \"{id}\", Cause: {e.Message}", e);
+                throw new IBatisConfigException($"Could not configure ResultMap named \"{id}\", Cause: {e.Message}", e);
             }
         }
 
         /// <summary>
-        /// Initializes the groupBy properties.
+        /// 初始化 GroupBy 的 ResultProperty 集合（根据名称查找）
         /// </summary>
         public void InitializeGroupByProperties()
         {
@@ -275,15 +257,14 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
 
 
         /// <summary>
-        /// Get the result properties and the subMap properties.
+        /// 解析 XML 中的子节点：constructor、result、discriminator、subMap
         /// </summary>
-        /// <param name="aConfigScope"></param>
         private void GetChildNode(ConfigurationScope aConfigScope)
         {
             ResultProperty _mapping = null;
             SubMap _subMap = null;
 
-            #region Load the parameters constructor
+            #region 解析构造函数参数 argument
             XmlNodeList _nodeList = aConfigScope.CurrentNodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_CONSTRUCTOR_ARGUMENT), aConfigScope.XmlNamespaceManager);
             if (_nodeList.Count > 0)
             {
@@ -292,13 +273,13 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
                 for (int i = 0; i < _nodeList.Count; i++)
                 {
                     ArgumentProperty _argumentMapping = ArgumentPropertyDeSerializer.Deserialize(_nodeList[i], aConfigScope);
-                    this.parameters.Add(_argumentMapping);
+                    this.constructorParams.Add(_argumentMapping);
                     _parametersName[i] = _argumentMapping.ArgumentName;
                 }
                 ConstructorInfo _constructorInfo = this.GetConstructor(this.resultClass, _parametersName);
-                for (int i = 0; i < parameters.Count; i++)
+                for (int i = 0; i < constructorParams.Count; i++)
                 {
-                    ArgumentProperty _argumentMapping = (ArgumentProperty)this.parameters[i];
+                    ArgumentProperty _argumentMapping = (ArgumentProperty)this.constructorParams[i];
 
                     aConfigScope.ErrorContext.MoreInfo = "initialize argument property : " + _argumentMapping.ArgumentName;
                     _argumentMapping.Initialize(aConfigScope, _constructorInfo);
@@ -309,6 +290,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
             }
             else
             {
+                // 没有构造参数时，创建无参对象工厂（如果是复杂对象）
                 if (Type.GetTypeCode(resultClass) == TypeCode.Object)
                 {
                     objectFactory = aConfigScope.SqlMapper.ObjectFactory.CreateFactory(resultClass, Type.EmptyTypes);
@@ -317,7 +299,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
 
             #endregion
 
-            #region Load the Result Properties
+            #region 解析 result 节点
 
             foreach (XmlNode resultNode in aConfigScope.CurrentNodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_RESULT), aConfigScope.XmlNamespaceManager))
             {
@@ -331,7 +313,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
             }
             #endregion
 
-            #region Load the Discriminator Property
+            #region 解析 discriminator 节点
 
             XmlNode discriminatorNode = aConfigScope.CurrentNodeContext.SelectSingleNode(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_DISCRIMNATOR), aConfigScope.XmlNamespaceManager);
             if (discriminatorNode != null)
@@ -343,11 +325,11 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
             }
             #endregion
 
-            #region Load the SubMap Properties
+            #region 解析 subMap 节点
 
             if (aConfigScope.CurrentNodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_SUBMAP), aConfigScope.XmlNamespaceManager).Count > 0 && this.Discriminator == null)
             {
-                throw new ConfigurationException("The discriminator is null, but somehow a subMap was reached.  This is a bug.");
+                throw new IBatisConfigException("The discriminator is null, but somehow a subMap was reached.  This is a bug.");
             }
             foreach (XmlNode resultNode in aConfigScope.CurrentNodeContext.SelectNodes(DomSqlMapBuilder.ApplyMappingNamespacePrefix(XML_SUBMAP), aConfigScope.XmlNamespaceManager))
             {
@@ -360,14 +342,14 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         }
 
         /// <summary>
-        /// Sets the object factory.
+        /// 根据构造函数参数类型初始化对象工厂
         /// </summary>
         public void SetObjectFactory(ConfigurationScope configScope)
         {
-            Type[] parametersType = new Type[parameters.Count];
-            for (int i = 0; i < parameters.Count; i++)
+            Type[] parametersType = new Type[constructorParams.Count];
+            for (int i = 0; i < constructorParams.Count; i++)
             {
-                ArgumentProperty argumentMapping = (ArgumentProperty)parameters[i];
+                ArgumentProperty argumentMapping = (ArgumentProperty)constructorParams[i];
                 parametersType[i] = argumentMapping.MemberType;
             }
             // Init the object factory
@@ -375,7 +357,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         }
 
         /// <summary>
-        /// Finds the constructor that takes the parameters.
+        /// 匹配构造函数（按参数名匹配）
         /// </summary>
         /// <param name="aType">The <see cref="System.Type"/> to find the constructor in.</param> 
         /// <param name="aParametersName">The parameters name to use to find the appropriate constructor.</param>
@@ -419,20 +401,15 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         #endregion
 
         /// <summary>
-        /// Create an instance Of result.
+        /// 创建一个映射结果对象的实例
         /// </summary>
-        /// <param name="parameters">
-        /// An array of values that matches the number, order and type 
-        /// of the parameters for this constructor. 
-        /// </param>
-        /// <returns>An object.</returns>
         public object CreateInstanceOfResult(object[] parameters)
         {
             TypeCode typeCode = Type.GetTypeCode(resultClass);
 
             if (typeCode == TypeCode.Object)
             {
-                return objectFactory.CreateInstance(parameters);
+                return this.objectFactory.CreateInstance(parameters);
             }
             else
             {
@@ -441,21 +418,16 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         }
 
         /// <summary>
-        /// Set the value of an object property.
+        /// 为映射对象设置某个属性值
         /// </summary>
-        /// <param name="target">The object to set the property.</param>
-        /// <param name="aProperty">The result property to use.</param>
-        /// <param name="dataBaseValue">The database value to set.</param>
         public void SetValueOfProperty(ref object target, ResultProperty aProperty, object dataBaseValue)
         {
             dataExchange.SetData(ref target, aProperty, dataBaseValue);
         }
 
         /// <summary>
-        /// 
+        /// 根据 discriminator 判断应该使用哪个 subMap（递归调用以支持嵌套 discriminator）
         /// </summary>
-        /// <param name="dataReader"></param>
-        /// <returns></returns>
         public IResultMap ResolveSubMap(IDataReader dataReader)
         {
             IResultMap subMap = this;

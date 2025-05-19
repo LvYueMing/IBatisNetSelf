@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -364,7 +365,6 @@ namespace IBatisNetSelf.Common
 
         #endregion
 
-
         #region Constructor(s)/Destructor
         /// <summary>
         /// Do not use direclty, only for serialization.
@@ -378,44 +378,47 @@ namespace IBatisNetSelf.Common
         #region Methods
 
         /// <summary>
-        /// Init the provider.
+        /// 初始化驱动程序，加载相关类型并创建模板实例。
         /// </summary>
         public void Initialize()
         {
-            Assembly _assembly;
-            Type? _type = null;
+            string _assemblyPath = string.Empty;
 
             try
             {
-                // Assembly.Load(this.assemblyName)方法需要在应用程序中添加名称为this.assemblyName的程序集的引用
+                // 解析程序集路径
+                string _assemblyName = this.assemblyName.Split(',')[0] + ".dll";
+                _assemblyPath = Path.Combine(AppContext.BaseDirectory, _assemblyName);
+                if (!File.Exists(_assemblyPath))
+                {
+                    throw new IBatisConfigException($"程序集文件未找到: {_assemblyPath}");
+                }
+
+                //Assembly.Load(this.assemblyName) //此方法需要在应用程序中添加名称为this.assemblyName的程序集的引用
                 //_assembly = Assembly.Load(this.assemblyName);
 
-                //在当前应用程序根目录下查找并加载名称为this.assemblyName的程序集
-                string _assemblyPath = this.assemblyName.Split(',')[0] + ".dll";
-                _assembly = Assembly.LoadFrom(_assemblyPath);
+                //LoadFrom(不建议使用,加载到Load-From Context上下文)
+                //string _assemblyName = this.assemblyName.Split(',')[0] + ".dll";
+                //string _assemblyPath = Path.Combine(AppContext.BaseDirectory, _assemblyName);
+                //_assembly = Assembly.LoadFrom(_assemblyPath);
 
-                // Build the DataAdapter template 
-                _type = _assembly.GetType(this.dataAdapterClass, true);
-                this.templateDataAdapter = (IDbDataAdapter)_type.GetConstructor(Type.EmptyTypes).Invoke(null);
+                // 加载程序集，根据路径加载到 默认上下文中
+                Assembly _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_assemblyPath);
 
+                // 加载并实例化 DataAdapter 模板
+                this.templateDataAdapter = (IDbDataAdapter)CreateInstance(_assembly, this.dataAdapterClass, typeof(IDbDataAdapter));
 
-                // Build the connection template
-                _type = _assembly.GetType(this.connectionClass, true);
-                this.CheckPropertyType(this.connectionClass, typeof(IDbConnection), _type);
-                this.templateConnection = (IDbConnection)_type.GetConstructor(Type.EmptyTypes).Invoke(null);
+                // 加载并实例化 Connection 模板
+                this.templateConnection = (IDbConnection)CreateInstance(_assembly, this.connectionClass, typeof(IDbConnection));
 
-                // Get the CommandBuilder Type
-                this.commandBuilderType = _assembly.GetType(this.commandBuilderClass, true);
+                // 加载 CommandBuilder 类型（不实例化）
+                this.commandBuilderType = GetTypeFromAssembly(_assembly, this.commandBuilderClass, throwOnError: true);
 
-                // Get the DbType Type
-                if (this.parameterDbTypeClass.IndexOf(',') > 0)
-                {
-                    this.parameterDbType = TypeUtils.ResolveType(this.parameterDbTypeClass);
-                }
-                else
-                {
-                    this.parameterDbType = _assembly.GetType(this.parameterDbTypeClass, true);
-                }
+                // 加载 DbType 类型（可能是跨程序集的类型）
+                this.parameterDbType = this.parameterDbTypeClass.Contains(',')
+                    ? TypeUtils.ResolveType(this.parameterDbTypeClass)
+                    : GetTypeFromAssembly(_assembly, this.parameterDbTypeClass, throwOnError: true);
+
 
                 this.templateConnectionIsICloneable = this.templateConnection is ICloneable;
                 this.templateDataAdapterIsICloneable = this.templateDataAdapter is ICloneable;
@@ -423,8 +426,42 @@ namespace IBatisNetSelf.Common
             }
             catch (Exception ex)
             {
-                throw new ConfigurationException($"无法配置驱动程序，无法加载或未找到名为{this.name}的驱动程序，失败原因: {ex.Message}", ex);
+                throw new IBatisConfigException($"无法配置驱动程序，无法加载或未找到名为{_assemblyPath}的驱动程序，失败原因: {ex.Message}", ex);
             }
+        }
+
+        /// <summary>
+        /// 尝试从程序集加载指定类型，必要时抛异常(自定义)。
+        /// </summary>
+        private static Type? GetTypeFromAssembly(Assembly assembly, string typeName, bool throwOnError)
+        {
+            var type = assembly.GetType(typeName, throwOnError: false, ignoreCase: false);
+            if (type == null && throwOnError)
+            {
+                throw new TypeLoadException($"无法从程序集 '{assembly.FullName}' 加载类型 '{typeName}'。");
+            }
+            return type;
+        }
+
+        /// <summary>
+        /// 加载指定类型并创建其实例，同时验证是否继承指定接口。
+        /// </summary>
+        private static object CreateInstance(Assembly assembly, string typeName, Type requiredInterface)
+        {
+            var type = GetTypeFromAssembly(assembly, typeName, throwOnError: true);
+
+            if (!requiredInterface.IsAssignableFrom(type))
+            {
+                throw new InvalidCastException($"类型 {typeName} 不实现接口 {requiredInterface.FullName}。");
+            }
+
+            var constructor = type.GetConstructor(Type.EmptyTypes);
+            if (constructor == null)
+            {
+                throw new MissingMethodException($"类型 {typeName} 缺少无参构造函数。");
+            }
+
+            return constructor.Invoke(null);
         }
 
         /// <summary>

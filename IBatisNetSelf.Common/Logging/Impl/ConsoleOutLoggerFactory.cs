@@ -24,7 +24,7 @@ namespace IBatisNetSelf.Common.Logging.Impl
         /// <paramref name="properties" /> for use when the GetLogger methods are called.
         /// </summary>
         /// <param name="properties">Contains user supplied configuration information.</param>
-        public ConsoleOutLoggerFactory(NameValueCollection properties)
+        public ConsoleOutLoggerFactory(Dictionary<string,string> properties)
         {
             try
             {

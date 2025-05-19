@@ -30,7 +30,7 @@ namespace IBatisNetSelf.Common.Logging.Impl
         /// <summary>
         /// Constructor
         /// </summary>
-        public NoOpLoggerFactory(NameValueCollection properties)
+        public NoOpLoggerFactory(Dictionary<string, string> properties)
         {
             // empty
         }

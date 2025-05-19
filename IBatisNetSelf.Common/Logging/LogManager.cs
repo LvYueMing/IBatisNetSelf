@@ -1,6 +1,8 @@
 ﻿using IBatisNetSelf.Common.Logging.Impl;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +17,7 @@ namespace IBatisNetSelf.Common.Logging
     {
         private static ILoggerFactoryAdapter adapter = null;
         private static object loadLock = new object();
-        private static readonly string LOGGING_SECTION = "IBatisNetSelf/Logging";
+        private static readonly string LOGGING_SECTION = "IBatisNetSelf:Logging";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogManager" /> class. 
@@ -96,72 +98,46 @@ namespace IBatisNetSelf.Common.Logging
         /// <returns></returns>
         private static ILoggerFactoryAdapter BuildLoggerFactoryAdapter()
         {
-            LogSetting _setting = null;
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
+
+            var _logConfig = new LogConfig();
+            configuration.GetSection(LOGGING_SECTION).Bind(_logConfig);
+
+            string _typeStr = _logConfig.LogFactoryAdapter?.Type ?? string.Empty;
+            var args = _logConfig.LogFactoryAdapter?.Args ?? new Dictionary<string, string>();
+
+            Type? factoryType = _typeStr.ToUpperInvariant() switch
+            {
+                "CONSOLE" => typeof(ConsoleOutLoggerFactory),
+                "TRACE" => typeof(TraceLoggerFactory),
+                "NOOP" => typeof(NoOpLoggerFactory),
+                "FILE" => typeof(FileTxtLoggerFactory),
+                _ => Type.GetType(_typeStr, throwOnError: false)
+            };
+
+            if (factoryType == null || !typeof(ILoggerFactoryAdapter).IsAssignableFrom(factoryType))
+            {
+                return BuildDefaultLoggerFactoryAdapter();
+            }
+
             try
             {
-                _setting = (LogSetting)System.Configuration.ConfigurationManager.GetSection(LOGGING_SECTION);
-            }
-            catch (Exception ex)
-            {
-                ILoggerFactoryAdapter _defaultFactory = BuildDefaultLoggerFactoryAdapter();
-                ILog _log = _defaultFactory.GetLogger(typeof(LogManager));
-                _log.Warn("Unable to read configuration. Using default logger.", ex);
-                return _defaultFactory;
-            }
-
-            if (_setting != null && !typeof(ILoggerFactoryAdapter).IsAssignableFrom(_setting.FactoryAdapterType))
-            {
-                ILoggerFactoryAdapter _defaultFactory = BuildDefaultLoggerFactoryAdapter();
-                ILog _log = _defaultFactory.GetLogger(typeof(LogManager));
-                _log.Warn("Type " + _setting.FactoryAdapterType.FullName + " does not implement ILoggerFactoryAdapter. Using default logger");
-                return _defaultFactory;
-            }
-
-            ILoggerFactoryAdapter _instance = null;
-
-            if (_setting != null)
-            {
-                if (_setting.Properties.Count > 0)
+                if (args.Count > 0)
                 {
-                    try
-                    {
-                        object[] args = { _setting.Properties };
+                    return (ILoggerFactoryAdapter)Activator.CreateInstance(factoryType, args)!;
+                }
 
-                        _instance = (ILoggerFactoryAdapter)Activator.CreateInstance(_setting.FactoryAdapterType, args);
-                    }
-                    catch (Exception ex)
-                    {
-                        ILoggerFactoryAdapter _defaultFactory = BuildDefaultLoggerFactoryAdapter();
-                        ILog _log = _defaultFactory.GetLogger(typeof(LogManager));
-                        _log.Warn("Unable to create instance of type " + _setting.FactoryAdapterType.FullName + ". Using default logger.", ex);
-                        return _defaultFactory;
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        _instance = (ILoggerFactoryAdapter)Activator.CreateInstance(_setting.FactoryAdapterType);
-                    }
-                    catch (Exception ex)
-                    {
-                        ILoggerFactoryAdapter defaultFactory = BuildDefaultLoggerFactoryAdapter();
-                        ILog log = defaultFactory.GetLogger(typeof(LogManager));
-                        log.Warn("Unable to create instance of type " + _setting.FactoryAdapterType.FullName + ". Using default logger.", ex);
-                        return defaultFactory;
-                    }
-                }
+                return (ILoggerFactoryAdapter)Activator.CreateInstance(factoryType)!;
             }
-            else
+            catch
             {
-                ILoggerFactoryAdapter defaultFactory = BuildDefaultLoggerFactoryAdapter();
-                ILog log = defaultFactory.GetLogger(typeof(LogManager));
-                log.Warn("Unable to read configuration IBatisNet/logging. Using default logger.");
-                return defaultFactory;
+                return BuildDefaultLoggerFactoryAdapter();
             }
-
-            return _instance;
         }
+
 
 
         /// <summary>

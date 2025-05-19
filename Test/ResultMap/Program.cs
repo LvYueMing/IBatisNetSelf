@@ -1,0 +1,26 @@
+﻿using IBatisNetSelf.DataMapper;
+using IBatisNetSelf.DataMapper.Configuration;
+using System.Collections;
+using System.Data;
+using System.Xml.Linq;
+
+namespace ResultMap
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            DomSqlMapBuilder _sqlMapBuilder = new DomSqlMapBuilder();
+            //不验证 配置文件格式
+            _sqlMapBuilder.ValidateSqlMapConfig = false;
+            ISqlMapper _sqlMapper = _sqlMapBuilder.Configure();
+
+            Hashtable ht = new Hashtable();
+            ht.Add("in_id", "DE01.00.010.00");
+            //DataSet ds = _sqlMapper.QueryForDataSet("Element_GetELement", ht);
+            var element = _sqlMapper.QueryForObject("Element_GetELement", ht) as Element;
+
+            Console.Read();
+        }
+    }
+}

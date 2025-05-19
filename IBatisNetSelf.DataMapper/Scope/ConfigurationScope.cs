@@ -301,7 +301,7 @@ namespace IBatisNetSelf.DataMapper.Scope
                     catch (Exception e)
                     {
 
-                        throw new ConfigurationException("Error. Could not set TypeHandler.  Cause: " + e.Message, e);
+                        throw new IBatisConfigException("Error. Could not set TypeHandler.  Cause: " + e.Message, e);
                     }
                 }
             }
@@ -335,7 +335,7 @@ namespace IBatisNetSelf.DataMapper.Scope
                     }
                     catch (Exception e)
                     {
-                        throw new ConfigurationException("Error. Could not set TypeHandler.  Cause: " + e.Message, e);
+                        throw new IBatisConfigException("Error. Could not set TypeHandler.  Cause: " + e.Message, e);
                     }
                 }
             }

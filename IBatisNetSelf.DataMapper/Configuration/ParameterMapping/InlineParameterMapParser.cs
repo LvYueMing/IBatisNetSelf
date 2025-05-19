@@ -120,19 +120,19 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
         /// #propertyName,type=string,dbype=Varchar,direction=Input,nullValue=N/A,handler=string#
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="parameterClassType"></param>
+        /// <param name="aParameterClassType"></param>
         /// <param name="scope"></param>
         /// <returns></returns>
-        private ParameterProperty ParseMapping(string token, Type? parameterClassType, IScope scope)
+        private ParameterProperty ParseMapping(string token, Type? aParameterClassType, IScope scope)
         {
-            ParameterProperty _mapping = new ParameterProperty();
+            ParameterProperty _paramProp = new ParameterProperty();
 
             Common.Utilities.StringTokenizer _paramParser = new Common.Utilities.StringTokenizer(token, "=,", false);
             IEnumerator _enumeratorParam = _paramParser.GetEnumerator();
 
             _enumeratorParam.MoveNext();
 
-            _mapping.PropertyName = ((string)_enumeratorParam.Current).Trim();
+            _paramProp.PropertyName = ((string)_enumeratorParam.Current).Trim();
 
             while (_enumeratorParam.MoveNext())
             {
@@ -142,23 +142,23 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                     string _value = (string)_enumeratorParam.Current;
                     if ("type".Equals(_field))
                     {
-                        _mapping.CLRType = _value;
+                        _paramProp.CLRType = _value;
                     }
                     else if ("dbType".Equals(_field))
                     {
-                        _mapping.DbType = _value;
+                        _paramProp.DbType = _value;
                     }
                     else if ("direction".Equals(_field))
                     {
-                        _mapping.DirectionAttribute = _value;
+                        _paramProp.DirectionAttribute = _value;
                     }
                     else if ("nullValue".Equals(_field))
                     {
-                        _mapping.NullValue = _value;
+                        _paramProp.NullValue = _value;
                     }
                     else if ("handler".Equals(_field))
                     {
-                        _mapping.CallBackName = _value;
+                        _paramProp.CallBackName = _value;
                     }
                     else
                     {
@@ -171,28 +171,28 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                 }
             }
 
-            if (_mapping.CallBackName.Length > 0)
+            if (_paramProp.CallBackName.Length > 0)
             {
-                _mapping.Initialize(scope, parameterClassType);
+                _paramProp.Initialize(scope, aParameterClassType);
             }
             else
             {
                 ITypeHandler handler = null;
-                if (parameterClassType == null)
+                if (aParameterClassType == null)
                 {
                     handler = scope.DataExchangeFactory.TypeHandlerFactory.GetUnkownTypeHandler();
                 }
                 else
                 {
                     handler = ResolveTypeHandler(scope.DataExchangeFactory.TypeHandlerFactory,
-                        parameterClassType, _mapping.PropertyName,
-                        _mapping.CLRType, _mapping.DbType);
+                        aParameterClassType, _paramProp.PropertyName,
+                        _paramProp.CLRType, _paramProp.DbType);
                 }
-                _mapping.TypeHandler = handler;
-                _mapping.Initialize(scope, parameterClassType);
+                _paramProp.TypeHandler = handler;
+                _paramProp.Initialize(scope, aParameterClassType);
             }
 
-            return _mapping;
+            return _paramProp;
         }
 
 
@@ -231,7 +231,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                     }
                     catch (Exception e)
                     {
-                        throw new ConfigurationException("Error. Could not set TypeHandler.  Cause: " + e.Message, e);
+                        throw new IBatisConfigException("Error. Could not set TypeHandler.  Cause: " + e.Message, e);
                     }
                 }
             }

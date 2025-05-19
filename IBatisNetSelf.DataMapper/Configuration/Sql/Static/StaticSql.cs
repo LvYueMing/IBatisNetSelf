@@ -60,12 +60,12 @@ namespace IBatisNetSelf.DataMapper.Configuration.Sql.Static
         /// Build the PreparedStatement
         /// </summary>
         /// <param name="aSession"></param>
-        /// <param name="aSqlStatement"></param>
-        public void BuildPreparedStatement(ISqlMapSession aSession, string aSqlStatement)
+        /// <param name="aSqlStr"></param>
+        public void BuildPreparedStatement(ISqlMapSession aSession, string aSqlStr)
         {
             RequestScope _request = new RequestScope(this.dataExchangeFactory, aSession, this.statement);
 
-            PreparedStatementFactory _factory = new PreparedStatementFactory(aSession, _request, this.statement, aSqlStatement);
+            PreparedStatementFactory _factory = new PreparedStatementFactory(aSession, _request, this.statement, aSqlStr);
             this.preparedStatement = _factory.Prepare();
         }
 

@@ -33,13 +33,13 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ArgumentStrategy
 
             IResultMap resultMapping = mapping.NestedResultMap.ResolveSubMap(reader);
 
-            if (resultMapping.Parameters.Count > 0)
+            if (resultMapping.ConstructorParams.Count > 0)
             {
-                parameters = new object[resultMapping.Parameters.Count];
+                parameters = new object[resultMapping.ConstructorParams.Count];
                 // Fill parameters array
-                for (int index = 0; index < resultMapping.Parameters.Count; index++)
+                for (int index = 0; index < resultMapping.ConstructorParams.Count; index++)
                 {
-                    ResultProperty property = resultMapping.Parameters[index];
+                    ResultProperty property = resultMapping.ConstructorParams[index];
                     parameters[index] = property.ArgumentStrategy.GetValue(request, property, ref reader, null);
                     request.IsRowDataFound = request.IsRowDataFound || (parameters[index] != null);
                     isParameterFound = isParameterFound || (parameters[index] != null);
@@ -48,7 +48,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ArgumentStrategy
 
             object obj = null;
             // If I have a constructor tag and all argumments values are null, the obj is null
-            if (resultMapping.Parameters.Count > 0 && isParameterFound == false)
+            if (resultMapping.ConstructorParams.Count > 0 && isParameterFound == false)
             {
                 obj = null;
             }

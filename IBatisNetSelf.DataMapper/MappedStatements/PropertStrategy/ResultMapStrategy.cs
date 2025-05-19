@@ -18,63 +18,69 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.PropertStrategy
         #region IPropertyStrategy Members
 
         /// <summary>
-        /// Sets value of the specified <see cref="ResultProperty"/> on the target object
-        /// when a 'resultMapping' attribute exists
-        /// on the <see cref="ResultProperty"/>.
+        /// 当 <see cref="ResultProperty"/> 上存在 'resultMapping' 属性时，
+        /// 设置目标对象上对应属性的值。
         /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="resultMap">The result map.</param>
-        /// <param name="mapping">The ResultProperty.</param>
-        /// <param name="target">The target.</param>
-        /// <param name="reader">The reader.</param>
-        /// <param name="keys">The keys</param>
+        /// <param name="request">封装当前请求上下文，包括配置、缓存、参数等。</param>
+        /// <param name="resultMap">当前对象的结果映射配置。</param>
+        /// <param name="mapping">当前正在处理的属性映射。</param>
+        /// <param name="target">目标对象（被填充属性值的实例）。</param>
+        /// <param name="reader">数据库读取器，读取行数据。</param>
+        /// <param name="keys">主键值集合。</param>
         public void Set(RequestScope request, IResultMap resultMap,
             ResultProperty mapping, ref object target, IDataReader reader, object keys)
         {
+            // 获取属性的值（可能是嵌套对象）
             object obj = Get(request, resultMap, mapping, ref target, reader);
-            // Sets created object on the property
+            // 设置目标对象上的属性值
             resultMap.SetValueOfProperty(ref target, mapping, obj);
         }
 
         /// <summary>
-        /// Gets the value of the specified <see cref="ResultProperty"/> that must be set on the target object.
+        /// 获取需要设置在目标对象属性上的值（支持嵌套对象的递归映射）。
         /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="resultMap">The result map.</param>
-        /// <param name="mapping">The mapping.</param>
-        /// <param name="reader">The reader.</param>
-        /// <param name="target">The target object</param>
+        /// <param name="request">封装当前映射上下文的信息。</param>
+        /// <param name="resultMap">当前的结果映射配置。</param>
+        /// <param name="mapping">当前属性映射配置。</param>
+        /// <param name="reader">数据读取器，用于读取字段值。</param>
+        /// <param name="target">目标对象实例。</param>
+        /// <returns>返回要赋值的对象（可为 null）。</returns>
         public object Get(RequestScope request, IResultMap resultMap, ResultProperty mapping, ref object target, IDataReader reader)
         {
             object[] parameters = null;
             bool isParameterFound = false;
 
+            // 获取嵌套映射（子映射），适用于嵌套对象或聚合对象
             IResultMap resultMapping = mapping.NestedResultMap.ResolveSubMap(reader);
 
-            if (resultMapping.Parameters.Count > 0)
+            // 如果嵌套对象需要构造函数参数
+            if (resultMapping.ConstructorParams.Count > 0)
             {
-                parameters = new object[resultMapping.Parameters.Count];
-                // Fill parameters array
-                for (int index = 0; index < resultMapping.Parameters.Count; index++)
+                parameters = new object[resultMapping.ConstructorParams.Count];
+                // 依次读取参数值
+                for (int index = 0; index < resultMapping.ConstructorParams.Count; index++)
                 {
-                    ResultProperty resultProperty = resultMapping.Parameters[index];
+                    ResultProperty resultProperty = resultMapping.ConstructorParams[index];
+                    // 获取构造函数参数的值
                     parameters[index] = resultProperty.ArgumentStrategy.GetValue(request, resultProperty, ref reader, null);
+                    // 如果任一参数不为 null，则认为有数据
                     request.IsRowDataFound = request.IsRowDataFound || (parameters[index] != null);
                     isParameterFound = isParameterFound || (parameters[index] != null);
                 }
             }
 
             object obj = null;
-            // If I have a constructor tag and all argumments values are null, the obj is null
-            if (resultMapping.Parameters.Count > 0 && isParameterFound == false)
+            // 如果定义了构造函数参数但都为 null，则表示该对象应为 null（空对象）
+            if (resultMapping.ConstructorParams.Count > 0 && isParameterFound == false)
             {
                 obj = null;
             }
             else
             {
+                // 创建嵌套对象实例（调用构造函数）
                 obj = resultMapping.CreateInstanceOfResult(parameters);
 
-                // Fills properties on the new object
+                // 将数据填充到嵌套对象中，如果失败（无数据），则将对象设为 null
                 if (this.FillObjectWithReaderAndResultMap(request, reader, resultMapping, ref obj) == false)
                 {
                     obj = null;
