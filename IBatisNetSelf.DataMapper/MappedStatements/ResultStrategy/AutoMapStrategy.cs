@@ -11,8 +11,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy
 {
     /// <summary>
     /// `AutoMapStrategy` 是一个 `IResultStrategy` 实现，
-    /// 当映射文件未显式声明 `<resultMap>` 时，
-    /// 它会自动根据查询结果集字段名与目标对象属性名进行映射。
+    /// 当映射文件未显式声明 `<resultMap>` 时，它会自动根据查询结果集字段名与目标对象属性名进行映射。
     /// </summary>
     public sealed class AutoMapStrategy : IResultStrategy
     {

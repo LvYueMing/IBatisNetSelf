@@ -73,7 +73,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         #region Properties
 
         /// <summary>
-        /// Allow remapping of dynamic SQL
+        /// 是否允许 remap 动态 SQL 的结果
         /// </summary>
         [XmlAttribute("remapResults")]
         public bool AllowRemapping
@@ -83,7 +83,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// Extend statement attribute
+        /// 扩展自某个 Statement，可复用配置
         /// </summary>
         [XmlAttribute("extends")]
         public virtual string ExtendStatement
@@ -93,7 +93,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The CacheModel name to use.
+        /// 要使用的缓存模型名
         /// </summary>
         [XmlAttribute("cacheModel")]
         public string CacheModelName
@@ -103,7 +103,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// Tell us if a cacheModel is attached to this statement.
+        /// 是否已指定缓存模型
         /// </summary>
         [XmlIgnore]
         public bool HasCacheModel
@@ -112,7 +112,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The CacheModel used by this statement.
+        /// 关联的 CacheModel 实例
         /// </summary>
         [XmlIgnore]
         public CacheModel CacheModel
@@ -122,7 +122,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The list class name to use for strongly typed collection.
+        /// 指定返回集合的类型名称，如 System.Collections.Generic.List`1
         /// </summary>
         [XmlAttribute("listClass")]
         public string ListClassName
@@ -133,7 +133,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
 
 
         /// <summary>
-        /// The list class type to use for strongly typed collection.
+        /// 返回集合的类型（Type 对象）
         /// </summary>
         [XmlIgnore]
         public Type ListClass
@@ -142,7 +142,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The result class name to used.
+        /// 结果对象类型名称
         /// </summary>
         [XmlAttribute("resultClass")]
         public string ResultClassName
@@ -152,7 +152,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The result class type to used.
+        /// 结果对象类型（Type 对象）
         /// </summary>
         [XmlIgnore]
         public Type ResultClass
@@ -161,7 +161,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The parameter class name to used.
+        /// 参数对象的类型名称
         /// </summary>
         [XmlAttribute("parameterClass")]
         public string ParameterClassName
@@ -171,7 +171,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The parameter class type to used.
+        /// 参数类型（Type 对象）
         /// </summary>
         [XmlIgnore]
         public Type ParameterClass
@@ -180,7 +180,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// Name used to identify the statement amongst the others.
+        /// 句的唯一标识符
         /// </summary>
         [XmlAttribute("id")]
         public string Id
@@ -197,7 +197,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
 
 
         /// <summary>
-        /// The sql statement
+        /// 语句的 SQL 内容对象
         /// </summary>
         [XmlIgnore]
         public ISql Sql
@@ -214,7 +214,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
 
 
         /// <summary>
-        /// The ResultMaps name used by the statement.
+        /// resultMap 的名称，用于结果映射
         /// </summary>
         [XmlAttribute("resultMap")]
         public string ResultMapName
@@ -224,7 +224,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The ParameterMap name used by the statement.
+        /// 参数映射名称
         /// </summary>
         [XmlAttribute("parameterMap")]
         public string ParameterMapName
@@ -234,7 +234,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The ResultMap used by the statement.
+        /// 结果映射集合（支持多个 resultMap）
         /// </summary>
         [XmlIgnore]
         public ResultMapCollection ResultsMap
@@ -243,7 +243,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The parameterMap used by the statement.
+        /// 参数映射对象
         /// </summary>
         [XmlIgnore]
         public ParameterMap ParameterMap
@@ -253,10 +253,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         }
 
         /// <summary>
-        /// The type of the statement (text or procedure)
-        /// Default Text.
+        /// 命令类型，默认为 Text（SQL 语句）
         /// </summary>
-        /// <example>Text or StoredProcedure</example>
         [XmlIgnore]
         public virtual CommandType CommandType
         {
@@ -273,33 +271,33 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
         {
             if (this.resultMapName.Length > 0)
             {
+                // 支持多个 resultMap 名称
                 string[] _names = this.resultMapName.Split(',');
                 for (int i = 0; i < _names.Length; i++)
                 {
+                    // 添加命名空间前缀
                     string _name = aConfigurationScope.ApplyNamespace(_names[i].Trim());
+                    // 加入 resultMap 集合
                     this.resultsMap.Add(aConfigurationScope.SqlMapper.GetResultMap(_name));
                 }
             }
             if (this.parameterMapName.Length > 0)
             {
+                // 获取参数映射
                 this.parameterMap = aConfigurationScope.SqlMapper.GetParameterMap(this.parameterMapName);
             }
             if (this.resultClassName.Length > 0)
             {
-                string[] _classNames = this.resultClassName.Split(',');
-                for (int i = 0; i < _classNames.Length; i++)
+                this.resultClass = aConfigurationScope.SqlMapper.TypeHandlerFactory.GetType(this.resultClassName);
+                IFactory _resultClassFactory = null;
+                if (Type.GetTypeCode(this.resultClass) == TypeCode.Object &&
+                    (this.resultClass.IsValueType == false))
                 {
-                    this.resultClass = aConfigurationScope.SqlMapper.TypeHandlerFactory.GetType(_classNames[i].Trim());
-                    IFactory _resultClassFactory = null;
-                    if (Type.GetTypeCode(this.resultClass) == TypeCode.Object &&
-                        (this.resultClass.IsValueType == false))
-                    {
-                        _resultClassFactory = aConfigurationScope.SqlMapper.ObjectFactory.CreateFactory(this.resultClass, Type.EmptyTypes);
-                    }
-                    IDataExchange _dataExchange = aConfigurationScope.DataExchangeFactory.GetDataExchangeForClass(this.resultClass);
-                    IResultMap _autoMap = new AutoResultMap(this.resultClass, _resultClassFactory, _dataExchange);
-                    this.resultsMap.Add(_autoMap);
+                    _resultClassFactory = aConfigurationScope.SqlMapper.ObjectFactory.CreateFactory(this.resultClass, Type.EmptyTypes);
                 }
+                IDataExchange _dataExchange = aConfigurationScope.DataExchangeFactory.GetDataExchangeForClass(this.resultClass);
+                IResultMap _autoMap = new AutoResultMap(this.resultClass, _resultClassFactory, _dataExchange);
+                this.resultsMap.Add(_autoMap);
             }
             if (this.parameterClassName.Length > 0)
             {

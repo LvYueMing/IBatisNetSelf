@@ -12,8 +12,25 @@
         <result property="Version" column="version" />
       </resultMap>
 	 </resultMaps>
-		<statements>
+	 <statements>
 		<select id="Element_GetELement" parameterClass="Hashtable" resultMap="ElementResult">
+      select a.id,
+             a.name,
+             a.mean,
+             a.allow_value,
+             a.data_type,
+             a.data_format,
+             a.code_value_id,
+             a.max_number_value,
+             a.min_number_value,
+             a.unit,
+             a.version,
+             a.update_worker_id,
+             a.update_date
+        from hsdict.data_element_ a
+       where a.id = #in_id#
+		</select>
+		<select id="Element_GetELement1" parameterClass="Hashtable">
       select a.id,
              a.name,
              a.mean,

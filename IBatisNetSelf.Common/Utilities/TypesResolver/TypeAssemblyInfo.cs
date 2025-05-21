@@ -88,32 +88,32 @@ namespace IBatisNetSelf.Common.Utilities.TypesResolver
             }
         }
 
-        private void SplitTypeAndAssemblyNames(string aOriginalTypeName)
+        private void SplitTypeAndAssemblyNames(string atypeName)
         {
-            if (aOriginalTypeName.StartsWith(NULLABLE_TYPE))
+            if (atypeName.StartsWith(NULLABLE_TYPE))
             {
-                int _typeAssemblyIndex = aOriginalTypeName.IndexOf(NULLABLE_TYPE_ASSEMBLY_SEPARATOR);
+                int _typeAssemblyIndex = atypeName.IndexOf(NULLABLE_TYPE_ASSEMBLY_SEPARATOR);
                 if (_typeAssemblyIndex < 0)
                 {
-                    this.unResolvedTypeName = aOriginalTypeName;
+                    this.unResolvedTypeName = atypeName;
                 }
                 else
                 {
-                    this.unResolvedTypeName = aOriginalTypeName.Substring(0, _typeAssemblyIndex + 2).Trim();
-                    this.unResolvedAssemblyName = aOriginalTypeName.Substring(_typeAssemblyIndex + 3).Trim();
+                    this.unResolvedTypeName = atypeName.Substring(0, _typeAssemblyIndex + 2).Trim();
+                    this.unResolvedAssemblyName = atypeName.Substring(_typeAssemblyIndex + 3).Trim();
                 }
             }
             else
             {
-                int _typeAssemblyIndex = aOriginalTypeName.IndexOf(TYPE_ASSEMBLY_SEPARATOR);
+                int _typeAssemblyIndex = atypeName.IndexOf(TYPE_ASSEMBLY_SEPARATOR);
                 if (_typeAssemblyIndex < 0)
                 {
-                    this.unResolvedTypeName = aOriginalTypeName;
+                    this.unResolvedTypeName = atypeName;
                 }
                 else
                 {
-                    this.unResolvedTypeName = aOriginalTypeName.Substring(0, _typeAssemblyIndex).Trim();
-                    this.unResolvedAssemblyName = aOriginalTypeName.Substring(_typeAssemblyIndex + 1).Trim();
+                    this.unResolvedTypeName = atypeName.Substring(0, _typeAssemblyIndex).Trim();
+                    this.unResolvedAssemblyName = atypeName.Substring(_typeAssemblyIndex + 1).Trim();
                 }
             }
         }

@@ -37,6 +37,13 @@ namespace IBatisNetSelf.Common.Utilities.Objects
         private string className = string.Empty;
         private string[] readableMemberNames = emptyStringArray;
         private string[] writeableMemberNames = emptyStringArray;
+
+
+        private List<string> readablePropertyList = new List<string>();
+        private List<string> writeablePropertyList = new List<string>();
+        private string[] readablePropertyNames = emptyStringArray;
+        private string[] writeablePropertyNames = emptyStringArray;
+
         // (memberName, MemberInfo)
         private Hashtable setMembers = new Hashtable();
         // (memberName, MemberInfo)
@@ -101,9 +108,17 @@ namespace IBatisNetSelf.Common.Utilities.Objects
             this.getMembers.Keys.CopyTo(_getArray, 0);
             this.readableMemberNames = _getArray;
 
+            string[] _getPropertyArray = new string[this.readablePropertyList.Count];
+            this.readablePropertyList.CopyTo(_getPropertyArray,0);
+            this.readablePropertyNames = _getPropertyArray;
+
             string[] _setArray = new string[this.setMembers.Count];
             this.setMembers.Keys.CopyTo(_setArray, 0);
             this.writeableMemberNames = _setArray;
+
+            string[] _setPropertyArray = new string[this.writeablePropertyList.Count];
+            this.writeablePropertyList.CopyTo(_setPropertyArray, 0);
+            this.writeablePropertyNames = _setPropertyArray;
         }
 
         /// <summary>
@@ -113,6 +128,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects
         private void AddMembers(Type aType)
         {
             #region Properties
+
             PropertyInfo[] _properties = aType.GetProperties(BINDING_FLAGS_PROPERTY);
             for (int i = 0; i < _properties.Length; i++)
             {
@@ -121,18 +137,21 @@ namespace IBatisNetSelf.Common.Utilities.Objects
                     string _name = _properties[i].Name;
                     this.setMembers[_name] = _properties[i];
                     this.setTypes[_name] = _properties[i].PropertyType;
+                    this.writeablePropertyList.Add(_name);
                 }
                 if (_properties[i].CanRead)
                 {
                     string _name = _properties[i].Name;
                     this.getMembers[_name] = _properties[i];
                     this.getTypes[_name] = _properties[i].PropertyType;
+                    this.readablePropertyList.Add(_name);
                 }
             }
 
             #endregion
 
             #region Fields
+
             FieldInfo[] _fields = aType.GetFields(BINDING_FLAGS_FIELD);
             for (int i = 0; i < _fields.Length; i++)
             {
@@ -142,6 +161,7 @@ namespace IBatisNetSelf.Common.Utilities.Objects
                 this.getMembers[_name] = _fields[i];
                 this.getTypes[_name] = _fields[i].FieldType;
             }
+
             #endregion
 
             // Fix for problem with interfaces inheriting other interfaces
@@ -220,39 +240,34 @@ namespace IBatisNetSelf.Common.Utilities.Objects
             return _type;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+
         public string[] GetReadableMemberNames()
         {
             return this.readableMemberNames;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        public string[] GetReadablePropertyNames()
+        {
+            return this.readablePropertyNames;
+        }
+
+
         public string[] GetWriteableMemberNames()
         {
             return this.writeableMemberNames;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="memberName"></param>
-        /// <returns></returns>
+        public string[] GetWriteablePropertyNames()
+        {
+            return this.writeablePropertyNames;
+        }
+
         public bool HasWritableMember(string memberName)
         {
             return this.setMembers.ContainsKey(memberName);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="memberName"></param>
-        /// <returns></returns>
+
         public bool HasReadableMember(string memberName)
         {
             return this.getMembers.ContainsKey(memberName);

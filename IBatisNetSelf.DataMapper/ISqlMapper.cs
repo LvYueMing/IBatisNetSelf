@@ -391,7 +391,7 @@ namespace IBatisNetSelf.DataMapper
         /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
         /// <param name="resultObject">An object of the type to be returned.</param>
         /// <returns>The single result object populated with the result set data.</returns>
-     //   object QueryForObject(string statementName, object parameterObject, object resultObject);
+        object QueryForObject(string statementName, object parameterObject, object resultObject);
 
         /// <summary>
         /// Executes a Sql SELECT statement that returns that returns data 

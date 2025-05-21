@@ -18,7 +18,10 @@ namespace ResultMap
             Hashtable ht = new Hashtable();
             ht.Add("in_id", "DE01.00.010.00");
             //DataSet ds = _sqlMapper.QueryForDataSet("Element_GetELement", ht);
-            var element = _sqlMapper.QueryForObject("Element_GetELement", ht) as Element;
+            //var element = _sqlMapper.QueryForObject("Element_GetELement1", ht) as Element;
+
+            Hashtable result=new Hashtable();
+            _sqlMapper.QueryForObject("Element_GetELement1", ht, result);
 
             Console.Read();
         }

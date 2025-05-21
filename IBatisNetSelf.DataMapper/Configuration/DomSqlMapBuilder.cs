@@ -727,20 +727,20 @@ namespace IBatisNetSelf.DataMapper.Configuration
             #region 初始化对象工厂、访问器工厂等
             if (objectFactory == null)
             {
-                objectFactory = new ObjectFactory(configScope.UseReflectionOptimizer);
+                this.objectFactory = new ObjectFactory(configScope.UseReflectionOptimizer);
             }
             if (setAccessorFactory == null)
             {
-                setAccessorFactory = new SetAccessorFactory(configScope.UseReflectionOptimizer);
+                this.setAccessorFactory = new SetAccessorFactory(configScope.UseReflectionOptimizer);
             }
             if (getAccessorFactory == null)
             {
-                getAccessorFactory = new GetAccessorFactory(configScope.UseReflectionOptimizer);
+                this.getAccessorFactory = new GetAccessorFactory(configScope.UseReflectionOptimizer);
             }
             if (sqlMapper == null)
             {
-                AccessorFactory _accessorFactory = new AccessorFactory(setAccessorFactory, getAccessorFactory);
-                configScope.SqlMapper = new SqlMapper(objectFactory, _accessorFactory);
+                AccessorFactory _accessorFactory = new AccessorFactory(this.setAccessorFactory, this.getAccessorFactory);
+                configScope.SqlMapper = new SqlMapper(this.objectFactory, _accessorFactory);
             }
             else
             {

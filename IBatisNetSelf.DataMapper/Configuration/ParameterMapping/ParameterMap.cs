@@ -74,8 +74,6 @@ namespace IBatisNetSelf.DataMapper.Configuration.ParameterMapping
                         _logger.Info("The class attribute is recommended for better performance in a ParameterMap tag '" + id + "'.");
                     }
                 }
-
-
                 className = value;
             }
         }

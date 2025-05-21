@@ -176,7 +176,7 @@ namespace IBatisNetSelf.DataMapper
             this.objectFactory = aObjectFactory;
             this.accessorFactory = aAccessorFactory;
 
-            this.dataExchangeFactory = new DataExchangeFactory(this.typeHandlerFactory, objectFactory, aAccessorFactory);
+            this.dataExchangeFactory = new DataExchangeFactory(this.typeHandlerFactory, aObjectFactory, aAccessorFactory);
 
             this.id = HashCodeProvider.GetIdentityHashCode(this).ToString();
             this.sessionStore = SessionStoreFactory.GetSessionStore(this.id);
@@ -701,43 +701,52 @@ namespace IBatisNetSelf.DataMapper
         /// <returns> The single result object populated with the result set data.</returns>
         public object QueryForObject(string statementName, object parameterObject)
         {
+            // 标记是否为本地（临时）创建的会话
             bool isSessionLocal = false;
+            // 尝试获取当前线程中的本地会话（事务或操作上下文中的会话）
             ISqlMapSession _session = sessionStore.LocalSession;
-            object result;
+            object _result;
 
+            // 如果当前线程中没有会话，则新建一个
             if (_session == null)
             {
+                // 创建新的 SQL 会话
                 _session = CreateSqlMapSession();
+                // 设置本地会话标志
                 isSessionLocal = true;
             }
 
             try
             {
+                // 根据语句名称获取映射语句（对应 XML 配置中的 statement）
                 IMappedStatement statement = GetMappedStatement(statementName);
-                result = statement.ExecuteQueryForObject(_session, parameterObject);
+                // 执行查询，并将结果填充到 resultObject 中（或创建新对象）
+                _result = statement.ExecuteQueryForObject(_session, parameterObject);
             }
             catch
             {
+                // 发生异常时重新抛出，保留调用栈
                 throw;
             }
             finally
             {
+                // 如果是本地创建的会话，需要手动关闭连接（否则事务性会话不能关闭）
                 if (isSessionLocal)
                 {
                     _session.CloseConnection();
                 }
             }
-
-            return result;
+            // 返回查询结果对象
+            return _result;
         }
 
         /// <summary>
-        /// Executes a Sql SELECT statement that returns a single object of the type of the resultObject parameter.
+        /// 执行一个 Sql SELECT 语句，返回一个指定类型的对象，类型由 resultObject 参数指定。
         /// </summary>
-        /// <param name="statementName">The name of the sql statement to execute.</param>
-        /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
-        /// <param name="resultObject">An object of the type to be returned.</param>
-        /// <returns>The single result object populated with the result set data.</returns>
+        /// <param name="statementName">要执行的 SQL 映射语句名称。</param>
+        /// <param name="parameterObject">用于填充 SQL 参数的对象。</param>
+        /// <param name="resultObject">作为返回类型模板的对象。</param>
+        /// <returns>一个填充了结果数据的对象。</returns>
         public object QueryForObject(string statementName, object parameterObject, object resultObject)
         {
             bool _isSessionLocal = false;

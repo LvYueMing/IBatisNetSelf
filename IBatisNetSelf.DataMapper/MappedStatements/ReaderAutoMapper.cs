@@ -13,70 +13,77 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using IBatisNetSelf.DataMapper.TypeHandlers;
 
 namespace IBatisNetSelf.DataMapper.MappedStatements
 {
     /// <summary>
-    /// Build a dynamic instance of a <see cref="ResultPropertyCollection"/>
+    /// 构建一个 <see cref="ResultPropertyCollection"/> 的动态实例
     /// </summary>
     public sealed class ReaderAutoMapper
     {
         private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// Builds a <see cref="ResultPropertyCollection"/> for an <see cref="AutoResultMap"/>.
+        /// 为 <see cref="AutoResultMap"/> 构建一个 <see cref="ResultPropertyCollection"/>。
         /// </summary>
-        /// <param name="dataExchangeFactory">The data exchange factory.</param>
-        /// <param name="reader">The reader.</param>
-        /// <param name="resultObject">The result object.</param>
-        public static ResultPropertyCollection Build(DataExchangeFactory dataExchangeFactory,
-                                IDataReader reader,
-                                ref object resultObject)
+        /// <param name="dataExchangeFactory">用于处理类型访问器与类型处理器的工厂。</param>
+        /// <param name="reader">数据库查询结果的读取器。</param>
+        /// <param name="resultObject">用于映射结果的目标对象。</param>
+        public static ResultPropertyCollection Build(DataExchangeFactory dataExchangeFactory, IDataReader reader, ref object resultObject)
         {
+            // 获取目标对象的类型（resultObject）
             Type targetType = resultObject.GetType();
+            // 初始化结果属性集合
             ResultPropertyCollection properties = new ResultPropertyCollection();
 
             try
             {
-                // Get all PropertyInfo from the resultObject properties
+                // 获取可写属性名并构造不区分大小写的属性映射表
                 ReflectionInfo reflectionInfo = ReflectionInfo.GetInstance(targetType);
-                string[] membersName = reflectionInfo.GetWriteableMemberNames();
+                // 获取所有可写入的属性名称
+                string[] _propertyNames = reflectionInfo.GetWriteablePropertyNames();
 
-                Hashtable propertyMap = new Hashtable();
-                int length = membersName.Length;
-                for (int i = 0; i < length; i++)
+                // 构建属性映射表（列名 -> 属性Setter）列名不区分大小写
+                Dictionary<string, ISetAccessor> propertyMap = new Dictionary<string, ISetAccessor>(StringComparer.OrdinalIgnoreCase);
+                ISetAccessorFactory _setAccessorFactory = dataExchangeFactory.AccessorFactory.SetAccessorFactory;
+                foreach (string name in _propertyNames)
                 {
-                    ISetAccessorFactory setAccessorFactory = dataExchangeFactory.AccessorFactory.SetAccessorFactory;
-                    ISetAccessor setAccessor = setAccessorFactory.CreateSetAccessor(targetType, membersName[i]);
-                    propertyMap.Add(membersName[i], setAccessor);
+                    ISetAccessor setAccessor = _setAccessorFactory.CreateSetAccessor(targetType, name);
+                    propertyMap.Add(name, setAccessor);
                 }
 
-                // Get all column Name from the reader
-                // and build a resultMap from with the help of the PropertyInfo[].
+                //从 reader 中获取所有列的 schema 信息（结构定义），并借助 PropertyInfo[] 构建一个 resultMap
                 DataTable dataColumn = reader.GetSchemaTable();
-                int count = dataColumn.Rows.Count;
-                for (int i = 0; i < count; i++)
+
+                for (int i = 0; i < dataColumn.Rows.Count; i++)
                 {
                     string columnName = dataColumn.Rows[i][0].ToString();
-                    ISetAccessor matchedSetAccessor = propertyMap[columnName] as ISetAccessor;
 
-                    ResultProperty property = new ResultProperty();
-                    property.ColumnName = columnName;
-                    property.ColumnIndex = i;
+                    // 如果列名与属性名称不匹配，则跳过
+                    ISetAccessor matchedSetAccessor = null;
+                    if (!propertyMap.TryGetValue(columnName, out matchedSetAccessor))
+                        continue;
 
+                    // 初始化一个新的结果属性
+                    ResultProperty _property = new ResultProperty();
+                    _property.ColumnName = columnName;
+                    _property.ColumnIndex = i;
+
+                    // 如果是 Hashtable 类型，则直接将列名作为属性名加入集合
                     if (resultObject is Hashtable)
                     {
-                        property.PropertyName = columnName;
-                        properties.Add(property);
+                        _property.PropertyName = columnName;
+                        properties.Add(_property);
                     }
 
-                    Type propertyType = null;
-
+                    Type _propertyType = null;
                     if (matchedSetAccessor == null)
                     {
+                        // 如果找不到匹配的 SetAccessor，尝试使用反射探测属性类型
                         try
                         {
-                            propertyType = ObjectProbe.GetMemberTypeForSetter(resultObject, columnName);
+                            _propertyType = ObjectProbe.GetMemberTypeForSetter(resultObject, columnName);
                         }
                         catch
                         {
@@ -85,23 +92,28 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
                     }
                     else
                     {
-                        propertyType = matchedSetAccessor.MemberType;
+                        // 有匹配的 SetAccessor，则直接获取其类型
+                        _propertyType = matchedSetAccessor.MemberType;
                     }
 
-                    if (propertyType != null || matchedSetAccessor != null)
+                    // 如果能获取到属性类型或访问器，则继续处理映射关系
+                    if (_propertyType != null || matchedSetAccessor != null)
                     {
-                        property.PropertyName = (matchedSetAccessor != null ? matchedSetAccessor.Name : columnName);
+                        // 设置属性名（优先用 SetAccessor 的名称）
+                        _property.PropertyName = (matchedSetAccessor != null ? matchedSetAccessor.Name : columnName);
                         if (matchedSetAccessor != null)
                         {
-                            property.Initialize(dataExchangeFactory.TypeHandlerFactory, matchedSetAccessor);
+                            // 使用 SetAccessor 初始化 TypeHandler
+                            _property.Initialize(dataExchangeFactory.TypeHandlerFactory, matchedSetAccessor);
                         }
                         else
                         {
-                            property.TypeHandler = dataExchangeFactory.TypeHandlerFactory.GetTypeHandler(propertyType);
+                            // 没有访问器，则手动获取 TypeHandler
+                            _property.TypeHandler = dataExchangeFactory.TypeHandlerFactory.GetTypeHandler(_propertyType);
                         }
 
-                        property.PropertyStrategy = PropertyStrategyFactory.Get(property);
-                        properties.Add(property);
+                        _property.PropertyStrategy = PropertyStrategyFactory.Get(_property);
+                        properties.Add(_property);
                     }
                 }
             }
@@ -112,6 +124,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
 
             return properties;
         }
-
     }
+
 }
