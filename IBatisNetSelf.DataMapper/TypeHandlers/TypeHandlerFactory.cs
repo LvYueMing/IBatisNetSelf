@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace IBatisNetSelf.DataMapper.TypeHandlers
 {
     /// <summary>
-    /// Not much of a suprise, this is a factory class for TypeHandler objects.
+    /// 显然，这是类型处理器工厂类的标准实现
     /// </summary>
     public class TypeHandlerFactory
     {
@@ -26,7 +26,7 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
 
         private IDictionary typeHandlerMap = new HybridDictionary();
         private ITypeHandler unknownTypeHandler = null;
-        private const string NULL = "_NULL_TYPE_";
+        private const string DB_NULL = "_NULL_TYPE_";
         //(typeAlias name, type alias)
         private IDictionary typeAliasMaps = new HybridDictionary();
         #endregion
@@ -153,14 +153,14 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
             {
                 if (aDbType == null)
                 {
-                    _handler = (ITypeHandler)_dbTypeHandlerMap[NULL];
+                    _handler = (ITypeHandler)_dbTypeHandlerMap[DB_NULL];
                 }
                 else
                 {
                     _handler = (ITypeHandler)_dbTypeHandlerMap[aDbType];
                     if (_handler == null)
                     {
-                        _handler = (ITypeHandler)_dbTypeHandlerMap[NULL];
+                        _handler = (ITypeHandler)_dbTypeHandlerMap[DB_NULL];
                     }
                 }
                 if (_handler == null)
@@ -184,26 +184,31 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
         }
 
         /// <summary>
-        /// Register (add) a type handler for a type and dbType
+        /// 为.NET类型和数据库类型 注册（添加）一个类型处理器
         /// </summary>
-        /// <param name="aType">the type</param>
-        /// <param name="aDbType">the dbType (optional, if dbType is null the handler will be used for all dbTypes)</param>
-        /// <param name="aHandler">the handler instance</param>
+        /// <param name="aType">要处理的.NET类型</param>
+        /// <param name="aDbType">数据库类型（可选，如果为null则处理器将用于所有数据库类型）</param>
+        /// <param name="aHandler">类型处理器实例</param>
         public void Register(Type aType, string aDbType, ITypeHandler aHandler)
         {
+            // 从类型处理器映射表中获取该类型对应的数据库类型字典
             HybridDictionary _map = (HybridDictionary)this.typeHandlerMap[aType];
+            // 如果该类型尚未注册过处理器
             if (_map == null)
             {
+                // 数据库类型与处理器的映射字典
                 _map = new HybridDictionary();
                 this.typeHandlerMap.Add(aType, _map);
             }
 
+            // 当 dbType 为 null 时，表示注册一个通用处理器（适用于所有数据库类型）
             if (aDbType == null)
             {
+                // 提示用户当前操作将替换系统内置的类型处理器
                 if (logger.IsInfoEnabled)
                 {
-                    // notify the user that they are no longer using one of the built-in type handlers
-                    ITypeHandler _oldTypeHandler = (ITypeHandler)_map[NULL];
+                    // 获取之前注册的通用处理器（使用DB_NULL作为键）
+                    ITypeHandler _oldTypeHandler = (ITypeHandler)_map[DB_NULL];
 
                     if (_oldTypeHandler != null)
                     {
@@ -222,12 +227,12 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
                             _replacement = aHandler.ToString();
                         }
 
-                        // should oldTypeHandler be checked if its a CustomTypeHandler and if so report the Callback property ???
+                        // 记录替换日志（原处理器 -> 新处理器）
                         logger.Info("Replacing type handler [" + _oldTypeHandler.ToString() + "] with [" + _replacement + "].");
                     }
                 }
 
-                _map[NULL] = aHandler;
+                _map[DB_NULL] = aHandler;
             }
             else
             {
@@ -236,9 +241,22 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
         }
 
         /// <summary>
-        /// When in doubt, get the "unknown" type handler
+        /// 【获取未知类型处理器】- 当无法确定具体类型时的兜底处理器
         /// </summary>
-        /// <returns>if I told you, it would not be unknown, would it?</returns>
+        /// <returns>
+        /// 预定义的未知类型处理器（用于处理未明确注册的类型转换）
+        /// </returns>
+        /// <remarks>
+        /// 设计意图：
+        /// 1. 作为类型处理系统的安全网机制
+        /// 2. 避免因类型未注册导致系统崩溃
+        /// 3. 通常包含基础的类型转换逻辑或特殊错误处理
+        /// 
+        /// 典型应用场景：
+        /// - 动态SQL查询返回未映射的类型
+        /// - 新添加的数据类型尚未配置处理器
+        /// - 反射生成的临时类型处理
+        /// </remarks>
         public ITypeHandler GetUnkownTypeHandler()
         {
             return unknownTypeHandler;

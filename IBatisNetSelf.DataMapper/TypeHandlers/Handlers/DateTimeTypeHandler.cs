@@ -9,8 +9,13 @@ using System.Threading.Tasks;
 namespace IBatisNetSelf.DataMapper.TypeHandlers.Handlers
 {
     /// <summary>
-    /// Description  DateTimeTypeHandler.
+    /// 【日期时间类型处理器】- 处理DateTime类型与数据库字段的相互转换
     /// </summary>
+    /// <remarks>
+    /// 1. 密封类设计确保线程安全
+    /// 2. 支持数据库NULL值处理
+    /// 3. 自动处理字符串到DateTime的转换
+    /// </remarks>
     public sealed class DateTimeTypeHandler : BaseTypeHandler
     {
 
@@ -19,7 +24,7 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers.Handlers
         /// </summary>
         /// <value></value>
         /// <returns></returns>
-        public override bool IsSimpleType=>true;
+        public override bool IsSimpleType => true;
 
 
         /// <summary>
@@ -82,11 +87,5 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers.Handlers
             return Convert.ToDateTime(outputValue);
         }
 
-
-
-        //public override object NullValue
-        //{
-        //    get { throw new InvalidCastException("DateTimeTypeHandler could not cast a null value in DateTime field."); }
-        //}
     }
 }

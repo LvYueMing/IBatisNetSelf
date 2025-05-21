@@ -82,12 +82,5 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers.Handlers
             return s;
         }
 
-
-
-
-        //public override object NullValue
-        //{
-        //    get { return null; }
-        //}
     }
 }
