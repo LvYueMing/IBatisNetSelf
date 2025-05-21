@@ -345,25 +345,30 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         #region Methods
 
         /// <summary>
-        /// Initialize the PropertyInfo of the result property.
+        /// 初始化结果属性的 PropertyInfo。
         /// </summary>
-        /// <param name="resultClass"></param>
-        /// <param name="configScope"></param>
-        public void Initialize(ConfigurationScope configScope, Type resultClass)
+        /// <param name="aResultClass">结果对象的类型</param>
+        /// <param name="configScope">当前配置作用域</param>
+        public void Initialize(ConfigurationScope configScope, Type aResultClass)
         {
-            if (propertyName.Length > 0 &&
-                 propertyName != "value" &&
-                !typeof(IDictionary).IsAssignableFrom(resultClass))
+            // 如果属性名非空，且不等于"value"，且目标类型不是 IDictionary
+            if (propertyName.Length > 0 && propertyName != "value" &&
+                !typeof(IDictionary).IsAssignableFrom(aResultClass))
             {
-                if (!isComplexMemberName)
+                // 如果是复合成员名（如 "FavouriteLineItem.Id"）
+                if (isComplexMemberName)
                 {
-                    this.setAccessor = configScope.DataExchangeFactory.AccessorFactory.SetAccessorFactory.CreateSetAccessor(resultClass, propertyName);
-                }
-                else // complex member name FavouriteLineItem.Id
-                {
-                    MemberInfo propertyInfo = ObjectProbe.GetMemberInfoForSetter(resultClass, propertyName);
+                    // 使用 ObjectProbe 获取属性名对应的成员信息（用于 setter）
+                    MemberInfo propertyInfo = ObjectProbe.GetMemberInfoForSetter(aResultClass, propertyName);
+                    // 提取最后一个“.”后的属性名（如 "Id"）
                     string memberName = propertyName.Substring(propertyName.LastIndexOf('.') + 1);
-                    this.setAccessor = configScope.DataExchangeFactory.AccessorFactory.SetAccessorFactory.CreateSetAccessor(propertyInfo.ReflectedType, memberName);
+                    // 创建 setter 访问器，用于后续给属性赋值
+                    this.setAccessor = configScope.DataExchangeFactory.AccessorFactory.SetAccessorFactory.CreateSetAccessor(propertyInfo.ReflectedType, memberName);                    
+                }
+                else 
+                {
+                    // 普通属性名，直接用类型和属性名创建 setter 访问器
+                    this.setAccessor = configScope.DataExchangeFactory.AccessorFactory.SetAccessorFactory.CreateSetAccessor(aResultClass, propertyName);
                 }
 
                 isIList = typeof(IList).IsAssignableFrom(MemberType);
@@ -397,7 +402,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
                 {
                     Type type = configScope.SqlMapper.TypeHandlerFactory.GetType(CallBackName);
                     ITypeHandlerCallback typeHandlerCallback = (ITypeHandlerCallback)Activator.CreateInstance(type);
-                    typeHandler = new CustomTypeHandler(typeHandlerCallback);
+                    this.typeHandler = new CustomTypeHandler(typeHandlerCallback);
                 }
                 catch (Exception e)
                 {
@@ -407,7 +412,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
             else
             {
                 configScope.ErrorContext.MoreInfo = "Result property '" + propertyName + "' set the typeHandler attribute.";
-                typeHandler = configScope.ResolveTypeHandler(resultClass, propertyName, clrType, dbType, true);
+                this.typeHandler = configScope.ResolveTypeHandler(aResultClass, propertyName, clrType, dbType, true);
             }
 
             if (IsLazyLoad)
@@ -439,11 +444,11 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
 
             if (columnIndex == UNKNOWN_COLUMN_INDEX)
             {
-                value = TypeHandler.GetValueByName(this, dataReader);
+                value = this.typeHandler.GetValueByName(this, dataReader);
             }
             else
             {
-                value = TypeHandler.GetValueByIndex(this, dataReader);
+                value = this.typeHandler.GetValueByIndex(this, dataReader);
             }
 
             bool wasNull = (value == DBNull.Value);
@@ -453,16 +458,16 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
                 {
                     if (setAccessor != null)
                     {
-                        value = TypeHandler.ValueOf(setAccessor.MemberType, nullValue);
+                        value = this.typeHandler.ValueOf(setAccessor.MemberType, nullValue);
                     }
                     else
                     {
-                        value = TypeHandler.ValueOf(null, nullValue);
+                        value = this.typeHandler.ValueOf(null, nullValue);
                     }
                 }
                 else
                 {
-                    value = TypeHandler.NullValue;
+                    value = this.typeHandler.NullValue;
                 }
             }
 

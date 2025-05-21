@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 
 namespace IBatisNetSelf.Common.Utilities
 {
+    /// <summary>
+    /// 用于解析类型名以及实例化原始类型的工具类。
+    /// </summary>
     public sealed class TypeUtils
     {
         #region Fields
-
+        // 内部使用的类型解析器，带缓存功能，提升性能。
         private static readonly ITypeResolver internalTypeResolver = new CachedTypeResolver(new TypeResolver());
 
         #endregion
@@ -32,22 +35,14 @@ namespace IBatisNetSelf.Common.Utilities
         #endregion
 
         /// <summary>
-        /// Resolves the supplied type name into a <see cref="System.Type"/>
-        /// instance.
+        /// 将提供的类型名称解析为一个实际的 Type 实例。
         /// </summary>
-        /// <param name="typeName">
-        /// The (possibly partially assembly qualified) name of a
-        /// <see cref="System.Type"/>.
-        /// </param>
-        /// <returns>
-        /// A resolved <see cref="System.Type"/> instance.
-        /// </returns>
-        /// <exception cref="System.TypeLoadException">
-        /// If the type cannot be resolved.
-        /// </exception>
+        /// <param name="typeName">类型名称，可能是部分或完整的程序集限定名。</param>
+        /// <returns>解析得到的 Type 实例。</returns>
+        /// <exception cref="TypeLoadException">如果类型无法被解析则抛出异常。</exception>
         public static Type ResolveType(string typeName)
         {
-            //resolve alias
+            // 先尝试使用 TypeRegistry（预加载的系统类型）进行类型解析。
             Type? _type = TypeRegistry.ResolveType(typeName);
             if (_type == null)
             {
@@ -57,10 +52,10 @@ namespace IBatisNetSelf.Common.Utilities
         }
 
         /// <summary>
-        /// Instantiate a 'Primitive'(原始的) Type.
+        /// 创建一个指定 TypeCode 类型的默认实例（用于原始类型）。
         /// </summary>
-        /// <param name="typeCode">a typeCode.</param>
-        /// <returns>An object.</returns>
+        /// <param name="typeCode">原始类型的 TypeCode。</param>
+        /// <returns>该类型的默认值实例，如果不是原始类型则返回 null。</returns>
         public static object? InstantiatePrimitiveType(TypeCode typeCode)
         {
             object resultObject = null;

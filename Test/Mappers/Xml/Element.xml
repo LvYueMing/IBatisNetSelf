@@ -1,8 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <sqlMap namespace="Element" xmlns="http://ibatis.apache.org/mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
-	<statements>
 		<resultMaps>
-	    <resultMap id="ElementResult" class="Element,ResultMap">
+	    <resultMap id="ElementResult" class="ResultMap.Element,ResultMap">
         <result property="Id" column="id" />
         <result property="Name" column="name" />
         <result property="Mean" column="mean" />
@@ -13,6 +12,7 @@
         <result property="Version" column="version" />
       </resultMap>
 	 </resultMaps>
+		<statements>
 		<select id="Element_GetELement" parameterClass="Hashtable" resultMap="ElementResult">
       select a.id,
              a.name,

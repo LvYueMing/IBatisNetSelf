@@ -295,7 +295,7 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
 
             if (typeAlias != null)
             {
-                type = typeAlias.Class;
+                type = typeAlias.Type;
             }
             else
             {
@@ -314,7 +314,7 @@ namespace IBatisNetSelf.DataMapper.TypeHandlers
         {
             if (this.typeAliasMaps.Contains(key) == true)
             {
-                throw new DataMapperException(" Alias name conflict occurred.  The type alias '" + key + "' is already mapped to the value '" + typeAlias.ClassName + "'.");
+                throw new DataMapperException(" Alias name conflict occurred.  The type alias '" + key + "' is already mapped to the value '" + typeAlias.TypeName + "'.");
             }
             this.typeAliasMaps.Add(key, typeAlias);
         }

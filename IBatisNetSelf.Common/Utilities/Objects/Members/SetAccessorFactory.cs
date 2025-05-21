@@ -57,30 +57,38 @@ namespace IBatisNetSelf.Common.Utilities.Objects.Members
 
 
         /// <summary>
-        /// Create a ISetAccessor instance for a property
+        /// 为指定类型的属性创建一个 ISetAccessor 实例（用于设置属性值）
         /// </summary>
-        /// <param name="aTtargetType">Target object type.</param>
-        /// <param name="aPropertyName">Property name.</param>
-        /// <returns>null if the generation fail</returns>
+        /// <param name="aTtargetType">目标对象类型</param>
+        /// <param name="aPropertyName">属性名</param>
+        /// <returns>如果创建失败，返回 null</returns>
         private ISetAccessor CreatePropertyAccessor(Type aTtargetType, string aPropertyName)
         {
+            // 获取目标类型的反射信息缓存实例（提升反射效率）
             ReflectionInfo _reflectionInfo = ReflectionInfo.GetInstance(aTtargetType);
+            // 尝试从缓存中获取指定属性的 setter 对应的 PropertyInfo
             PropertyInfo _propertyInfo = _reflectionInfo.GetSetter(aPropertyName) as PropertyInfo;
 
+            // 如果属性是可写的
             if (_propertyInfo.CanWrite)
             {
+                // 尝试获取该属性的 set_ 方法（仅限于当前类声明的 public 实例方法）
                 MethodInfo _setMethodInfo = aTtargetType.GetMethod("set_" + aPropertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                // 如果当前类中找不到 set 方法，则尝试在基类中继续查找
                 if (_setMethodInfo == null)
                 {
                     _setMethodInfo = aTtargetType.GetMethod("set_" + aPropertyName);
                 }
 
-                if (_setMethodInfo != null)// == visibilty public
+                // 如果找到了 set 方法，并且是 public 的
+                if (_setMethodInfo != null)
                 {
+                    // 使用 Emit 技术生成高性能的设置器（动态 IL）
                     return new EmitPropertySetAccessor(aTtargetType, aPropertyName, this.assemblyBuilder, this.moduleBuilder);
                 }
                 else
                 {
+                    // 否则退回使用传统反射方式设置属性值
                     return new ReflectionPropertySetAccessor(aTtargetType, aPropertyName);
                 }
             }

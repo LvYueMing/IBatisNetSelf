@@ -9,7 +9,9 @@
 			<constructor>
 				<argument argumentName="" select="" type="" typeHandler="" columnIndex="" column="" dbType="" resultMapping="" nullValue="" />
 			</constructor>
-			<result></result>
+			<result>
+				
+			</result>
 		</resultMap>
 	</resultMaps>
 	

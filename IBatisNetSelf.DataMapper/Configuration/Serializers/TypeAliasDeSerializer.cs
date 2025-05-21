@@ -2,6 +2,7 @@
 using IBatisNetSelf.DataMapper.Configuration.Alias;
 using IBatisNetSelf.DataMapper.Scope;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -28,15 +29,15 @@ namespace IBatisNetSelf.DataMapper.Configuration.Serializers
             configScope.ErrorContext.MoreInfo = "loading type alias";
 
             NameValueCollection prop = XmlNodeUtils.ParseAttributes(node, configScope.Properties);
-            typeAlias.Name = XmlNodeUtils.GetStringAttribute(prop, "alias");
-            typeAlias.ClassName = XmlNodeUtils.GetStringAttribute(prop, "type");
+            typeAlias.AliasName = XmlNodeUtils.GetStringAttribute(prop, "alias");
+            typeAlias.TypeName = XmlNodeUtils.GetStringAttribute(prop, "type");
 
-            configScope.ErrorContext.ObjectId = typeAlias.ClassName;
+            configScope.ErrorContext.ObjectId = typeAlias.TypeName;
             configScope.ErrorContext.MoreInfo = "initialize type alias";
 
             typeAlias.Initialize();
 
-            configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(typeAlias.Name, typeAlias);
+            configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(typeAlias.AliasName, typeAlias);
         }
     }
 }

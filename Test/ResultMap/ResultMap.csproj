@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\IBatisNetSelf.Common\IBatisNetSelf.Common.csproj" />
     <ProjectReference Include="..\..\IBatisNetSelf.DataMapper\IBatisNetSelf.DataMapper.csproj" />
+    <ProjectReference Include="..\Mappers\Mappers.csproj" />
   </ItemGroup>
 
   <ItemGroup>

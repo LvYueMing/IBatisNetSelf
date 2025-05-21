@@ -29,7 +29,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Serializers
             NameValueCollection prop = XmlNodeUtils.ParseAttributes(node, configScope.Properties);
             model.Id = XmlNodeUtils.GetStringAttribute(prop, "id");
             model.Implementation = XmlNodeUtils.GetStringAttribute(prop, "implementation");
-            model.Implementation = configScope.SqlMapper.TypeHandlerFactory.GetTypeAlias(model.Implementation).Class.AssemblyQualifiedName;
+            model.Implementation = configScope.SqlMapper.TypeHandlerFactory.GetTypeAlias(model.Implementation).Type.AssemblyQualifiedName;
             model.IsReadOnly = XmlNodeUtils.GetBooleanAttribute(prop, "readOnly", true);
             model.IsSerializable = XmlNodeUtils.GetBooleanAttribute(prop, "serialize", false);
 

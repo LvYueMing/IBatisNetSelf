@@ -18,11 +18,11 @@ namespace IBatisNetSelf.DataMapper.Configuration.Alias
 
         #region Fields
         [NonSerialized]
-        private string name = string.Empty;
+        private string aliasName = string.Empty;
         [NonSerialized]
-        private string className = string.Empty;
+        private string typeName = string.Empty;
         [NonSerialized]
-        private Type @class = null;
+        private Type type = null;
         #endregion
 
         #region Properties
@@ -31,16 +31,16 @@ namespace IBatisNetSelf.DataMapper.Configuration.Alias
         /// </summary>
         /// <example> Account</example>
         [XmlAttribute("alias")]
-        public string Name
+        public string AliasName
         {
-            get { return name; }
+            get { return aliasName; }
             set
             {
                 if ((value == null) || (value.Length < 1))
                 {
                     throw new ArgumentNullException("The name attribute is mandatory in the typeAlias ");
                 }
-                name = value;
+                aliasName = value;
             }
         }
 
@@ -49,9 +49,9 @@ namespace IBatisNetSelf.DataMapper.Configuration.Alias
         /// The type class for the typeAlias
         /// </summary>
         [XmlIgnore]
-        public Type Class
+        public Type Type
         {
-            get { return @class; }
+            get { return type; }
         }
 
 
@@ -60,16 +60,16 @@ namespace IBatisNetSelf.DataMapper.Configuration.Alias
         /// </summary>
         /// <example>Com.Site.Domain.Product</example>
         [XmlAttribute("type")]
-        public string ClassName
+        public string TypeName
         {
-            get { return className; }
+            get { return typeName; }
             set
             {
                 if ((value == null) || (value.Length < 1))
                 {
-                    throw new ArgumentNullException("The class attribute is mandatory in the typeAlias " + name);
+                    throw new ArgumentNullException("The class attribute is mandatory in the typeAlias " + aliasName);
                 }
-                className = value;
+                typeName = value;
             }
         }
         #endregion
@@ -87,7 +87,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Alias
         /// <param name="type">a type.</param>
         public TypeAlias(Type type)
         {
-            @class = type;
+            this.type = type;
         }
         #endregion
 
@@ -98,7 +98,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Alias
         /// </summary>
         public void Initialize()
         {
-            @class = TypeUtils.ResolveType(className);
+            type = TypeUtils.ResolveType(typeName);
         }
         #endregion
 

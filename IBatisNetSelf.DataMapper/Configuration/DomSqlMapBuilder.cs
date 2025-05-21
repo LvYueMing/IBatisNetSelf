@@ -587,7 +587,6 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// <param name="aSchemaFileName">Schema file name.</param>
         private void ValidateSchema(XmlNode aSection, string aSchemaFileName)
         {
-
             XmlReader? _validatingReader = null;
             Stream? _xsdStream = null;
 
@@ -650,11 +649,13 @@ namespace IBatisNetSelf.DataMapper.Configuration
         /// </summary>
         private void Initialize()
         {
+            // 重置当前配置作用域的状态
             Reset();
 
             Stopwatch _sw = null;
             Stopwatch _swTotal = null;
 
+            // 如果启用了调试日志，则开始计时器
             if (logger.IsDebugEnabled)
             {
                 logger.Debug($"SqlMapper 开始初始化！");
@@ -662,12 +663,14 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 _sw = Stopwatch.StartNew();
             }
 
-            #region Load Global Properties from sqlmap.config
+            #region 读取全局属性（来自 sqlmap.config 的 <properties>） 
             if (configScope.IsCallFromDao == false)
             {
+                // 获取 sqlmap.config 中 sqlMapConfig 节点
                 string _xPathProperties = ApplyDataMapperNamespacePrefix(XML_DATAMAPPER_CONFIG_ROOT);
                 configScope.CurrentNodeContext = configScope.SqlMapConfigDocument.SelectSingleNode(_xPathProperties, configScope.XmlNamespaceManager);
 
+                // 解析全局属性
                 ParseGlobalProperties();
             }
 
@@ -679,7 +682,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Load Settings from sqlmap.config
+            #region 读取 settings 配置（来自 sqlmap.config 的 <settings>）  
             configScope.ErrorContext.Activity = "loading global settings";
 
             string _xPathSettings = ApplyDataMapperNamespacePrefix(XML_CONFIG_SETTINGS);
@@ -687,6 +690,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
             if (_settings != null)
             {
+                // 判断每个 setting 属性是否存在，并读取其值
                 foreach (XmlNode _setting in _settings)
                 {
                     if (_setting.Attributes[ATR_USE_STATEMENT_NAMESPACES] != null)
@@ -720,6 +724,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
             #endregion
 
+            #region 初始化对象工厂、访问器工厂等
             if (objectFactory == null)
             {
                 objectFactory = new ObjectFactory(configScope.UseReflectionOptimizer);
@@ -742,6 +747,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 configScope.SqlMapper = sqlMapper;
             }
 
+            // 添加一个空的参数映射
             ParameterMap _emptyParameterMap = new ParameterMap(configScope.DataExchangeFactory);
             _emptyParameterMap.Id = ConfigurationScope.EMPTY_PARAMETER_MAP;
             configScope.SqlMapper.AddParameterMap(_emptyParameterMap);
@@ -755,23 +761,26 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 _sw.Restart();
             }
 
-            #region Cache Alias
+            #endregion
 
+            #region 初始化缓存控制器别名
+
+            // 添加各种缓存控制器的别名，如 MEMORY、LRU、FIFO
             TypeAlias _cacheAlias = new TypeAlias(typeof(MemoryCacheControler));
-            _cacheAlias.Name = "MEMORY";
-            configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(_cacheAlias.Name, _cacheAlias);
+            _cacheAlias.AliasName = "MEMORY";
+            configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(_cacheAlias.AliasName, _cacheAlias);
 
             _cacheAlias = new TypeAlias(typeof(LruCacheController));
-            _cacheAlias.Name = "LRU";
-            configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(_cacheAlias.Name, _cacheAlias);
+            _cacheAlias.AliasName = "LRU";
+            configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(_cacheAlias.AliasName, _cacheAlias);
 
             _cacheAlias = new TypeAlias(typeof(FifoCacheController));
-            _cacheAlias.Name = "FIFO";
-            configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(_cacheAlias.Name, _cacheAlias);
+            _cacheAlias.AliasName = "FIFO";
+            configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(_cacheAlias.AliasName, _cacheAlias);
 
             _cacheAlias = new TypeAlias(typeof(AnsiStringTypeHandler));
-            _cacheAlias.Name = "AnsiStringTypeHandler";
-            configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(_cacheAlias.Name, _cacheAlias);
+            _cacheAlias.AliasName = "AnsiStringTypeHandler";
+            configScope.SqlMapper.TypeHandlerFactory.AddTypeAlias(_cacheAlias.AliasName, _cacheAlias);
 
             if (logger.IsDebugEnabled)
             {
@@ -782,16 +791,16 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
             #endregion
 
-            #region Load providers from sqlmap.config
+            #region 加载数据库驱动程序 （来自 sqlmap.config 的 <providers>）
             if (configScope.IsCallFromDao == false)
             {
                 GetProviders();
             }
             #endregion
 
-            #region Load DataBase from sqlmap.config
+            #region 加载数据库配置（Provider 和 DataSource）
 
-            #region Choose the  provider
+            #region 选择数据库驱动程序
             IDbProvider _provider = null;
             if (configScope.IsCallFromDao == false)
             {
@@ -807,7 +816,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Load the DataSources from sqlmap.config
+            #region 加载数据库配置（来自 sqlmap.config 的 <database>）
             configScope.ErrorContext.Activity = "loading Database DataSource";
             XmlNode _nodeDataSource = configScope.SqlMapConfigDocument.SelectSingleNode(ApplyDataMapperNamespacePrefix(XML_DATABASE_DATASOURCE), configScope.XmlNamespaceManager);
 
@@ -851,9 +860,10 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 _sw.Restart();
             }
             #endregion
+
             #endregion 
 
-            #region Load Global TypeAlias from sqlmap.config
+            #region 加载全局 TypeAlias （来自 sqlmap.config 的 <alias>）
             foreach (XmlNode xmlNode in configScope.SqlMapConfigDocument.SelectNodes(ApplyDataMapperNamespacePrefix(XML_GLOBAL_TYPEALIAS), configScope.XmlNamespaceManager))
             {
                 configScope.ErrorContext.Activity = "loading global Type alias";
@@ -868,7 +878,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Load TypeHandlers from sqlmap.config
+            #region 加载 TypeHandler （来自 sqlmap.config 的 <typeHandlers>）
             foreach (XmlNode xmlNode in configScope.SqlMapConfigDocument.SelectNodes(ApplyDataMapperNamespacePrefix(XML_GLOBAL_TYPEHANDLER), configScope.XmlNamespaceManager))
             {
                 try
@@ -898,7 +908,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Load sqlMap mapping files from sqlmap.config
+            #region 加载 SQL 映射文件 （来自 sqlmap.config 的 <sqlMaps>） 
             foreach (XmlNode xmlNode in configScope.SqlMapConfigDocument.SelectNodes(ApplyDataMapperNamespacePrefix(XML_SQLMAP), configScope.XmlNamespaceManager))
             {
                 configScope.CurrentNodeContext = xmlNode;
@@ -912,7 +922,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Attach CacheModel to statement
+            #region  绑定缓存模型（设置缓存对象的引用）
             if (configScope.IsCacheModelsEnabled)
             {
                 foreach (DictionaryEntry entry in configScope.SqlMapper.MappedStatements)
@@ -938,7 +948,8 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Register Trigger Statements for Cache Models
+            #region 注册缓存模型的刷新触发器（FlushOnExecute）
+            // 为缓存模型注册触发器语句（即当执行某语句时触发缓存刷新）
             foreach (DictionaryEntry entry in configScope.CacheModelFlushOnExecuteStatements)
             {
                 string cacheModelId = (string)entry.Key;
@@ -952,13 +963,14 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
                         if (mappedStatement != null)
                         {
+                            // 获取对应的缓存模型
                             CacheModel _cacheModel = configScope.SqlMapper.GetCache(cacheModelId);
 
                             if (logger.IsDebugEnabled)
                             {
                                 logger.Debug("Registering trigger statement [" + mappedStatement.Id + "] to cache model [" + _cacheModel.Id + "]");
                             }
-
+                            // 注册该语句为缓存模型的触发器语句
                             _cacheModel.RegisterTriggerStatement(mappedStatement);
                         }
                         else
@@ -980,13 +992,14 @@ namespace IBatisNetSelf.DataMapper.Configuration
             }
             #endregion
 
-            #region Resolve resultMap / Discriminator / PropertyStategy attributes on Result/Argument Property 
-            // 解析 Result、Argument 属性上的 resultMap、Discriminator 和 PropertyStrategy 属性
+            #region  解析嵌套 ResultMap（映射关系中的嵌套结构）
+            // 解析 ResultMap 中的嵌套 resultMap、Discriminator 和 属性/参数 策略
             foreach (DictionaryEntry entry in configScope.SqlMapper.ResultMaps)
             {
                 configScope.ErrorContext.Activity = "Resolve 'resultMap' attribute on Result Property";
 
                 ResultMap _resultMap = (ResultMap)entry.Value;
+                // 处理 ResultProperty 属性上的嵌套 resultMap 和策略
                 for (int index = 0; index < _resultMap.Properties.Count; index++)
                 {
                     ResultProperty result = _resultMap.Properties[index];
@@ -996,6 +1009,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                     }
                     result.PropertyStrategy = PropertyStrategyFactory.Get(result);
                 }
+                // 处理构造函数参数上的嵌套 resultMap 和策略
                 for (int index = 0; index < _resultMap.ConstructorParams.Count; index++)
                 {
                     ResultProperty result = _resultMap.ConstructorParams[index];
@@ -1005,6 +1019,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                     }
                     result.ArgumentStrategy = ArgumentStrategyFactory.Get((ArgumentProperty)result);
                 }
+                // 初始化 Discriminator（用来做多态映射）
                 if (_resultMap.Discriminator != null)
                 {
                     _resultMap.Discriminator.Initialize(configScope);
