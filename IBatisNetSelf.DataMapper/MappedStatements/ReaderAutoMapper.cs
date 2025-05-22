@@ -70,12 +70,13 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
                     _property.ColumnName = columnName;
                     _property.ColumnIndex = i;
 
+                    //TODO:应该不会到这里
                     // 如果是 Hashtable 类型，则直接将列名作为属性名加入集合
-                    if (resultObject is Hashtable)
-                    {
-                        _property.PropertyName = columnName;
-                        properties.Add(_property);
-                    }
+                    //if (resultObject is Hashtable)
+                    //{
+                    //    _property.PropertyName = columnName;
+                    //    properties.Add(_property);
+                    //}
 
                     Type _propertyType = null;
                     if (matchedSetAccessor == null)

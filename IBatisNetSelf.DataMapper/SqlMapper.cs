@@ -6,6 +6,7 @@ using IBatisNetSelf.Common.Utilities.Objects.Members;
 using IBatisNetSelf.DataMapper.Configuration.Cache;
 using IBatisNetSelf.DataMapper.Configuration.ParameterMapping;
 using IBatisNetSelf.DataMapper.Configuration.ResultMapping;
+using IBatisNetSelf.DataMapper.Configuration.Statements;
 using IBatisNetSelf.DataMapper.DataExchange;
 using IBatisNetSelf.DataMapper.MappedStatements;
 using IBatisNetSelf.DataMapper.SessionStore;
@@ -165,20 +166,27 @@ namespace IBatisNetSelf.DataMapper
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SqlMapper"/> class.
+        /// 初始化 SqlMapper 实例（核心 SQL 执行器）
         /// </summary>
-        /// <param name="aObjectFactory">The object factory.</param>
-        /// <param name="aAccessorFactory">The accessor factory.</param>
+        /// <param name="aObjectFactory">对象创建工厂（用于创建实体对象实例）</param>
+        /// <param name="aAccessorFactory">属性访问器工厂（用于读写属性值）</param>
         public SqlMapper(IObjectFactory aObjectFactory, AccessorFactory aAccessorFactory)
         {
+            // 初始化类型处理器工厂，用于处理数据库类型与 .NET 类型之间的转换
             this.typeHandlerFactory = new TypeHandlerFactory();
+            // 初始化参数缓存工具类，用于缓存存储过程的参数信息，提高性能
             this.dbHelperParameterCache = new DBHelperParameterCache();
+            // 保存外部传入的对象工厂（用于实例化结果对象、集合等）
             this.objectFactory = aObjectFactory;
+            // 保存属性访问器工厂（用于通过反射读写对象属性值）
             this.accessorFactory = aAccessorFactory;
 
+            // 初始化数据交换工厂：封装 TypeHandler、ObjectFactory、AccessorFactory， 用于在数据库与对象之间进行数据的读写转换
             this.dataExchangeFactory = new DataExchangeFactory(this.typeHandlerFactory, aObjectFactory, aAccessorFactory);
-
+            // 为当前 SqlMapper 生成一个唯一标识（用于标识 Mapper 实例）
             this.id = HashCodeProvider.GetIdentityHashCode(this).ToString();
+
+            // 根据 Mapper 实例的唯一 id 获取会话存储对象，用于管理 SqlMapSession（如线程绑定、Http上下文绑定等）
             this.sessionStore = SessionStoreFactory.GetSessionStore(this.id);
         }
 
@@ -186,7 +194,7 @@ namespace IBatisNetSelf.DataMapper
         #endregion
 
 
-        #region Methods
+        #region SqlMapSession
 
         /// <summary>
         /// Creates a new SqlMapSession that will be used to query the data source.
@@ -213,6 +221,7 @@ namespace IBatisNetSelf.DataMapper
 
             return _session;
         }
+        #endregion
 
         #region Get/Add ParemeterMap, ResultMap, MappedStatement, TypeAlias, DataSource, CacheModel
 
@@ -690,21 +699,19 @@ namespace IBatisNetSelf.DataMapper
         #region QueryForObject
 
         /// <summary>
-        /// Executes a Sql SELECT statement that returns that returns data 
-        /// to populate a single object instance.
+        /// 执行一个 SQL SELECT 查询语句，用于返回数据并填充一个对象实例。
         /// <p/>
-        /// The parameter object is generally used to supply the input
-        /// data for the WHERE clause parameter(s) of the SELECT statement.
+        /// 参数对象通常用于提供 SELECT 语句中 WHERE 子句的输入参数。
         /// </summary>
-        /// <param name="statementName">The name of the sql statement to execute.</param>
-        /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
-        /// <returns> The single result object populated with the result set data.</returns>
+        /// <param name="statementName">要执行的 SQL 语句名称。</param>
+        /// <param name="parameterObject">用于设置 SQL 参数的对象。</param>
+        /// <returns>一个被结果集数据填充的单一对象。</returns>
         public object QueryForObject(string statementName, object parameterObject)
         {
             // 标记是否为本地（临时）创建的会话
             bool isSessionLocal = false;
             // 尝试获取当前线程中的本地会话（事务或操作上下文中的会话）
-            ISqlMapSession _session = sessionStore.LocalSession;
+            ISqlMapSession _session = this.sessionStore.LocalSession;
             object _result;
 
             // 如果当前线程中没有会话，则新建一个
@@ -749,27 +756,34 @@ namespace IBatisNetSelf.DataMapper
         /// <returns>一个填充了结果数据的对象。</returns>
         public object QueryForObject(string statementName, object parameterObject, object resultObject)
         {
+            // 标记是否为本地（临时）创建的会话
             bool _isSessionLocal = false;
+            // 尝试获取当前线程中的本地会话（事务或操作上下文中的会话）
             ISqlMapSession _session = this.sessionStore.LocalSession;
             object _result = null;
 
+            // 如果当前线程中没有会话，则新建一个
             if (_session == null)
             {
-                _session = CreateSqlMapSession();
-                _isSessionLocal = true;
+                _session = CreateSqlMapSession();  // 创建新的 SQL 会话
+                _isSessionLocal = true;           // 设置本地会话标志
             }
 
             try
             {
+                // 根据语句名称获取映射语句（对应 XML 配置中的 statement）
                 IMappedStatement statement = GetMappedStatement(statementName);
+                // 执行查询，并将结果填充到 resultObject 中（或创建新对象）
                 _result = statement.ExecuteQueryForObject(_session, parameterObject, resultObject);
             }
             catch
             {
+                // 发生异常时重新抛出，保留调用栈
                 throw;
             }
             finally
             {
+                // 如果是本地创建的会话，需要手动关闭连接（否则事务性会话不能关闭）
                 if (_isSessionLocal)
                 {
                     _session.CloseConnection();
@@ -1292,7 +1306,5 @@ namespace IBatisNetSelf.DataMapper
 
         #endregion
 
-
-        #endregion
     }
 }

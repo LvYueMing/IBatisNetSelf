@@ -94,8 +94,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy
             for (int index = 0; index < _resultMap.Properties.Count; index++)
             {
                 ResultProperty _property = _resultMap.Properties[index];
-                _resultMap.SetValueOfProperty(ref _outObject, _property,
-                                             _property.GetDataBaseValue(aReader));
+                _resultMap.SetValueOfProperty(ref _outObject, _property, _property.GetDataBaseValue(aReader));
             }
 
             return _outObject;
