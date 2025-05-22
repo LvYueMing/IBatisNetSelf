@@ -96,6 +96,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         {
             get { return isIList; }
         }
+
         /// <summary>
         /// List factory for <see cref="IList"/> property
         /// </summary>
@@ -207,7 +208,8 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
 
 
         /// <summary>
-        /// The name of the statement to retrieve the property
+        /// select 属性的作用是指定一个嵌套查询(一个 SQL 映射语句的 ID)，用于获取关联对象。，这个查询会在需要填充当前属性时被执行。
+        /// 它常用于实现 关联对象的延迟加载 或者 复杂对象图的构建
         /// </summary>
         [XmlAttribute("select")]
         public string Select
