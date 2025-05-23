@@ -86,13 +86,13 @@ namespace IBatisNetSelf.Common.Utilities.Objects
             simleTypeMap.Add(typeof(ArrayList));
             simleTypeMap.Add(typeof(IEnumerator));
 
-            //			simleTypeMap.Add(Class.class);
-            //			simleTypeMap.Add(Collection.class);
-            //			simleTypeMap.Add(HashMap.class);
-            //			simleTypeMap.Add(TreeMap.class);
-            //			simleTypeMap.Add(HashSet.class);
-            //			simleTypeMap.Add(TreeSet.class);
-            //			simleTypeMap.Add(Vector.class);
+            // simleTypeMap.Add(Class.class);
+            // simleTypeMap.Add(Collection.class);
+            // simleTypeMap.Add(HashMap.class);
+            // simleTypeMap.Add(TreeMap.class);
+            // simleTypeMap.Add(HashSet.class);
+            // simleTypeMap.Add(TreeSet.class);
+            // simleTypeMap.Add(Vector.class);
         }
 
         /// <summary>

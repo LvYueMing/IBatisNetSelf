@@ -290,8 +290,7 @@ namespace IBatisNetSelf.DataMapper.Configuration.Statements
             {
                 this.resultClass = aConfigurationScope.SqlMapper.TypeHandlerFactory.GetType(this.resultClassName);
                 IFactory _resultClassFactory = null;
-                if (Type.GetTypeCode(this.resultClass) == TypeCode.Object &&
-                    (this.resultClass.IsValueType == false))
+                if (Type.GetTypeCode(this.resultClass) == TypeCode.Object && (this.resultClass.IsValueType == false))
                 {
                     _resultClassFactory = aConfigurationScope.SqlMapper.ObjectFactory.CreateFactory(this.resultClass, Type.EmptyTypes);
                 }

@@ -526,7 +526,6 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
         /// </summary>
         private class ArrayListFactory : IFactory
         {
-
             #region IFactory Members
 
             /// <summary>

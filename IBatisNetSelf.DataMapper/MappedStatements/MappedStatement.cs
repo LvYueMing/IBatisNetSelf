@@ -81,6 +81,7 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
             // 获取结果策略处理器
             this.resultStrategy = ResultStrategyFactory.Get(this.statement);
         }
+
         #endregion
 
 
@@ -192,7 +193,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
             return ExecuteQueryForObject(session, parameterObject, null);
         }
 
-
         /// <summary>
         /// 执行一条 SQL 查询语句，并返回一个单行结果对象，可以传入用于接收结果的现成对象
         /// </summary>
@@ -212,7 +212,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
 
             return _obj;
         }
-
 
         /// <summary>
         /// 实际执行查询操作，并返回查询结果

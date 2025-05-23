@@ -793,6 +793,38 @@ namespace IBatisNetSelf.DataMapper
             return _result;
         }
 
+
+        /// <summary>
+        /// 执行一个 SQL SELECT 查询语句，用于返回数据并填充一个对象实例（泛型版）。
+        /// 参数对象通常用于提供 SELECT 语句中 WHERE 子句的输入参数。
+        /// </summary>
+        /// <typeparam name="T">期望返回的结果类型</typeparam>
+        /// <param name="statementName">要执行的 SQL 语句名称。</param>
+        /// <param name="parameterObject">用于设置 SQL 参数的对象。</param>
+        /// <returns>一个被结果集数据填充的单一对象（T 类型）。</returns>
+        public T QueryForObject<T>(string statementName, object parameterObject)
+        {
+            object _result = QueryForObject(statementName, parameterObject);
+            // 处理 null 和类型安全
+            return (_result == null) ? default(T) : (T)_result;
+        }
+
+        /// <summary>
+        /// 执行一个 Sql SELECT 语句，返回一个指定类型的对象，类型由 resultObject 参数指定（泛型版）。
+        /// </summary>
+        /// <typeparam name="T">期望返回的结果类型</typeparam>
+        /// <param name="statementName">要执行的 SQL 映射语句名称。</param>
+        /// <param name="parameterObject">用于填充 SQL 参数的对象。</param>
+        /// <param name="resultObject">作为返回类型模板的对象。</param>
+        /// <returns>一个填充了结果数据的对象（T 类型）。</returns>
+        public T QueryForObject<T>(string statementName, object parameterObject, T resultObject)
+        {
+            object _result = QueryForObject(statementName, parameterObject, resultObject);
+
+            // 处理 null 和类型安全
+            return (_result == null) ? default(T) : (T)_result;
+        }
+
         #endregion
 
         #region QueryForMap, QueryForDictionary

@@ -30,14 +30,14 @@
         from hsdict.data_element_ a
        where a.id = #in_id#
 		</select>
-		<select id="Element_GetELement1" parameterClass="Hashtable">
+		<select id="Element_GetELement1" parameterClass="Hashtable" resultClass="ResultMap.Element,ResultMap">
       select a.id,
              a.name,
              a.mean,
-             a.allow_value,
-             a.data_type,
-             a.data_format,
-             a.code_value_id,
+             a.allow_value      allowvalue,
+             a.data_type        datatype,
+             a.data_format      dataformat,
+             a.code_value_id    codevalueid,
              a.max_number_value,
              a.min_number_value,
              a.unit,

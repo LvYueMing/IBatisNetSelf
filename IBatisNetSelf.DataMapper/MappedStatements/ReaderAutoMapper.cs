@@ -44,13 +44,13 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
                 // 获取所有可写入的属性名称
                 string[] _propertyNames = reflectionInfo.GetWriteablePropertyNames();
 
-                // 构建属性映射表（列名 -> 属性Setter）列名不区分大小写
+                // 构建属性映射表（列名 -> 属性Setter,列名不区分大小写
                 Dictionary<string, ISetAccessor> propertyMap = new Dictionary<string, ISetAccessor>(StringComparer.OrdinalIgnoreCase);
                 ISetAccessorFactory _setAccessorFactory = dataExchangeFactory.AccessorFactory.SetAccessorFactory;
-                foreach (string name in _propertyNames)
+                foreach (string _name in _propertyNames)
                 {
-                    ISetAccessor setAccessor = _setAccessorFactory.CreateSetAccessor(targetType, name);
-                    propertyMap.Add(name, setAccessor);
+                    ISetAccessor setAccessor = _setAccessorFactory.CreateSetAccessor(targetType, _name);
+                    propertyMap.Add(_name, setAccessor);
                 }
 
                 //从 reader 中获取所有列的 schema 信息（结构定义），并借助 PropertyInfo[] 构建一个 resultMap
@@ -58,19 +58,19 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
 
                 for (int i = 0; i < dataColumn.Rows.Count; i++)
                 {
-                    string columnName = dataColumn.Rows[i][0].ToString();
+                    string _columnName = dataColumn.Rows[i][0].ToString();
 
                     // 如果列名与属性名称不匹配，则跳过
-                    ISetAccessor matchedSetAccessor = null;
-                    if (!propertyMap.TryGetValue(columnName, out matchedSetAccessor))
+                    ISetAccessor _matchedSetAccessor = null;
+                    if (!propertyMap.TryGetValue(_columnName, out _matchedSetAccessor))
                         continue;
 
                     // 初始化一个新的结果属性
                     ResultProperty _property = new ResultProperty();
-                    _property.ColumnName = columnName;
+                    _property.ColumnName = _columnName;
                     _property.ColumnIndex = i;
 
-                    //TODO:应该不会到这里
+                    //TODO: 应该不会到这里来
                     // 如果是 Hashtable 类型，则直接将列名作为属性名加入集合
                     //if (resultObject is Hashtable)
                     //{
@@ -79,33 +79,33 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
                     //}
 
                     Type _propertyType = null;
-                    if (matchedSetAccessor == null)
+                    if (_matchedSetAccessor == null)
                     {
                         // 如果找不到匹配的 SetAccessor，尝试使用反射探测属性类型
                         try
                         {
-                            _propertyType = ObjectProbe.GetMemberTypeForSetter(resultObject, columnName);
+                            _propertyType = ObjectProbe.GetMemberTypeForSetter(resultObject, _columnName);
                         }
                         catch
                         {
-                            _logger.Error("The column [" + columnName + "] could not be auto mapped to a property on [" + resultObject.ToString() + "]");
+                            _logger.Error("The column [" + _columnName + "] could not be auto mapped to a property on [" + resultObject.ToString() + "]");
                         }
                     }
                     else
                     {
                         // 有匹配的 SetAccessor，则直接获取其类型
-                        _propertyType = matchedSetAccessor.MemberType;
+                        _propertyType = _matchedSetAccessor.MemberType;
                     }
 
                     // 如果能获取到属性类型或访问器，则继续处理映射关系
-                    if (_propertyType != null || matchedSetAccessor != null)
+                    if (_propertyType != null || _matchedSetAccessor != null)
                     {
                         // 设置属性名（优先用 SetAccessor 的名称）
-                        _property.PropertyName = (matchedSetAccessor != null ? matchedSetAccessor.Name : columnName);
-                        if (matchedSetAccessor != null)
+                        _property.PropertyName = (_matchedSetAccessor != null ? _matchedSetAccessor.Name : _columnName);
+                        if (_matchedSetAccessor != null)
                         {
                             // 使用 SetAccessor 初始化 TypeHandler
-                            _property.Initialize(dataExchangeFactory.TypeHandlerFactory, matchedSetAccessor);
+                            _property.Initialize(dataExchangeFactory.TypeHandlerFactory, _matchedSetAccessor);
                         }
                         else
                         {
