@@ -20,7 +20,7 @@ namespace ResultMap
             //DataSet ds = _sqlMapper.QueryForDataSet("Element_GetELement", ht);
             //var element = _sqlMapper.QueryForObject("Element_GetELement1", ht) as Element;
 
-            var element = _sqlMapper.QueryForObject<Element>("Element_GetELement1", ht);
+            var element = _sqlMapper.QueryForObject<Element>("Element_GetELement", ht);
 
             Console.Read();
         }

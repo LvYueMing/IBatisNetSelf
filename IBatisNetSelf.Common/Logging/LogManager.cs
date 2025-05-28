@@ -100,7 +100,7 @@ namespace IBatisNetSelf.Common.Logging
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("ibatislog.json", optional: true, reloadOnChange: true)
                 .Build();
 
             var _logConfig = new LogConfig();

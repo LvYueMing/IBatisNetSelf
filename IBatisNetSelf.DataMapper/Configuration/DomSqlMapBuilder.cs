@@ -27,9 +27,11 @@ using IBatisNetSelf.DataMapper.TypeHandlers;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Schema;
 
 namespace IBatisNetSelf.DataMapper.Configuration
@@ -1871,6 +1873,11 @@ namespace IBatisNetSelf.DataMapper.Configuration
                          */
                         if (_keyAttr != null && _valueAttr != null)
                         {
+                            if(_valueAttr.Value.ToLower()== "host.docker.internal")
+                            {
+                                _valueAttr.Value = GetHostAddress("host.docker.internal");
+                            }
+
                             configScope.Properties.Add(_keyAttr.Value, _valueAttr.Value);
 
                             if (logger.IsDebugEnabled)
@@ -1889,6 +1896,10 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
                             foreach (XmlNode _node in _propertiesConfig.SelectNodes(XML_GLOBAL_PROPERTIES, configScope.XmlNamespaceManager))
                             {
+                                if (_node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value.ToLower() == "host.docker.internal")
+                                {
+                                    _node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value = GetHostAddress("host.docker.internal");
+                                }
                                 configScope.Properties[_node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value] = _node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
 
                                 if (logger.IsDebugEnabled)
@@ -1901,8 +1912,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 }
                 else
                 {
-                    // <properties> element's InnerXml is currently an empty string anyway
-                    // since <settings> are in properties file
+                    // <properties> 元素的 InnerXml 当前为空字符串
                     //例如：<properties resource="DataBase.config"/>
 
                     configScope.ErrorContext.Resource = _nodeProperties.OuterXml.ToString();
@@ -1912,6 +1922,10 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
                     foreach (XmlNode node in propertiesConfig.SelectNodes(XML_SETTINGS_ADD))
                     {
+                        if (node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value.ToLower() == "host.docker.internal")
+                        {
+                            node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value = GetHostAddress("host.docker.internal");
+                        }
                         configScope.Properties[node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value] = node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
 
                         if (logger.IsDebugEnabled)
@@ -2152,6 +2166,29 @@ namespace IBatisNetSelf.DataMapper.Configuration
         {
             return MAPPING_NAMESPACE_PREFIX + ":" + elementName.
                 Replace("/", "/" + MAPPING_NAMESPACE_PREFIX + ":");
+        }
+
+        /// <summary>
+        /// Get the host address for a given host name.
+        /// </summary>
+        /// <param name="hostName"></param>
+        /// <returns></returns>
+        public static string GetHostAddress(string hostName)
+        {
+            string _hostIp = string.Empty;
+            try
+            {
+                var _addresses = Dns.GetHostAddressesAsync(hostName).Result;
+                _hostIp = _addresses.FirstOrDefault()?.ToString();
+            }
+            catch (Exception ex)
+            {
+                if (logger.IsDebugEnabled)
+                {
+                    logger.Debug($"[ERROR] Failed to resolve {hostName}: {ex.Message}");
+                }
+            }
+            return _hostIp;
         }
 
         #endregion
