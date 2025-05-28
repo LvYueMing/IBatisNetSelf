@@ -28,8 +28,10 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
@@ -1873,9 +1875,11 @@ namespace IBatisNetSelf.DataMapper.Configuration
                          */
                         if (_keyAttr != null && _valueAttr != null)
                         {
-                            if(_valueAttr.Value.ToLower()== "host.docker.internal")
+                            // 检查 key 是否为 "Host" 且 value 是否为有效的 IP 地址
+                            if (_keyAttr.Value == "Host" && !IsValidIP(_valueAttr.Value))
                             {
-                                _valueAttr.Value = GetHostAddress("host.docker.internal");
+                                //例如："host.docker.internal"
+                                _valueAttr.Value = GetHostAddress(_valueAttr.Value);
                             }
 
                             configScope.Properties.Add(_keyAttr.Value, _valueAttr.Value);
@@ -1896,15 +1900,21 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
                             foreach (XmlNode _node in _propertiesConfig.SelectNodes(XML_GLOBAL_PROPERTIES, configScope.XmlNamespaceManager))
                             {
-                                if (_node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value.ToLower() == "host.docker.internal")
+                                string _key = _node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value;
+                                string _value = _node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
+
+                                // 检查 key 是否为 "Host" 且 value 是否为有效的 IP 地址
+                                if (_key == "Host" && !IsValidIP(_value))
                                 {
-                                    _node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value = GetHostAddress("host.docker.internal");
+                                    //例如："host.docker.internal"
+                                    _value = GetHostAddress(_value);
                                 }
-                                configScope.Properties[_node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value] = _node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
+
+                                configScope.Properties[_key] = _value;
 
                                 if (logger.IsDebugEnabled)
                                 {
-                                    logger.Debug(string.Format("获取 property \"{0}\" value \"{1}\"", _node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value, _node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value));
+                                    logger.Debug(string.Format("获取 property \"{0}\" value \"{1}\"", _key, _value));
                                 }
                             }
                         }
@@ -1922,15 +1932,21 @@ namespace IBatisNetSelf.DataMapper.Configuration
 
                     foreach (XmlNode node in propertiesConfig.SelectNodes(XML_SETTINGS_ADD))
                     {
-                        if (node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value.ToLower() == "host.docker.internal")
+                        string _key = node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value;
+                        string _value = node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
+
+                        // 检查 key 是否为 "Host" 且 value 是否为有效的 IP 地址
+                        if (_key == "Host" && !IsValidIP(_value))
                         {
-                            node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value = GetHostAddress("host.docker.internal");
+                            //例如："host.docker.internal"
+                            _value = GetHostAddress(_value);
                         }
-                        configScope.Properties[node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value] = node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value;
+
+                        configScope.Properties[_key] = _value;
 
                         if (logger.IsDebugEnabled)
                         {
-                            logger.Debug(string.Format("Add property \"{0}\" value \"{1}\"", node.Attributes[PROPERTY_ELEMENT_KEY_ATTR].Value, node.Attributes[PROPERTY_ELEMENT_VALUE_ATTR].Value));
+                            logger.Debug(string.Format("Add property \"{0}\" value \"{1}\"", _key, _value));
                         }
                     }
                 }
@@ -2179,7 +2195,7 @@ namespace IBatisNetSelf.DataMapper.Configuration
             try
             {
                 var _addresses = Dns.GetHostAddressesAsync(hostName).Result;
-                _hostIp = _addresses.FirstOrDefault()?.ToString();
+                _hostIp = _addresses.FirstOrDefault(addr => addr.AddressFamily == AddressFamily.InterNetwork)?.ToString();
             }
             catch (Exception ex)
             {
@@ -2189,6 +2205,18 @@ namespace IBatisNetSelf.DataMapper.Configuration
                 }
             }
             return _hostIp;
+        }
+
+
+        public static bool IsValidIP(string ip)
+        {
+            if (string.IsNullOrEmpty(ip))
+            {
+                return false;
+            }
+            // 使用正则表达式验证 IP 地址格式
+            string pattern = @"^(\d{1,3}\.){3}\d{1,3}$";
+            return Regex.IsMatch(ip, pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
         }
 
         #endregion
