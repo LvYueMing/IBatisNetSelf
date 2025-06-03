@@ -118,6 +118,7 @@ namespace IBatisNetSelf.Common.Utilities
             catch (Exception e)
             {
                 throw new IBatisConfigException($"Unable to load config file \"{resourcePath}\". Cause : {e.Message}");
+
             }
             finally
             {

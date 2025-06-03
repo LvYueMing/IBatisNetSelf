@@ -1,10 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>enable</Nullable>		
+		<!-- NuGet 包版本控制 -->
+    <VersionPrefix>1.0.0</VersionPrefix>
+		<!--<VersionSuffix>$([System.DateTime]::Now.ToString("yyyyMMddHHmm"))</VersionSuffix>-->
+	
+		<PackageOutputPath>D:\MyPackages</PackageOutputPath>	
+		<Authors>LYM</Authors>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Title>IBatisNetSelf</Title>
+    <PackageId>IBatisNetSelf</PackageId>
+    <Product>ORM</Product>
+		
+		<!-- 关键：包含引用的 DLL -->
+    <IncludeReferencedProjects>true</IncludeReferencedProjects>
   </PropertyGroup>
+	
 
   <ItemGroup>
     <None Remove="SqlMap.xsd" />
@@ -22,7 +36,30 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IBatisNetSelf.Common\IBatisNetSelf.Common.csproj" />
+		<ProjectReference Include="..\IBatisNetSelf.Common\IBatisNetSelf.Common.csproj" >
+			  <!--避免被作为外部依赖--> 
+      <PrivateAssets>all</PrivateAssets>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+		</ProjectReference>
+  </ItemGroup>
+	
+  <!-- 把 A 的输出 DLL 及依赖打包进 lib/net6.0 -->
+  <Target Name="CopyADependencies" AfterTargets="Build">
+    <ItemGroup>
+      <ADlls Include="..\IBatisNetSelf.Common\bin\$(Configuration)\net6.0\*.dll" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ADlls)"
+          DestinationFolder="$(OutputPath)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <Content Include="..\IBatisNetSelf.Common\bin\$(Configuration)\net6.0\*.dll">
+      <Pack>true</Pack>
+      <PackagePath>lib/net6.0/</PackagePath>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

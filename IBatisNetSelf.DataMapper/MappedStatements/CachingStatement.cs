@@ -279,6 +279,20 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         {
             return this.mappedStatement.ExecuteQueryForDataSet(aSession, aParameterObject);
         }
+
+
+        /// <summary>
+        /// Executes the SQL and retuns fill a DataTable
+        /// </summary>
+        /// <param name="aSession">The session used to execute the statement.</param>
+        /// <param name="aParameterObject">The object used to set the parameters in the SQL.</param>
+        /// <returns>A DataTable objects.</returns>
+        public DataTable ExecuteQueryForDataTable(ISqlMapSession aSession, object aParameterObject)
+        {
+            return this.mappedStatement.ExecuteQueryForDataTable(aSession, aParameterObject);
+        }
+
+
         #endregion
 
         /// <summary>

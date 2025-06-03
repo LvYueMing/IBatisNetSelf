@@ -454,6 +454,18 @@ namespace IBatisNetSelf.DataMapper
         /// <returns>A DataSet</returns>
         DataSet QueryForDataSet(string statementName, object parameterObject);
 
+
+        /// <summary>
+        /// Executes a Sql SELECT statement that returns data to populate a DataTable.
+        /// <p/>
+        ///  The parameter object is generally used to supply the input
+        /// data for the WHERE clause parameter(s) of the SELECT statement.
+        /// </summary>
+        /// <param name="statementName">The name of the sql statement to execute.</param>
+        /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
+        /// <returns>A DataTable</returns>
+        DataTable QueryForDataTable(string statementName, object parameterObject);
+
         /// <summary>
         /// Executes a Sql INSERT statement.
         /// Insert is a bit different from other update methods, as it

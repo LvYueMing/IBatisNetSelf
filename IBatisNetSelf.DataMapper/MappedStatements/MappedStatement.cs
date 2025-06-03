@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using IBatisNetSelf.DataMapper.MappedStatements.ResultStrategy;
 using IBatisNetSelf.DataMapper.Commands;
 using IBatisNetSelf.DataMapper.MappedStatements.PostSelectStrategy;
+using System.Data.Common;
 
 namespace IBatisNetSelf.DataMapper.MappedStatements
 {
@@ -831,6 +832,63 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
             }
 
             return _ds;
+        }
+
+        #endregion
+
+        #region ExecuteQueryForDataTable
+
+
+        /// <summary>
+        /// 执行sql返回DataTable，没有应用结果策略(resultStrategy)，使用IDbDataAdapter直接返回DataTable
+        /// </summary>
+        /// <param name="aSession">当前 SQL 会话</param>
+        /// <param name="aParameterObject">SQL 参数对象</param>
+        /// <returns>包含结果的 DataTable</returns>
+        public virtual DataTable ExecuteQueryForDataTable(ISqlMapSession aSession, object aParameterObject)
+        {
+            RequestScope _request = this.statement.Sql.GetRequestScope(this, aParameterObject, aSession);
+
+            //创建命令对象IDbCommand，_request.IDbCommand=aSession.CreateCommand(aStatement.CommandType)
+            //命令对象执行语句CommandText赋值，_request.IDbCommand.CommandText = _request.PreparedStatement.PreparedSql
+            //给命令对象创建参数列表（aRequest.IDbCommand.Parameters），并赋值（从aParameterObject获取参数对应的值）
+            //一切准备就绪，可执行命令获取数据
+            this.preparedCommand.Create(_request, aSession, this.Statement, aParameterObject);
+
+            return RunQueryForDataTable(_request, aSession, aParameterObject);
+        }
+
+
+        /// <summary>
+        /// 执行sql返回DataTable数据集，没有应用结果策略，使用IDbDataAdapter直接返回DataTable
+        /// </summary>
+        /// <param name="aRequest">执行上下文</param>
+        /// <param name="aSession">当前 SQL 会话</param>
+        /// <param name="aParameterObject">SQL 参数对象</param>
+        /// <returns>包含结果的 DataTable</returns>
+        internal DataTable RunQueryForDataTable(RequestScope aRequest, ISqlMapSession aSession, object aParameterObject)
+        {
+            DataTable _dt = new DataTable();
+
+            // 提取真实 IDbCommand
+            IDbCommand command = (aRequest.IDbCommand is DbCommandDecorator decorator) ? decorator.IDbCommand : aRequest.IDbCommand;
+
+            using (command)
+            {
+                try
+                {
+                    // 使用连接创建 DataAdapter（通常为 SqlDataAdapter、OracleDataAdapter 等）
+                    IDbDataAdapter _dataAdapter = aSession.CreateDataAdapter(command);
+                    var _dbAdapter = (DbDataAdapter)_dataAdapter;
+                    _dbAdapter.Fill(_dt); 
+                }
+                catch
+                {
+                    throw;
+                }
+            }
+
+            return _dt;
         }
 
         #endregion

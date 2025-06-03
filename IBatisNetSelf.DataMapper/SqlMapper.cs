@@ -1338,5 +1338,50 @@ namespace IBatisNetSelf.DataMapper
 
         #endregion
 
+        #region QueryForDataTable
+
+        /// <summary>
+        /// Executes a Sql SELECT statement that returns data to populate a DataTable.
+        /// <p/>
+        ///  The parameter object is generally used to supply the input
+        /// data for the WHERE clause parameter(s) of the SELECT statement.
+        /// </summary>
+        /// <param name="statementName">The name of the sql statement to execute.</param>
+        /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
+        /// <returns>A DataTable</returns>
+        public DataTable QueryForDataTable(string statementName, object parameterObject)
+        {
+            bool _isSessionLocal = false;
+            ISqlMapSession _session = this.sessionStore.LocalSession;
+            DataTable _dt;
+
+            if (_session == null)
+            {
+                _session = CreateSqlMapSession();
+                _isSessionLocal = true;
+            }
+
+            try
+            {
+                IMappedStatement _statement = GetMappedStatement(statementName);
+                _dt = _statement.ExecuteQueryForDataTable(_session, parameterObject);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                if (_isSessionLocal)
+                {
+                    _session.CloseConnection();
+                }
+            }
+
+            return _dt;
+        }
+
+        #endregion
+
     }
 }

@@ -1,9 +1,11 @@
 ﻿using IBatisNetSelf.DataMapper.Commands;
 using IBatisNetSelf.DataMapper.Configuration.Statements;
+using IBatisNetSelf.DataMapper.Scope;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -191,6 +193,19 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// <param name="aParameterObject">The object used to set the parameters in the SQL.</param>
         /// <returns>A DataSet of result objects.</returns>
         DataSet ExecuteQueryForDataSet(ISqlMapSession aSession, object aParameterObject);
+        #endregion
+
+        #region ExecuteQueryForDataTable
+
+
+        /// <summary>
+        /// 执行sql返回DataTable，没有应用结果策略(resultStrategy)，使用IDbDataAdapter直接返回DataTable
+        /// </summary>
+        /// <param name="aSession">当前 SQL 会话</param>
+        /// <param name="aParameterObject">SQL 参数对象</param>
+        /// <returns>包含结果的 DataTable</returns>
+        DataTable ExecuteQueryForDataTable(ISqlMapSession aSession, object aParameterObject);
+
         #endregion
 
 

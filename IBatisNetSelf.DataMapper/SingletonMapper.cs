@@ -44,7 +44,7 @@ namespace IBatisNetSelf.DataMapper
         {
             if (sqlMapper == null)
             {
-                lock (typeof(SqlMapper))
+                lock (typeof(SqlMapper)) 
                 {
                     if (sqlMapper == null) // double-check
                     {
