@@ -4,19 +4,20 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>		
+		
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies> <!-- 所有 NuGet 依赖的 DLL 复制到 obj\... 下 -->
+		
 		<!-- NuGet 包版本控制 -->
     <VersionPrefix>1.0.0</VersionPrefix>
-		<!--<VersionSuffix>$([System.DateTime]::Now.ToString("yyyyMMddHHmm"))</VersionSuffix>-->
-	
+		<!--<VersionSuffix>$([System.DateTime]::Now.ToString("yyyyMMddHHmm"))</VersionSuffix>-->	
 		<PackageOutputPath>D:\MyPackages</PackageOutputPath>	
 		<Authors>LYM</Authors>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Title>IBatisNetSelf</Title>
     <PackageId>IBatisNetSelf</PackageId>
     <Product>ORM</Product>
-		
 		<!-- 关键：包含引用的 DLL -->
-    <IncludeReferencedProjects>true</IncludeReferencedProjects>
+    <IncludeReferencedProjects>false</IncludeReferencedProjects>
   </PropertyGroup>
 	
 
@@ -30,36 +31,50 @@
     <EmbeddedResource Include="SqlMapConfig.xsd" />
   </ItemGroup>
 
+	<!-- NuGet 依赖 -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0">
+			 <!--能正常使用、不打包依赖、不传递-->
+       <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
   </ItemGroup>
 
+	<!-- 引用 IBatisNetSelf.Common -->
   <ItemGroup>
 		<ProjectReference Include="..\IBatisNetSelf.Common\IBatisNetSelf.Common.csproj" >
-			  <!--避免被作为外部依赖--> 
-      <PrivateAssets>all</PrivateAssets>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+        <PrivateAssets>all</PrivateAssets>
 		</ProjectReference>
   </ItemGroup>
 	
-  <!-- 把 A 的输出 DLL 及依赖打包进 lib/net6.0 -->
-  <Target Name="CopyADependencies" AfterTargets="Build">
+  <!-- 构建后,复制 Common 的 DLL 到输出目录（便于调试、发布） -->
+  <Target Name="CopyCommonDlls" AfterTargets="Build">
     <ItemGroup>
-      <ADlls Include="..\IBatisNetSelf.Common\bin\$(Configuration)\net6.0\*.dll" />
+      <CommonDlls Include="..\IBatisNetSelf.Common\bin\$(Configuration)\net6.0\*.dll" />
     </ItemGroup>
+		
+		<Message Text="Copying @(CommonDlls) To $(OutputPath)" Importance="High" />
 
-    <Copy SourceFiles="@(ADlls)"
-          DestinationFolder="$(OutputPath)"
-          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(CommonDlls)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
   </Target>
 
-  <ItemGroup>
-    <Content Include="..\IBatisNetSelf.Common\bin\$(Configuration)\net6.0\*.dll">
-      <Pack>true</Pack>
-      <PackagePath>lib/net6.0/</PackagePath>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+	<!-- 打包：打包时，包括主 DLL + 引用 DLL + 所有依赖 DLL ，(不能排除系统运行时库，新项目中不一定引用对应库)-->
+  <ItemGroup Condition="'$(BuildingPackage)' == 'true'">
+      <!--<None Include="..\IBatisNetSelf.Common\bin\$(Configuration)\net6.0\*.dll">-->
+			<Content Include="$(OutputPath)\*.dll">
+        <Pack>true</Pack>
+        <PackagePath>lib/net6.0/</PackagePath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content >
   </ItemGroup>
+
+	
+	<Target Name="LogPackedFiles" AfterTargets="Pack">
+    <Message Text="打包进 NuGet 的 DLL 文件：" Importance="High" />
+    <Message Text="@(Content)" Importance="High" />
+  </Target>
 
 </Project>
