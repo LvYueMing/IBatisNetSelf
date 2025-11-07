@@ -234,7 +234,8 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
                 IDataReader _reader = command.ExecuteReader();
                 try
                 {
-                    // 遍历查询结果（只取第一行）
+                    // Read() 方法的作用是移动游标，而非 “消耗” 数据
+                    // 调用 Read() 方法会将游标向前移动一行，并返回 true（表示有数据）或 false（表示已到末尾）
                     while (_reader.Read())
                     {
                         // 使用结果策略进行数据映射（如映射为实体类对象）
@@ -306,6 +307,65 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         }
 
         /// <summary>
+        /// 执行 SQL 并返回所有结果行（List<T> 列表形式）。
+        /// 实际上等价于调用 ExecuteQueryForList(session, parameterObject, NO_SKIPPED_RESULTS, NO_MAXIMUM_RESULTS)。
+        /// </summary>
+        /// <param name="aSession">执行 SQL 的当前会话对象（ISqlMapSession）</param>
+        /// <param name="aParameterObject">用于填充 SQL 参数的输入对象</param>
+        /// <returns>结果列表（IList<T> 类型）</returns>
+        public virtual IList ExecuteQueryForList<T>(ISqlMapSession aSession, object aParameterObject)
+        {
+            // 通过 SQL 映射配置生成请求作用域对象（RequestScope）
+            // 包含：语句内容、参数映射、结果映射等上下文信息
+            RequestScope _request = this.statement.Sql.GetRequestScope(this, aParameterObject, aSession);
+
+            // 使用请求作用域、SQL 映射、参数对象创建 IDbCommand 命令对象
+            // 1.创建命令对象IDbCommand，_request.IDbCommand=aSession.CreateCommand(aStatement.CommandType)
+            // 2.命令对象执行语句CommandText赋值，_request.IDbCommand.CommandText = _request.PreparedStatement.PreparedSql
+            // 3.给命令对象创建参数列表（aRequest.IDbCommand.Parameters），并赋值（从aParameterObject获取参数对应的值）
+            // 4.一切准备就绪，可执行命令获取数据
+            this.preparedCommand.Create(_request, aSession, this.Statement, aParameterObject);
+
+            // 调用实际执行逻辑方法，获取查询结果（默认不分页、不传递 RowDelegate）
+            return RunQueryForList<T>(_request, aSession, aParameterObject, null, null);
+        }
+
+
+        /// <summary>
+        /// 执行 SQL 查询，并将结果填充到指定的强类型集合中（由调用者提供 IList）。
+        /// </summary>
+        /// <param name="aSession">用于执行语句的 SQL 映射会话对象</param>
+        /// <param name="aParameterObject">用于设置 SQL 参数的输入对象</param>
+        /// <param name="aResultObject">用于接收查询结果的目标集合（强类型 IList，如 List&lt;User&gt;）</param>
+        public virtual void ExecuteQueryForList(ISqlMapSession aSession, object aParameterObject, IList aResultObject)
+        {
+            RequestScope _request = this.statement.Sql.GetRequestScope(this, aParameterObject, aSession);
+
+            this.preparedCommand.Create(_request, aSession, this.Statement, aParameterObject);
+
+            RunQueryForList(_request, aSession, aParameterObject, aResultObject, null);
+        }
+
+        /// <summary>
+        /// 执行 SQL 查询，并返回部分结果（支持分页），可指定跳过的行数和最大返回行数。
+        /// </summary>
+        /// <param name="session">执行 SQL 的会话对象（ISqlMapSession）</param>
+        /// <param name="parameterObject">用于设置 SQL 参数的对象</param>
+        /// <param name="skipResults">要跳过的记录条数（用于分页）</param>
+        /// <param name="maxResults">最多返回的记录条数（用于分页）</param>
+        /// <returns>包含查询结果的列表（IList）</returns>
+        public virtual IList ExecuteQueryForList(ISqlMapSession session, object parameterObject, int skipResults, int maxResults)
+        {
+            RequestScope request = statement.Sql.GetRequestScope(this, parameterObject, session);
+
+            this.preparedCommand.Create(request, session, this.Statement, parameterObject);
+
+            // 实际执行查询逻辑，返回结果列表
+            // 传入跳过行数和最大行数实现分页效果
+            return RunQueryForList(request, session, parameterObject, skipResults, maxResults);
+        }
+
+        /// <summary>
         /// 执行一条 SQL 查询语句，并允许用户通过 RowDelegate 委托对每一行数据自定义处理。
         /// </summary>
         /// <param name="session">执行 SQL 的当前会话（ISqlMapSession）</param>
@@ -357,24 +417,6 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         }
 
 
-        /// <summary>
-        /// 执行 SQL 查询，并返回部分结果（支持分页），可指定跳过的行数和最大返回行数。
-        /// </summary>
-        /// <param name="session">执行 SQL 的会话对象（ISqlMapSession）</param>
-        /// <param name="parameterObject">用于设置 SQL 参数的对象</param>
-        /// <param name="skipResults">要跳过的记录条数（用于分页）</param>
-        /// <param name="maxResults">最多返回的记录条数（用于分页）</param>
-        /// <returns>包含查询结果的列表（IList）</returns>
-        public virtual IList ExecuteQueryForList(ISqlMapSession session, object parameterObject, int skipResults, int maxResults)
-        {
-            RequestScope request = statement.Sql.GetRequestScope(this, parameterObject, session);
-
-            this.preparedCommand.Create(request, session, this.Statement, parameterObject);
-
-            // 实际执行查询逻辑，返回结果列表
-            // 传入跳过行数和最大行数实现分页效果
-            return RunQueryForList(request, session, parameterObject, skipResults, maxResults);
-        }
 
         /// <summary>
         /// 执行查询，返回指定范围（分页）的结果列表。
@@ -535,20 +577,163 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
 
 
         /// <summary>
-        /// 执行 SQL 查询，并将结果填充到指定的强类型集合中（由调用者提供 IList）。
+        /// 执行查询，返回指定范围（分页）的结果列表。
         /// </summary>
-        /// <param name="aSession">用于执行语句的 SQL 映射会话对象</param>
-        /// <param name="aParameterObject">用于设置 SQL 参数的输入对象</param>
-        /// <param name="aResultObject">用于接收查询结果的目标集合（强类型 IList，如 List&lt;User&gt;）</param>
-        public virtual void ExecuteQueryForList(ISqlMapSession aSession, object aParameterObject, IList aResultObject)
+        /// <param name="request">请求上下文（包含 SQL、参数、命令等）</param>
+        /// <param name="session">当前会话，用于数据库连接和操作</param>
+        /// <param name="parameterObject">传入的参数对象</param>
+        /// <param name="skipResults">需要跳过的行数</param>
+        /// <param name="maxResults">需要返回的最大行数</param>
+        /// <returns>查询结果列表</returns>
+        internal IList RunQueryForList<T>(RequestScope request, ISqlMapSession session, object parameterObject, int skipResults, int maxResults)
         {
-            RequestScope _request = this.statement.Sql.GetRequestScope(this, aParameterObject, aSession);
+            IList list = null;
+            T resultObject = default;
 
-            this.preparedCommand.Create(_request, aSession, this.Statement, aParameterObject);
+            using (IDbCommand command = request.IDbCommand)
+            {
+                // 判断是否指定了结果集合类型
+                if (statement.ListClass == null)
+                {
+                    // 如果未指定 ListClass，使用默认 ArrayList
+                    list = new ArrayList();
+                }
+                else
+                {
+                    // 如果配置了 ListClass，则使用反射创建实例（支持泛型集合等）
+                    list = statement.CreateInstanceOfListClass();
+                }
 
-            RunQueryForList(_request, aSession, aParameterObject, aResultObject, null);
+                // 执行命令，获取 DataReader 读取数据
+                IDataReader reader = command.ExecuteReader();
+
+                try
+                {
+                    // 跳过 skipResults 行（实现分页）
+                    for (int i = 0; i < skipResults; i++)
+                    {
+                        // 如果没数据可读，提前退出循环
+                        if (!reader.Read())
+                        {
+                            break;
+                        }
+                    }
+
+                    // 获取数据的主循环
+                    int resultsFetched = 0;// 已获取的记录数
+                    while ((maxResults == NO_MAXIMUM_RESULTS || resultsFetched < maxResults)
+                        && reader.Read())
+                    {
+                        // 使用结果处理策略将一行数据转换为对象
+                        object obj = this.resultStrategy.Process(request, ref reader, resultObject);
+                        // 过滤掉被标记为 SKIP 的对象（如 discriminator 不匹配）
+                        if (obj != BaseStrategy.SKIP)
+                        {
+                            list.Add((T)obj);
+                        }
+                        resultsFetched++;
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    reader.Close();
+                    reader.Dispose();
+                }
+
+                // 执行 PostSelect（延迟绑定、嵌套查询等）
+                ExecutePostSelect(request);
+
+                // 如果有 Output 参数（如存储过程），读取输出参数
+                RetrieveOutputParameters(request, session, command, parameterObject);
+            }
+
+            return list;
         }
 
+        /// <summary>
+        /// 执行 SQL 查询，并将结果填充到指定的列表中。可选传入 RowDelegate 对每行自定义处理。
+        /// </summary>
+        /// <param name="aRequest">查询请求作用域（包含语句、参数、IDbCommand 等信息）</param>
+        /// <param name="aSession">当前数据库会话</param>
+        /// <param name="aParameterObject">用于设置 SQL 参数的对象</param>
+        /// <param name="aResultObject">外部传入的结果列表（可为 null）</param>
+        /// <param name="aRowDelegate">自定义每行处理逻辑的委托</param>
+        /// <returns>填充好的结果列表</returns>
+        internal IList RunQueryForList<T>(RequestScope aRequest, ISqlMapSession aSession, object aParameterObject, IList aResultObject, RowDelegate aRowDelegate)
+        {
+            IList _list = aResultObject;
+            T resultObject = default;
+
+            using (IDbCommand _command = aRequest.IDbCommand)
+            {
+                if (aResultObject == null)
+                {
+                    if (this.statement.ListClass == null)
+                    {
+                        // 如果未指定 ListClass，使用默认 ArrayList
+                        _list = new ArrayList();
+                    }
+                    else
+                    {
+                        // 否则使用指定的类型创建实例（支持泛型集合等）
+                        _list = this.statement.CreateInstanceOfListClass();
+                    }
+                }
+
+                // 执行查询命令，获取数据读取器
+                IDataReader _reader = _command.ExecuteReader();
+
+                try
+                {
+                    // 支持处理多结果集（DataReader.NextResult），一般用于存储过程返回多个结果集的情况
+                    do
+                    {
+                        if (aRowDelegate == null)
+                        {
+                            // 如果未指定 RowDelegate，默认将每一行转换为对象并加入结果集合
+                            while (_reader.Read())
+                            {
+                                object obj = this.resultStrategy.Process(aRequest, ref _reader, resultObject);
+                                if (obj != BaseStrategy.SKIP)
+                                {
+                                    _list.Add((T)obj);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // 如果指定了 RowDelegate，则由回调方法处理每一行结果
+                            while (_reader.Read())
+                            {
+                                object obj = this.resultStrategy.Process(aRequest, ref _reader, resultObject);
+                                // 调用回调委托进行自定义处理（例如按某个规则分组）
+                                aRowDelegate(obj, aParameterObject, _list);
+                            }
+                        }
+                    }
+                    while (_reader.NextResult());// 继续读取下一个结果集（如果有）
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    _reader.Close();
+                    _reader.Dispose();
+                }
+                // 执行延迟绑定/后处理（如嵌套查询 select）
+                this.ExecutePostSelect(aRequest);
+                // 获取输出参数（如果是存储过程）
+                this.RetrieveOutputParameters(aRequest, aSession, _command, aParameterObject);
+            }
+
+            return _list;
+        }
 
         #endregion
 

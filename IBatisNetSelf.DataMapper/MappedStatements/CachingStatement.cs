@@ -186,6 +186,11 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         {
             return this.ExecuteQueryForList(session, parameterObject, MappedStatement.NO_SKIPPED_RESULTS, MappedStatement.NO_MAXIMUM_RESULTS);
         }
+
+        public IList ExecuteQueryForList<T>(ISqlMapSession aSession, object aParameterObject)
+        {
+            return this.ExecuteQueryForList<T>(aSession, aParameterObject);
+        }
         #endregion
 
 

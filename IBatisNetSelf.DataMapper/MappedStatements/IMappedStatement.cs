@@ -133,6 +133,8 @@ namespace IBatisNetSelf.DataMapper.MappedStatements
         /// <returns>A List of result objects.</returns>
         IList ExecuteQueryForList(ISqlMapSession session, object parameterObject);
 
+        IList ExecuteQueryForList<T>(ISqlMapSession aSession, object aParameterObject);
+
         #endregion
 
         #region ExecuteForObject

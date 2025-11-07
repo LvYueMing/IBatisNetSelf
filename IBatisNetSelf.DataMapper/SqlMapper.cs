@@ -959,6 +959,49 @@ namespace IBatisNetSelf.DataMapper
             return _list;
         }
 
+
+        /// <summary>
+        /// Executes a Sql SELECT statement that returns data to populate
+        /// a number of result objects(T type).
+        /// <p/>
+        ///  The parameter object is generally used to supply the input
+        /// data for the WHERE clause parameter(s) of the SELECT statement.
+        /// </summary>
+        /// <param name="statementName">The name of the sql statement to execute.</param>
+        /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
+        /// <returns>A List of T type.</returns>
+        public IList QueryForList<T>(string statementName, object parameterObject)
+        {
+            bool _isSessionLocal = false;
+            ISqlMapSession _session = this.sessionStore.LocalSession;
+            IList _list;
+
+            if (_session == null)
+            {
+                _session = CreateSqlMapSession();
+                _isSessionLocal = true;
+            }
+
+            try
+            {
+                IMappedStatement _statement = GetMappedStatement(statementName);
+                _list = _statement.ExecuteQueryForList<T>(_session, parameterObject);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                if (_isSessionLocal)
+                {
+                    _session.CloseConnection();
+                }
+            }
+
+            return _list;
+        }
+
         /// <summary>
         /// Executes the SQL and retuns all rows selected.
         /// <p/>
@@ -1070,94 +1113,90 @@ namespace IBatisNetSelf.DataMapper
         #region QueryWithRowDelegate
 
         /// <summary>
-        /// Runs a query for list with a custom object that gets a chance to deal 
-        /// with each row as it is processed.
+        /// 运行一个查询，返回一个列表，并允许使用自定义对象逐行处理查询结果。
         /// <p/>
-        ///  The parameter object is generally used to supply the input
-        /// data for the WHERE clause parameter(s) of the SELECT statement.
+        ///  参数对象通常用于提供 SQL 查询中 WHERE 子句的参数。
         /// </summary>
-        /// <param name="statementName">The name of the sql statement to execute.</param>
-        /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
-        /// <param name="rowDelegate"></param>
-        /// <returns>A List of result objects.</returns>
-        //public IList QueryWithRowDelegate(string statementName, object parameterObject, RowDelegate rowDelegate)
-        //{
-        //	bool isSessionLocal = false;
-        //	ISqlMapSession session = _sessionStore.LocalSession;
-        //	IList list = null;
+        /// <param name="statementName">要执行的 SQL 语句的名称。</param>
+        /// <param name="parameterObject">用于设置 SQL 查询参数的对象。</param>
+        /// <param name="rowDelegate">用于逐行处理查询结果的委托。</param>
+        /// <returns>返回查询结果的列表。</returns>
+        public IList QueryWithRowDelegate(string statementName, object parameterObject, RowDelegate rowDelegate)
+        {
+            bool isSessionLocal = false;
+            ISqlMapSession session = this.sessionStore.LocalSession;
+            IList list = null;
 
-        //	if (session == null)
-        //	{
-        //		session = CreateSqlMapSession();
-        //		isSessionLocal = true;
-        //	}
+            if (session == null)
+            {
+                session = CreateSqlMapSession();
+                isSessionLocal = true;
+            }
 
-        //	try
-        //	{
-        //		IMappedStatement statement = GetMappedStatement(statementName);
-        //		list = statement.ExecuteQueryForRowDelegate(session, parameterObject, rowDelegate);
-        //	}
-        //	catch
-        //	{
-        //		throw;
-        //	}
-        //	finally
-        //	{
-        //		if (isSessionLocal)
-        //		{
-        //			session.CloseConnection();
-        //		}
-        //	}
+            try
+            {
+                IMappedStatement statement = GetMappedStatement(statementName);
+                list = statement.ExecuteQueryForRowDelegate(session, parameterObject, rowDelegate);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                if (isSessionLocal)
+                {
+                    session.CloseConnection();
+                }
+            }
 
-        //	return list;
-        //}
+            return list;
+        }
 
 
         /// <summary>
-        /// Runs a query with a custom object that gets a chance to deal 
-        /// with each row as it is processed.
+        /// 执行一个查询，返回一个包含按指定属性分组的结果字典，并允许使用自定义对象逐行处理查询结果
         /// <p/>
-        ///  The parameter object is generally used to supply the input
-        /// data for the WHERE clause parameter(s) of the SELECT statement.
+        /// 参数对象通常用于提供 SQL 查询中 WHERE 子句的参数。
         /// </summary>
-        /// <param name="statementName">The name of the sql statement to execute.</param>
-        /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
-        /// <param name="keyProperty">The property of the result object to be used as the key.</param>
-        /// <param name="valueProperty">The property of the result object to be used as the value (or null)</param>
-        /// <param name="rowDelegate"></param>
-        /// <returns>A IDictionary (Hashtable) of object containing the rows keyed by keyProperty.</returns>
-        ///<exception cref="DataMapperException">If a transaction is not in progress, or the database throws an exception.</exception>
-        //public IDictionary QueryForMapWithRowDelegate(string statementName, object parameterObject, string keyProperty, string valueProperty, DictionaryRowDelegate rowDelegate)
-        //{
-        //	bool isSessionLocal = false;
-        //	ISqlMapSession session = _sessionStore.LocalSession;
-        //	IDictionary map = null;
+        /// <param name="statementName">要执行的 SQL 语句的名称。</param>
+        /// <param name="parameterObject">用于设置 SQL 查询参数的对象。</param>
+        /// <param name="keyProperty">从每个结果对象中提取作为字典 key 的属性名</param>
+        /// <param name="valueProperty">从每个结果对象中提取作为字典 value 的属性名，若为 null 表示整个对象作为 value</param>
+        /// <param name="rowDelegate">用于逐行处理查询结果的委托。</param>
+        /// <returns>返回一个包含按 `keyProperty` 属性分组的结果字典。</returns>
+        /// <exception cref="DataMapperException">如果没有进行事务，或者数据库抛出异常。</exception>
+        public IDictionary QueryForMapWithRowDelegate(string statementName, object parameterObject, string keyProperty, string valueProperty, DictionaryRowDelegate rowDelegate)
+        {
+            bool isSessionLocal = false;
+            ISqlMapSession session = this.sessionStore.LocalSession;
+            IDictionary map = null;
 
-        //	if (session == null)
-        //	{
-        //		session = CreateSqlMapSession();
-        //		isSessionLocal = true;
-        //	}
+            if (session == null)
+            {
+                session = CreateSqlMapSession();
+                isSessionLocal = true;
+            }
 
-        //	try
-        //	{
-        //		IMappedStatement statement = GetMappedStatement(statementName);
-        //		map = statement.ExecuteQueryForMapWithRowDelegate(session, parameterObject, keyProperty, valueProperty, rowDelegate);
-        //	}
-        //	catch
-        //	{
-        //		throw;
-        //	}
-        //	finally
-        //	{
-        //		if (isSessionLocal)
-        //		{
-        //			session.CloseConnection();
-        //		}
-        //	}
+            try
+            {
+                IMappedStatement statement = GetMappedStatement(statementName);
+                map = statement.ExecuteQueryForMapWithRowDelegate(session, parameterObject, keyProperty, valueProperty, rowDelegate);
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                if (isSessionLocal)
+                {
+                    session.CloseConnection();
+                }
+            }
 
-        //	return map;
-        //}
+            return map;
+        }
 
         #endregion
 

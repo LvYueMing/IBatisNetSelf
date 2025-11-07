@@ -16,3 +16,8 @@ if (!(Test-Path $commonOutput)) {
 # 2. 构建并打包 DataMapper 项目
 Write-Host "Packing IBatisNetSelf.DataMapper..."
 dotnet pack $dataMapperProject -c Release /p:BuildingPackage=true
+
+Write-Host "打包完成！"
+
+# 等待用户输入（按回车后才会退出）
+Read-Host -Prompt "按回车键关闭窗口"
