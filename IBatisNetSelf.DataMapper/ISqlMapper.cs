@@ -330,6 +330,8 @@ namespace IBatisNetSelf.DataMapper
         /// <returns>A List of result objects.</returns>
         IList QueryForList(string statementName, object parameterObject);
 
+        IList QueryForList<T>(string statementName, object parameterObject);
+
         /// <summary>
         /// Executes the SQL and retuns all rows selected.
         /// <p/>
@@ -367,21 +369,6 @@ namespace IBatisNetSelf.DataMapper
         ///<exception cref="DataMapperException">If a transaction is not in progress, or the database throws an exception.</exception>
      //   IDictionary QueryForMap(string statementName, object parameterObject, string keyProperty, string valueProperty);
 
-        /// <summary>
-        /// Runs a query with a custom object that gets a chance to deal 
-        /// with each row as it is processed.
-        /// <p/>
-        ///  The parameter object is generally used to supply the input
-        /// data for the WHERE clause parameter(s) of the SELECT statement.
-        /// </summary>
-        /// <param name="statementName">The name of the sql statement to execute.</param>
-        /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
-        /// <param name="keyProperty">The property of the result object to be used as the key.</param>
-        /// <param name="valueProperty">The property of the result object to be used as the value (or null)</param>
-        /// <param name="rowDelegate"></param>
-        /// <returns>A IDictionary (Hashtable) of object containing the rows keyed by keyProperty.</returns>
-        ///<exception cref="DataMapperException">If a transaction is not in progress, or the database throws an exception.</exception>
-     //   IDictionary QueryForMapWithRowDelegate(string statementName, object parameterObject, string keyProperty, string valueProperty, DictionaryRowDelegate rowDelegate);
 
         /// <summary>
         /// Executes a Sql SELECT statement that returns a single object of the type of the
@@ -439,7 +426,24 @@ namespace IBatisNetSelf.DataMapper
         /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
         /// <param name="rowDelegate"></param>
         /// <returns>A List of result objects.</returns>
-        //  IList QueryWithRowDelegate(string statementName, object parameterObject, RowDelegate rowDelegate);
+        IList QueryWithRowDelegate(string statementName, object parameterObject, RowDelegate rowDelegate);
+
+
+        /// <summary>
+        /// Runs a query with a custom object that gets a chance to deal 
+        /// with each row as it is processed.
+        /// <p/>
+        ///  The parameter object is generally used to supply the input
+        /// data for the WHERE clause parameter(s) of the SELECT statement.
+        /// </summary>
+        /// <param name="statementName">The name of the sql statement to execute.</param>
+        /// <param name="parameterObject">The object used to set the parameters in the SQL.</param>
+        /// <param name="keyProperty">The property of the result object to be used as the key.</param>
+        /// <param name="valueProperty">The property of the result object to be used as the value (or null)</param>
+        /// <param name="rowDelegate"></param>
+        /// <returns>A IDictionary (Hashtable) of object containing the rows keyed by keyProperty.</returns>
+        ///<exception cref="DataMapperException">If a transaction is not in progress, or the database throws an exception.</exception>
+        IDictionary QueryForMapWithRowDelegate(string statementName, object parameterObject, string keyProperty, string valueProperty, DictionaryRowDelegate rowDelegate);
 
 
         /// <summary>

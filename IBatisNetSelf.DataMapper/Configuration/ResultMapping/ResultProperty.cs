@@ -446,11 +446,11 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
 
             if (columnIndex == UNKNOWN_COLUMN_INDEX)
             {
-                value = this.typeHandler.GetValueByName(this, dataReader);
+                value = this.TypeHandler.GetValueByName(this, dataReader);
             }
             else
             {
-                value = this.typeHandler.GetValueByIndex(this, dataReader);
+                value = this.TypeHandler.GetValueByIndex(this, dataReader);
             }
 
             bool wasNull = (value == DBNull.Value);
@@ -460,16 +460,16 @@ namespace IBatisNetSelf.DataMapper.Configuration.ResultMapping
                 {
                     if (setAccessor != null)
                     {
-                        value = this.typeHandler.ValueOf(setAccessor.MemberType, nullValue);
+                        value = this.TypeHandler.ValueOf(setAccessor.MemberType, nullValue);
                     }
                     else
                     {
-                        value = this.typeHandler.ValueOf(null, nullValue);
+                        value = this.TypeHandler.ValueOf(null, nullValue);
                     }
                 }
                 else
                 {
-                    value = this.typeHandler.NullValue;
+                    value = this.TypeHandler.NullValue;
                 }
             }
 

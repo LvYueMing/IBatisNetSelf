@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<sqlMap namespace="Circulation" xmlns="http://ibatis.apache.org/mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
+<sqlMap namespace="Common" xmlns="http://ibatis.apache.org/mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
 
 	<parameterMaps>
 		<parameterMap class="Hashtable" id="PM.HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收">
@@ -19,328 +19,319 @@
 	</parameterMaps>
 
 	<statements>
-		<!--待处理-->
-		<select id="Circulation_GetMrFileCirculation" parameterClass="Hashtable">
-			select t.resident_id 病案号,
-			hospital.get_resident_id_ex(t.resident_id, t.hosp_id) short_residentid,
-			hospital.get_patient_name(t.patient_id) 姓名,
-			hospital.get_patient_name(t.patient_id) name,
-			hospital.get_patient_name_pym(t.patient_id) 拼音,
-			t.visit_id 住院次,
-			hospital.get_dept_name(t.dept_id) 当前科室,
-			hospital.get_病人住院天数(t.resident_id) 住院天数,
-			hospital.get_patient_gender_ex(t.patient_id) 性别,
-			nvl(hospital.get_resident_age(t.resident_id),
-			hospital.get_patient_age(t.patient_id)) 年龄,
-			hospital.get_worker_name(t.charge_doctorid) 主治医生,
-			t.patient_id 病人编号,
-			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
-			t.out_date 出院时间,
-			t.dept_id 科室编号,
-			t.hosp_id 医院编号,
-			t.baby_flag,
-			t.visit_type
-			from hsemr.patient_visit_            t,
-			hsemr.mr_file_circulation_      c,
-			hsemr.circulation_step_process_ b
-			where t.resident_id = c.resident_id
-			and t.patient_id = c.patient_id
-			and c.circulation_id = b.circulation_id
-			and c.cur_step = b.circulation_step
-			and (b.process_worker_id is not null and
-			b.process_worker_id = #in_worker_id# or
-			b.process_worker_id is null and b.process_dept_id = #in_dept_id#)
-			and t.hosp_id = #in_hospid#
-			union
-			select t.resident_id 病案号,
-			hospital.get_resident_id_ex(t.resident_id, t.hosp_id) short_residentid,
-			hospital.get_patient_name(t.patient_id) 姓名,
-			hospital.get_patient_name(t.patient_id) name,
-			hospital.get_patient_name_pym(t.patient_id) 拼音,
-			t.visit_id 住院次,
-			hospital.get_dept_name(t.dept_id) 当前科室,
-			hospital.get_病人住院天数(t.resident_id) 住院天数,
-			hospital.get_patient_gender_ex(t.patient_id) 性别,
-			nvl(hospital.get_resident_age(t.resident_id),
-			hospital.get_patient_age(t.patient_id)) 年龄,
-			hospital.get_worker_name(t.charge_doctorid) 主治医生,
-			t.patient_id 病人编号,
-			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
-			t.out_date 出院时间,
-			t.dept_id 科室编号,
-			t.hosp_id 医院编号,
-			t.baby_flag,
-			t.visit_type
-			from hsemr.patient_visit_ t, hsemr.mr_file_circulation_ c
-			where t.dept_id = c.cur_process_dept_id
-			and t.resident_id = c.resident_id
-			and t.patient_id = c.patient_id
-			and c.input_worker_id = #in_worker_id#
-			and t.hosp_id = #in_hospid#
-		</select>
-		<!--协作患者-->
-		<select id="Circulation_GetCirculationPatient" parameterClass="Hashtable">
-			select distinct t.resident_id 病案号,
-			hospital.get_resident_id_ex(t.resident_id, t.hosp_id) short_residentid,
-			hospital.get_patient_name_pym(t.patient_id) 拼音,
-			hospital.get_patient_name(t.patient_id) 姓名,
-			t.visit_id 住院次,
-			hospital.get_dept_name(t.dept_id) 当前科室,
-			hospital.get_病人住院天数(t.resident_id) 住院天数,
-			hospital.get_patient_gender_ex(t.patient_id) 性别,
-			nvl(hospital.get_resident_age(t.resident_id),
-			hospital.get_patient_age(t.patient_id)) 年龄,
-			hospital.get_worker_name(t.charge_doctorid) 主治医生,
-			t.patient_id 病人编号,
-			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
-			t.out_date 出院时间,
-			t.dept_id 科室编号,
-			t.hosp_id 医院编号,
-			t.baby_flag,
-			t.visit_type
-			from hsemr.patient_visit_ t, hospital.in_examination_application_ a
-			where t.resident_id = a.residentid
-			and a.execute_deptid = #in_login_dept_id#
-			<isEqual property="in_patient_status" compareValue="IN">
-				and  t.status = 0
-			</isEqual>
-			<isEqual property="in_patient_status" compareValue="OUT">
-				and  t.status = 2 and (t.out_date between
-				to_date(#in_begin_date# || ' 00:00:00', 'yyyy/mm/dd hh24:mi:ss') and
-				to_date(#in_end_date# || ' 23:59:59', 'yyyy/mm/dd hh24:mi:ss'))
-			</isEqual>
-			and t.visit_type = 'ZY'
-			union all
-			select distinct t.resident_id 病案号,
-			hospital.get_resident_id_ex(t.resident_id, t.hosp_id) short_residentid,
-			hospital.get_patient_name_pym(t.patient_id) 拼音,
-			hospital.get_patient_name(t.patient_id) 姓名,
-			t.visit_id 住院次,
-			hospital.get_dept_name(t.dept_id) 当前科室,
-			hospital.get_病人住院天数(t.resident_id) 住院天数,
-			hospital.get_patient_gender_ex(t.patient_id) 性别,
-			nvl(hospital.get_resident_age(t.resident_id),
-			hospital.get_patient_age(t.patient_id)) 年龄,
-			hospital.get_worker_name(t.charge_doctorid) 主治医生,
-			t.patient_id 病人编号,
-			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
-			t.out_date 出院时间,
-			t.dept_id 科室编号,
-			t.hosp_id 医院编号,
-			t.baby_flag,
-			t.visit_type
-			from hsemr.patient_visit_ t, hsois.operation_arrangement_ a
-			where t.resident_id = a.resident_id
-			and a.operation_exec_deptid = #in_login_dept_id#
-			<isEqual property="in_patient_status" compareValue="IN">
-				and  t.status = 0
-			</isEqual>
-			<isEqual property="in_patient_status" compareValue="OUT">
-				and  t.status = 2 and (t.out_date between
-				to_date(#in_begin_date# || ' 00:00:00', 'yyyy/mm/dd hh24:mi:ss') and
-				to_date(#in_end_date# || ' 23:59:59', 'yyyy/mm/dd hh24:mi:ss'))
-			</isEqual>
-			and t.visit_type = 'ZY'
-		</select>
-		<select id="Circulation_GetCirculationProcess" parameterClass="Hashtable">
-			select distinct t.resident_id 病案号,
-			hospital.get_resident_id_ex(t.resident_id, t.hosp_id) short_residentid,
-			hospital.get_patient_name_pym(t.patient_id) 拼音,
-			hospital.get_patient_name(t.patient_id) name,
-			hospital.get_patient_name(t.patient_id) 姓名,
-			t.visit_id 住院次,
-			hospital.get_dept_name(t.dept_id) 当前科室,
-			hospital.get_病人住院天数(t.resident_id) 住院天数,
-			hospital.get_patient_gender_ex(t.patient_id) 性别,
-			nvl(hospital.get_resident_age(t.resident_id),
-			hospital.get_patient_age(t.patient_id)) 年龄,
-			hospital.get_worker_name(t.charge_doctorid) 主治医生,
-			t.patient_id 病人编号,
-			to_char(t.in_date, 'yyyy-mm-dd hh24:mi') 入院时间,
-			t.out_date 出院时间,
-			t.dept_id 科室编号,
-			t.hosp_id 医院编号,
-			t.baby_flag,
-			t.visit_type
-			from hsemr.patient_visit_               t,
-			hsemr.mr_file_circulation_         a,
-			hsemr.mr_file_circulation_process_ b
-			where t.resident_id = a.resident_id
-			and a.id = b.mr_file_circulation_id
-			and b.process_worker_id = #in_process_worker_id#
-			and (b.operation_date between
-			to_date(#in_begin_date# || ' 00:00:00', 'yyyy/mm/dd hh24:mi:ss') and
-			to_date(#in_end_date# || ' 23:59:59', 'yyyy/mm/dd hh24:mi:ss'))
-		</select>
-		<!--查询病人所有病历-->
-		<select id="Circulation_GetAllMRForTreeList" parameterClass="Hashtable">
-			select a.dept_id id,
-			null parentid,
-			hospital.get_dept_name(a.dept_id) ||
-			hsemr.get_treament_type(#in_resident_id#,
-			#in_visit_id#,
-			#in_hosp_id#,
-			#in_login_dept_id#) name,
-			'KS' title_type,
-			a.dept_id title_id,
-			a.dept_id patient_dept_id,
-			null topic,
-			null mr_doc_class,
-			null mr_file_id,
-			null parent_mr_file_id,
-			null new_page_flag,
-			null 文件状态,
-			null doc_type,
-			null parent_mr_doc_type,
-			null input_dept_id,
-			null input_dept,
-			null input_worker_id,
-			null input_worker,
-			null input_date,
-			null first_signature_date,
-			null 最后保存时间,
-			null 最后保存人,
-			null out_dept_date,
-			0 seq,
-			0 subseq,
-			null trigger_operation_type,
-			null circulation_id
-			from hsemr.patient_visit_ a
-			where a.resident_id = #in_resident_id#
-			and a.visit_id = #in_visit_id#
-			and a.hosp_id = #in_hosp_id#
-			union all
-			select a.class || b.patient_dept_id id,
-			b.patient_dept_id parentid,
-			a.name || '(' ||
-			hsemr.pck_mr.get_mr_file_count(#in_resident_id#,
-			#in_visit_id#,
-			#in_hosp_id#,
-			a.class,
-			b.patient_dept_id) || ')' name,
-			'BLLX' title_type,
-			a.class title_id,
-			b.patient_dept_id patient_dept_id,
-			null topic,
-			a.class mr_doc_class,
-			null mr_file_id,
-			null parent_mr_file_id,
-			null new_page_flag,
-			null 文件状态,
-			null doc_type,
-			null parent_mr_doc_type,
-			null input_dept_id,
-			null input_dept,
-			null input_worker_id,
-			null input_worker,
-			null input_date,
-			null first_signature_date,
-			null 最后保存时间,
-			null 最后保存人,
-			null out_dept_date,
-			a.subseq seq,
-			0 subseq,
-			null trigger_operation_type,
-			null circulation_id
-			from hsemr.mr_doc_class_ a,
-			(select a.dept_id patient_dept_id
-			from hsemr.patient_visit_ a
-			where a.resident_id = #in_resident_id#
-			and a.visit_id = #in_visit_id#
-			and a.hosp_id = #in_hosp_id#) b
-			where a.visible = '1'
-			<isEqual property="in_mr_doc_class" compareValue="COOPERATE">
-				and substrb(a.menu_config,9,1) = '1'
-			</isEqual>
-			union all
-			select a.id,
-			b.mr_doc_class_class || a.patient_dept_id parentid,
-			decode(c.class, '2',decode(a.new_page_flag, '1', '>', ' '),null) ||
-			decode(c.class, '2', to_char(a.input_date, 'mm/dd') || ' ', null) ||
-			decode(a.file_flag, '0', '*') || a.topic ||
-			decode(a.parent_id,
-			null,
-			hsemr.get_treament_dept_name(a.resident_id,
-			a.visit_id,
-			a.hosp_id,
-			a.id),
-			hsemr.get_treament_dept_name(a.resident_id,
-			a.visit_id,
-			a.hosp_id,
-			a.parent_id)) name,
-			'BLWS' title_type,
-			a.id title_id,
-			a.patient_dept_id patient_dept_id,
-			a.topic topic,
-			c.class mr_doc_class,
-			a.id mr_file_id,
-			a.parent_id parent_mr_file_id,
-			a.new_page_flag new_page_flag,
-			hsemr.get_field_dict('MR_FILE', 'FILE_FLAG', a.file_flag) 文件状态,
-			a.doc_type doc_type,
-			d.doc_type parent_mr_doc_type,
-			a.input_dept_id input_dept_id,
-			a.input_dept input_dept,
-			a.input_worker_id input_worker_id,
-			a.input_worker input_worker,
-			a.input_date input_date,
-			a.first_signature_date first_signature_date,
-			a.update_date 最后保存时间,
-			a.update_worker 最后保存人,
-			null out_dept_date,
-			c.subseq seq,
-			1 subseq,
-			a.trigger_operation_type,
-			a.circulation_id
-			from hsemr.mr_file_                a,
-			hsemr.mr_doc_class_mrt_class_ b,
-			hsemr.mr_file_circulation_ h,
-			hsemr.mr_doc_class_           c,
-			hsemr.mr_file_                d
-			where a.mr_class_id = b.mr_class_id
-			and b.mr_doc_class_class = c.class
-			and a.id= h.mr_file_id
-			and a.parent_id = d.id(+)
-			and a.deleted_flag = 0
-			and c.visible = '1'
-			and a.resident_id = #in_resident_id#
-			and a.visit_id = #in_visit_id#
-			and a.hosp_id = #in_hosp_id#
-			<isEqual property="in_mr_doc_class" compareValue="COOPERATE">
-				and substrb(c.menu_config,9,1) = '1'
-			</isEqual>
-			order by out_dept_date, seq asc,subseq asc, input_date asc
-		</select>
-		<!--查询业务流转步骤-->
-		<select id="Circulation_GetCirculationConfig" parameterClass="Hashtable">
-			select t.step_name 步骤,
-			hsemr.pck_mr_circulation.get_circulation_step_enable(b.mr_file_id,
-			t.step) enable_flag,
-			hsemr.pck_mr_circulation.get_circulation_step_check(b.mr_file_id,
-			t.step) check_flag,
-			hsemr.pck_mr_circulation.get_circulation_step_bottom(b.mr_file_id,
-			t.circulation_id,
-			t.step) 底部标题,
-			hsemr.pck_mr_circulation.get_circulation_process_time(b.mr_file_id,
-			t.circulation_id,
-			t.step) 顶部标题,
-			hsemr.pck_mr_circulation.get_circulation_process_info(b.mr_file_id,
-			t.step) 提示信息,
-			t.optional 可选,
-			t.step value
-			from hsemr.circulation_step_ t, hsemr.mr_file_circulation_ b
-			where t.circulation_id = b.circulation_id
-			and b.mr_file_id = #in_mr_file_id#
-			order by t.step
-		</select>
-		<!--查询文书状态-->
-		<select id="Circulation_GetCirculationWorkerRole" parameterClass="Hashtable">
-			select hsemr.pck_mr_circulation.get_circulation_worker_role(#in_mr_file_id#,
-			#in_worker_id#,
-			#in_dept_id#) 编辑权限
-			from dual
-		</select>
 
+		<select id="Order_GetOrderList" parameterClass="Hashtable" resultClass="ResultMap.OrderList,ResultMap">
+      select a.id,
+             decode(a.parentid,
+                    a.id,
+                    substr(hospital.get_field_dict_name('ORDER_LIST',
+                                                        'TYPE',
+                                                        a.type),
+                           1,
+                           4),
+                    null,
+                    substr(hospital.get_field_dict_name('ORDER_LIST',
+                                                        'TYPE',
+                                                        a.type),
+                           1,
+                           4),
+                    null) type,
+             decode(a.parentid,
+                    a.id,
+                    substr(hospital.get_field_dict_name('ORDER_LIST',
+                                                        'LONG_FLAG',
+                                                        a.long_flag),
+                           1,
+                           2) || decode(a.cir_drug_flag, '1', '[带]', null) ||
+                    decode(a.self_drug, '1', '[备]', null),
+                    null,
+                    substr(hospital.get_field_dict_name('ORDER_LIST',
+                                                        'LONG_FL AG',
+                                                        a.long_flag),
+                           1,
+                           2) || decode(a.cir_drug_flag, '1', '[带]', null) ||
+                    decode(a.self_drug, '1', '[备]', null),
+                    null) flag,
+             decode(a.parentid,
+                    a.id,
+                    decode(a.status,
+                           'WAIT_AUDIT',
+                           '待审核',
+                           substr(hospital.get_field_dict_name('ORDER_LIST',
+                                                               'STATUS',
+                                                               a.status),
+                                  1,
+                                  4)),
+                    null,
+                    decode(a.status,
+                           'WAIT_AUDIT',
+                           '待审核',
+                           substr(hospital.get_field_dict_name('ORDER_LIST',
+                                                               'STATUS',
+                                                               a.status),
+                                  1,
+                                  4)),
+                    null) orderstatus,
+             decode(a.parentid,
+                    a.id,
+                    substr(hospital.get_field_dict_name('ORDER_LIST',
+                                                        'STATUS1',
+                                                        a.status1),
+                           1,
+                           4),
+                    null,
+                    substr(hospital.get_field_dict_name('ORDER_LIST',
+                                                        'STATUS1',
+                                                        a.status1),
+                           1,
+                           4),
+                    null) executestatus,
+             decode(a.parentid,
+                    a.id,
+                    hospital.exam_apply.get_检查申请单_状态(a.id),
+                    null,
+                    hospital.exam_apply.get_检查申请单_状态(a.id),
+                    null) applystatus,
+             decode(a.parentid,
+                    a.id,
+                    hospital.exam_apply.get_检查申请单_id(a.id),
+                    null,
+                    hospital.exam_apply.get_检查申请单_id(a.id),
+                    null) applyno,
+             decode(a.parentid,
+                    a.id,
+                    to_char(a.start_date, 'MM-DD HH24:MI'),
+                    null,
+                    to_char(a.start_date, 'MM-DD HH24:MI'),
+                    null) startshortdate,
+             decode(a.input_way, 'KYYZ', '(会诊)', null) ||
+             trim(hospital.get_医嘱医保信息(a.sundry_feeid, a.materialid, #in_hospid#) ||
+                  nvl(a.order_content,
+                      hospital.get_sundry_fee_name(a.sundry_feeid) ||
+                      hospital.get_material_name(a.materialid) || a.text)) || ' ' ||
+             a.method ||
+             decode(a.check_point, null, ' ', ' [' || a.check_point || ']') ||
+             decode(a.comment_text,
+                    null,
+                    ' ',
+                    ' <![CDATA[<]]>' || a.comment_text || '<![CDATA[>]]> ') ||
+             hospital.get_field_dict_name('ORDER_LIST',
+                                          'SKIN_TEST_RESULT',
+                                          a.skin_test_result) || a.drop_speed ||
+             a.drop_speed_unit ordercontent,
+             decode(a.skin_test_sign1,
+                    null,
+                    decode(a.parentid,
+                           a.id,
+                           hospital.get_order_list_audit(a.id),
+                           null),
+                    a.skin_test_sign1 || '于' ||
+                    to_char(a.skin_test_sign1_date, 'YYYY-MM-DD HH24:MI:SS') ||
+                    '皮试，皮试结果为' || decode(a.skin_test_result1,
+                                         '1',
+                                         '阴性',
+                                         '2',
+                                         '阳性',
+                                         '3',
+                                         '弱阳性',
+                                         '4',
+                                         '强阳性') ||
+                    decode(hospital.get_system_option('医嘱皮试_启用皮试复核'),
+                           'Y',
+                           decode(a.skin_test_sign2,
+                                  null,
+                                  '，还未皮试复核！',
+                                  '。' || a.skin_test_sign2 || '于' ||
+                                  to_char(a.skin_test_sign2_date,
+                                          'YYYY-MM-DD HH24:MI:SS') || '复核皮试，复核结果为' ||
+                                  decode(a.skin_test_result2,
+                                         '1',
+                                         '阴性',
+                                         '2',
+                                         '阳性',
+                                         '3',
+                                         '弱阳性',
+                                         '4',
+                                         '强阳性') || '。'),
+                           '! ')) || decode(a.parentid,
+                                            a.id,
+                                            hospital.get_remote_treament_order(a.id),
+                                            null) ||
+             hospital.get_cross_hosp_order(a.id) skintestinfo,
+             hospital.get_package_description(a.packageid) packagedescription,
+             hospital.get_package_description_ex(a.packageid) specification,
+             hospital.get_package_medicament(a.packageid) dosageform,
+             a.amount amount,
+             nvl(hospital.get_sundry_fee_unit(a.sundry_feeid),
+                 hospital.get_package_name(a.packageid)) unit,
+             substr(decode(substr(to_char(a.amount) ||
+                                  nvl(hospital.get_sundry_fee_unit(a.sundry_feeid),
+                                      hospital.get_package_name(a.packageid)),
+                                  1,
+                                  1),
+                           '.',
+                           '0' || to_char(a.amount) ||
+                           nvl(hospital.get_sundry_fee_unit(a.sundry_feeid),
+                               hospital.get_package_name(a.packageid)),
+                           to_char(a.amount) ||
+                           nvl(hospital.get_sundry_fee_unit(a.sundry_feeid),
+                               hospital.get_package_name(a.packageid))),
+                    1,
+                    6) dailydosage,
+             decode(a.parentid,
+                    a.id,
+                    to_char(a.this_days, 'FM999'),
+                    null,
+                    to_char(a.this_days, 'FM999'),
+                    null) thisdays,
+             decode(a.parentid,
+                    a.id,
+                    to_char(a.start_date + a.executed_days, 'YYYY-MM-DD'),
+                    null,
+                    null,
+                    to_char(a.start_date + a.executed_days, 'YYYY-MM-DD')) executeddate,
+             round(a.price, 3) price,
+             decode(a.parentid,
+                    a.id,
+                    substr(hospital.get_worker_name(a.input_workerid), 1, 5),
+                    null,
+                    substr(hospital.get_worker_name(a.input_workerid), 1, 5),
+                    null) inputworker,
+             decode(a.parentid,
+                    a.id,
+                    to_char(a.input_date, 'YYYY-MM-DD HH24:MI:SS'),
+                    null,
+                    to_char(a.input_date, 'YYYY-MM-DD HH24:MI:SS'),
+                    null) inputdate,
+             decode(a.parentid,
+                    a.id,
+                    to_char(a.account_date, 'YYYY-MM-DD HH24:MI:SS'),
+                    null,
+                    to_char(a.account_date, 'YYYY-MM-DD HH24:MI:SS'),
+                    null) accountdate,
+             decode(a.parentid,
+                    a.id,
+                    to_char(a.execute_date, 'YYYY-MM-DD HH24:MI:SS'),
+                    null,
+                    to_char(a.execute_date, 'YYYY-MM-DD HH24:MI:SS'),
+                    null) executedate,
+             decode(a.material_deptid,
+                    null,
+                    hospital.get_dept_name(a.execute_deptid),
+                    hospital.get_dept_name(a.material_deptid)) medicinedept,
+             a.sequence,
+             a.long_flag,
+             to_char(a.start_date, 'YYYY-MM-DD HH24:MI:SS') start_date,
+             a.input_date,
+             a.parentid,
+             a.type typeflag,
+             a.start_workerid,
+             a.comment_text,
+             a.status,
+             a.subseq,
+             hospital.get_药品抗菌药物级别(a.materialid) attr,
+             hospital.get_医生用药权限(a.start_workerid, a.materialid) can_use,
+             case
+               when a.materialid is not null then
+                '药品类型'
+               when a.sundry_feeid is not null then
+                '杂费类型'
+               when a.text is not null then
+                '文本类型'
+               else
+                ''
+             end 医嘱类型,
+             a.light_flag,
+             a.materialid,
+             a.sundry_feeid,
+             a.text,
+             hospital.get_医嘱医保信息(null, a.materialid, #in_hospid#) ||
+             hospital.get_material_name(a.materialid) material_name,
+             to_char(a.stop_date, 'YYYY-MM-DD HH24:MI:SS') stopdate,
+             substr(hospital.get_worker_name(a.stop_workerid), 1, 5) stopworker,
+             a.method,
+             a.materialid || a.packageid pass_materialid,
+             round(a.amount * a.price, 3) subtotal,
+             a.skin_test_result1,
+             a.skin_test_sign1_workerid skintester1,
+             a.skin_test_sign2_workerid skintester2,
+             a.material_deptid,
+             a.packageid,
+             a.skin_test_result skintestresult,
+             a.first_executions firstexecutions,
+             a.last_executions lastexecutions,
+             a.first_executions || '/' || a.last_executions firstlastexecutions,
+             a.first_exec_amount,
+             a.last_exec_amount,
+             to_char(a.medicament, 'FM9999990.000') || a.medicament_unit dosage,
+             hospital.get_sundry_fee_name(a.sundry_feeid) sundry_fee_name,
+             hospital.get_material_name(a.materialid) drugname,
+             substr(hospital.get_field_dict_name('SUNDRY_FEE',
+                                                 'SAMPLE_TYPE',
+                                                 a.sample_type),
+                    1,
+                    12) sample_type,
+             hospital.get_ol_combo_flag(a.id) comboflag,
+             hospital.get_sundry_fee_pre_type(a.sundry_feeid, #in_hospid#) prescriptiontype,
+             hospital.get_material_name(a.materialid) ||
+             hospital.get_sundry_fee_name(a.sundry_feeid) || a.text order_name,
+             '0' expand,
+             hospital.get_ol_record_ca(a.id) signature,
+             hospital.get_his_material_collateid(#in_hospid#,
+                                                 a.materialid,
+                                                 a.packageid,
+                                                 a.purchaseid,
+                                                 a.sundry_feeid) nationalinsurancecode,
+             hospital.get_his_material_collate_name(#in_hospid#,
+                                                    a.materialid,
+                                                    a.packageid,
+                                                    a.purchaseid,
+                                                    a.sundry_feeid) nationalinsurancename,
+             hospital.get_field_dict_name('ORDER_LIST',
+                                          'INSPECT_ITEM',
+                                          a.inspect_item) inspectitem,
+             hospital.get_ol_mr_file_id(a.id) mr_file_id,
+             hsemr.get_mr_doc_class_ex(hospital.get_ol_mr_file_id(a.id)) mr_doc_class,
+             decode(a.parentid,
+                    a.id,
+                    to_char(a.start_date, 'YYYY-MM-DD HH24:MI'),
+                    null,
+                    to_char(a.start_date, 'YYYY-MM-DD HH24:MI'),
+                    null) starttime,
+             a.input_way,
+             hospital.get_field_dict_name('PRESCRIPTION_DETAIL',
+                                          'CYCLE_MARKER',
+                                          a.cycle_marker) cycle_marker,
+             decode(a.parentid,
+                    a.id,
+                    to_char(a.ack_date, 'MM-DD HH24:MI'),
+                    null,
+                    to_char(a.ack_date, 'MM-DD HH24:MI'),
+                    null) ackdate,
+             hospital.get_worker_name(a.execute_workerid) executor,
+             a.frequence_dict,
+             hospital.get_order_crosss_hosp_url(a.id) url,
+             to_char(a.planned_stop_date, 'YYYY-MM-DD HH24:MI:SS') planned_stop_date,
+             case
+               when to_number(to_char(a.planned_stop_date, 'hh24')) >= '8'
+                    or a.last_executions is not null then
+                (a.skip_days + a.executed_days) || '/' ||
+                (trunc(a.planned_stop_date) - trunc(a.start_date) + 1)
+               else
+                (a.skip_days + a.executed_days) || '/' ||
+                (trunc(a.planned_stop_date) - trunc(a.start_date))
+             end executeddaysinfo,
+             hospital.get_field_dict_name('ORDER_LIST',
+                                          'USE_REASON',
+                                          a.use_reason) usereason
+        from hospital.order_list a
+       where a.ownerid = #in_ownerid#
+			    and a.long_flag in ('A', 'B')
+					and (a.status in ('WAIT_ACK', 'NORMAL', 'WAIT_AUDIT', 'WAIT_CHECK') or
+             a.status = 'STOPPED' and a.status1 = 'WAIT_ACK')  
+       order by long_flag, sequence, subseq, input_date
+		</select>
+		
 		<procedure id="HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收" parameterMap="PM.HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收">
 			HSEMR.PCK_MR_CIRCULATION.S_流转_流程接收
 		</procedure>
@@ -348,7 +339,6 @@
 		<procedure id="HSEMR.PCK_MR_CIRCULATION.S_流转_流程提交" parameterMap="PM.HSEMR.PCK_MR_CIRCULATION.S_流转_流程提交">
 			HSEMR.PCK_MR_CIRCULATION.S_流转_流程提交
 		</procedure>
-
 
 	</statements>
 </sqlMap>

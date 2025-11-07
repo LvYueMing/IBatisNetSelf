@@ -332,16 +332,18 @@ namespace IBatisNetSelf.Common.Utilities
             {
                 // 构建完整路径（如：AppBaseDir/MyAssembly.dll）
                 string _assemblyPath = Path.Combine(AppContext.BaseDirectory, _fileInfo.AssemblyName+".dll");
+
+                Assembly _assembly = null;
                 if (!File.Exists(_assemblyPath))
                 {
-                    throw new IBatisConfigException($"Assembly not found at path: {_assemblyPath}");
+                    //按照路径加载到默认加载上下文(Load Context)
+                   _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_assemblyPath);
+                }
+                else
+                {
+                    _assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(_fileInfo.AssemblyName));
                 }
 
-                //_assembly = Assembly.LoadFrom(_assemblyPath);
-                //_assembly = Assembly.Load(_fileInfo.AssemblyName);
-
-                //按照路径加载到默认加载上下文(Load Context)
-                Assembly _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_assemblyPath);
 
                 // 先尝试用 ResourceFileName 加载，失败再尝试 FileName
                 Stream? stream = _assembly.GetManifestResourceStream(_fileInfo.ResourceFileName)

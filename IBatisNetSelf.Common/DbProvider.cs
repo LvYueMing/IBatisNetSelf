@@ -387,13 +387,10 @@ namespace IBatisNetSelf.Common
             try
             {
                 // 解析程序集路径
-                string _assemblyName = this.assemblyName.Split(',')[0] + ".dll";
-                _assemblyPath = Path.Combine(AppContext.BaseDirectory, _assemblyName);
-                if (!File.Exists(_assemblyPath))
-                {
-                    throw new IBatisConfigException($"程序集文件未找到: {_assemblyPath}");
-                }
+                string _assemblyName = this.assemblyName.Split(',')[0];
+                _assemblyPath = Path.Combine(AppContext.BaseDirectory, _assemblyName+ ".dll");
 
+                Assembly _assembly = null;
                 //Assembly.Load(this.assemblyName) //此方法需要在应用程序中添加名称为this.assemblyName的程序集的引用
                 //_assembly = Assembly.Load(this.assemblyName);
 
@@ -401,9 +398,16 @@ namespace IBatisNetSelf.Common
                 //string _assemblyName = this.assemblyName.Split(',')[0] + ".dll";
                 //string _assemblyPath = Path.Combine(AppContext.BaseDirectory, _assemblyName);
                 //_assembly = Assembly.LoadFrom(_assemblyPath);
+                if (File.Exists(_assemblyPath))
+                {
+                    // 加载程序集，根据路径加载到 默认上下文中
+                    _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_assemblyPath);
+                }
+                else
+                {
+                    _assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(_assemblyName));
+                }
 
-                // 加载程序集，根据路径加载到 默认上下文中
-                Assembly _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_assemblyPath);
 
                 // 加载并实例化 DataAdapter 模板
                 this.templateDataAdapter = (IDbDataAdapter)CreateInstance(_assembly, this.dataAdapterClass, typeof(IDbDataAdapter));

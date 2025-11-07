@@ -87,13 +87,17 @@ namespace IBatisNetSelf.Common.Utilities.TypesResolver
                 string assemblyFileName = typeInfo.AssemblyName + ".dll";
                 string assemblyPath = Path.Combine(AppContext.BaseDirectory, assemblyFileName);
 
-                if (!File.Exists(assemblyPath))
+                Assembly assembly = null;
+                // 使用 AssemblyLoadContext 默认上下文加载程序集
+                if (File.Exists(assemblyPath))
                 {
-                    throw new FileNotFoundException($"程序集文件未找到：{assemblyPath}");
+                    assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
+                }
+                else
+                {
+                    assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(typeInfo.AssemblyName));
                 }
 
-                // 使用 AssemblyLoadContext 默认上下文加载程序集
-                Assembly assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
 
                 // 加载类型，忽略大小写，不抛异常
                 return assembly.GetType(typeInfo.TypeName, throwOnError: true, ignoreCase: true);
