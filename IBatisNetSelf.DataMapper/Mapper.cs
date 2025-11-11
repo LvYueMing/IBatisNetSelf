@@ -27,7 +27,7 @@ namespace IBatisNetSelf.DataMapper
     }
 
 
-    public sealed class Mapper : IMapper
+    public sealed class Mapper : IMapper, IDisposable
     {
         private readonly object _lock = new();
         // 确保多线程环境下字段的可见性和禁止指令重排序,volatile 是多线程环境下共享字段的 “安全开关”，确保字段的读写操作在多线程间是 “透明” 的
@@ -90,6 +90,15 @@ namespace IBatisNetSelf.DataMapper
             {
                 _sqlMapper = null;
             }
+        }
+
+        public void Dispose()
+        {
+            if (_sqlMapper is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+            _sqlMapper = null;
         }
     }
 

@@ -1,0 +1,5 @@
+{
+    "IBatis": {
+      "SqlMapConfig": "SqlMap.config"  // 你的 SQL Map 配置文件路径
+    }
+}
