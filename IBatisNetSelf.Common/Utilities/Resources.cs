@@ -334,7 +334,7 @@ namespace IBatisNetSelf.Common.Utilities
                 string _assemblyPath = Path.Combine(AppContext.BaseDirectory, _fileInfo.AssemblyName+".dll");
 
                 Assembly _assembly = null;
-                if (!File.Exists(_assemblyPath))
+                if (File.Exists(_assemblyPath))
                 {
                     //按照路径加载到默认加载上下文(Load Context)
                    _assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(_assemblyPath);

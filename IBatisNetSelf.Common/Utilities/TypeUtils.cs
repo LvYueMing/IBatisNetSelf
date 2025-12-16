@@ -14,7 +14,7 @@ namespace IBatisNetSelf.Common.Utilities
     {
         #region Fields
         // 内部使用的类型解析器，带缓存功能，提升性能。
-        private static readonly ITypeResolver internalTypeResolver = new CachedTypeResolver(new TypeResolver());
+        private static readonly ITypeResolver typeResolverCache = new CachedTypeResolver(new TypeResolver());
 
         #endregion
 
@@ -46,7 +46,7 @@ namespace IBatisNetSelf.Common.Utilities
             Type? _type = TypeRegistry.ResolveType(typeName);
             if (_type == null)
             {
-                _type = internalTypeResolver.Resolve(typeName);
+                _type = typeResolverCache.Resolve(typeName);
             }
             return _type;
         }

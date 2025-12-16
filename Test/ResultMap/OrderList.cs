@@ -11,7 +11,7 @@ namespace ResultMap
         /// <summary>
         /// 医嘱ID
         /// </summary>
-        public decimal? Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// 类型

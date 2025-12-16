@@ -45,13 +45,10 @@ namespace IBatisNetSelf.Common.Utilities.TypesResolver
         #region ITypeResolver Members
 
         /// <summary>
-        /// Resolves the supplied <paramref name="aTypeName"/> to a
-        /// <see cref="System.Type"/>
-        /// instance.
+        /// Resolves the supplied <paramref name="aTypeName"/> to a<see cref="System.Type"/> instance.
         /// </summary>
         /// <param name="aTypeName">
-        /// The (possibly partially assembly qualified) name of a
-        /// <see cref="System.Type"/>.
+        /// The (possibly partially assembly qualified) name of a <see cref="System.Type"/>.
         /// </param>
         /// <returns>
         /// A resolved <see cref="System.Type"/> instance.
